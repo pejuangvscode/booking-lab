@@ -6,15 +6,42 @@ generator client {
 }
 
 datasource db {
-    provider = "sqlite"
+    provider = "postgresql"
     url      = env("DATABASE_URL")
+    directUrl = env("DIRECT_URL")
 }
 
-model Post {
-    id        Int      @id @default(autoincrement())
+model Users {
+    id        String    @unique
     name      String
     createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
 
-    @@index([name])
+    bookings  Bookings[]
+
+    @@map("users")
+}
+
+model Rooms {
+    id        String    @unique
+    name      String
+    createdAt DateTime @default(now())
+
+    bookings  Bookings[]
+
+    @@map("rooms")
+}
+
+model Bookings {
+    id        String    @unique
+    userId    String
+    roomId    String
+    startTime DateTime
+    endTime   DateTime
+    status    String @default("pending") // e.g., pending, confirmed, cancelled
+    createdAt DateTime @default(now())
+
+    user Users @relation(fields: [userId], references: [id])
+    room Rooms @relation(fields: [roomId], references: [id])
+
+    @@map("bookings")
 }
