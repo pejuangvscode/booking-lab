@@ -16,7 +16,9 @@ const geist = Geist({
 });
 
 // Create a wrapper component to use Clerk hooks
-const AppContent = ({ Component, pageProps }) => {
+import type { AppProps } from "next/app";
+
+const AppContent = ({ Component, pageProps, router }: AppProps) => {
   const { isSignedIn, isLoaded } = useAuth();
   const syncUser = api.user.syncUser.useMutation();
   
@@ -32,17 +34,17 @@ const AppContent = ({ Component, pageProps }) => {
     <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-grow">
-        <Component {...pageProps} />
+        <Component {...pageProps} router={router} />
       </main>
     </div>
   );
 };
 
-const MyApp: AppType = ({ Component, pageProps }) => {
+const MyApp: AppType = ({ Component, pageProps, router }) => {
   return (
     <div className={geist.className}>
       <ClerkProvider {...pageProps}>
-        <AppContent Component={Component} pageProps={pageProps} />
+        <AppContent Component={Component} pageProps={pageProps} router={router} />
       </ClerkProvider>
     </div>
   );
