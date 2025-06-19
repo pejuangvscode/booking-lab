@@ -12,8 +12,7 @@ datasource db {
 }
 
 model Users {
-    id        String    @unique
-    name      String
+    id        String    @unique @default(uuid()) @id
     createdAt DateTime @default(now())
 
     bookings  Bookings[]
@@ -21,9 +20,12 @@ model Users {
     @@map("users")
 }
 
+// Update your Rooms model in schema.prisma if needed
 model Rooms {
-    id        String    @unique
+    id        String    @unique @id
     name      String
+    type      String?
+    capacity  Int?
     createdAt DateTime @default(now())
 
     bookings  Bookings[]
@@ -32,7 +34,7 @@ model Rooms {
 }
 
 model Bookings {
-    id        String    @unique
+    id        Int      @id @default(autoincrement())
     userId    String
     roomId    String
     startTime DateTime

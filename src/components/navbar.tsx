@@ -1,17 +1,49 @@
 import Link from "next/link";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function Navbar() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [prevScrollPos, setPrevScrollPos] = useState(0);
+  const [visible, setVisible] = useState(true);
+  const [isMounted, setIsMounted] = useState(false);
+
+  // Set isMounted to true after component mounts
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  // Add scroll event listener only after component has mounted
+  useEffect(() => {
+    if (!isMounted) return;
+    
+    const handleScroll = () => {
+      const currentScrollPos = window.scrollY;
+      
+      // Make the navbar visible when:
+      // 1. Scrolling up OR
+      // 2. At the top of the page
+      const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
+      
+      setPrevScrollPos(currentScrollPos);
+      setVisible(isVisible);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [prevScrollPos, isMounted]);
 
   return (
-    <nav className="bg-white shadow-sm">
+    <nav 
+      className={`fixed top-0 left-0 right-0 z-50 bg-white shadow-sm transition-transform duration-300 ${
+        isMounted && !visible ? '-translate-y-full' : 'transform-none'
+      }`}
+    >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold">BookingWeb</span>
+              <span className="text-xl font-bold text-orange-600">BookLab</span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
@@ -21,10 +53,16 @@ export function Navbar() {
                 Home
               </Link>
               <Link
-                href="/bookings"
+                href="/lab-search"
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
               >
-                Bookings
+                Lab Search
+              </Link>
+              <Link
+                href="/booking-calendar"
+                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+              >
+                Booking Calendar
               </Link>
               <SignedIn>
                 <Link
@@ -58,7 +96,7 @@ export function Navbar() {
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
-              aria-expanded="false"
+              aria-expanded={isMenuOpen}
             >
               <span className="sr-only">Open main menu</span>
               {isMenuOpen ? (
@@ -103,19 +141,29 @@ export function Navbar() {
       <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden`}>
         <div className="pt-2 pb-3 space-y-1">
           <Link
+            onClick={() => setIsMenuOpen(false)}
             href="/"
             className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
           >
             Home
           </Link>
           <Link
-            href="/bookings"
+            onClick={() => setIsMenuOpen(false)}
+            href="/lab-search"
             className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
           >
-            Bookings
+            Lab Search
+          </Link>
+          <Link
+            onClick={() => setIsMenuOpen(false)}
+            href="/booking-calendar"
+            className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+          >
+            Booking Calendar
           </Link>
           <SignedIn>
             <Link
+              onClick={() => setIsMenuOpen(false)}
               href="/dashboard"
               className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
             >
