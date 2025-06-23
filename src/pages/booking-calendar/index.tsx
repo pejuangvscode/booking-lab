@@ -1,3 +1,11 @@
+export default function BookingCalendar() {
+  return (
+    <div className="flex items-center justify-center min-h-screen">
+      <h1 className="text-2xl font-bold">Booking Calendar</h1>
+    </div>
+  );
+}
+
 // import { useState, useEffect } from 'react';
 // import { useRouter } from 'next/router';
 // import { useAuth } from '@clerk/nextjs';
