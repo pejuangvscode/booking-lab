@@ -31,7 +31,7 @@ export default function BookingPage() {
   const [phone, setPhone] = useState("");
   const [requestorName, setRequestorName] = useState("");
   const [requestorNIM, setRequestorNIM] = useState("");
-  const [formErrors, setFormErrors] = useState({});
+  const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [faculty, setFaculty] = useState("Faculty of Information & Technology"); // Default faculty
 
   // Fetch lab details using tRPC query
@@ -43,10 +43,7 @@ export default function BookingPage() {
     { id: labId as string },
     { 
       enabled: !!labId,
-      retry: 1,
-      onError: (error) => {
-        console.error("Failed to fetch lab details:", error);
-      }
+      retry: 1
     }
   );
 
@@ -75,11 +72,11 @@ export default function BookingPage() {
   ];
 
   // Handle form submission with tRPC mutation
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // Validate form
-    const errors = {};
+    const errors: { [key: string]: string } = {};
     if (!bookingDate) errors.bookingDate = "Booking date is required";
     if (!startHour || !startMinute) errors.startTime = "Start time is required";
     if (!endHour || !endMinute) errors.endTime = "End time is required";
@@ -417,9 +414,9 @@ export default function BookingPage() {
               <Button 
                 type="submit" 
                 className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-lg"
-                disabled={bookingMutation.isLoading}
+                disabled={bookingMutation.status === "pending"}
               >
-                {bookingMutation.isLoading ? (
+                {bookingMutation.status === "pending" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...

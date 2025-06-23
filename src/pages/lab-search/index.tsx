@@ -8,12 +8,23 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
 
+type Lab = {
+  id: string;
+  name: string;
+  facilityId: string;
+  department: string;
+  type: string;
+  capacity: number;
+};
+
+type SortField = "name" | "facilityId" | "type" | "capacity";
+
 export default function LabSearch() {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [roomTypeFilter, setRoomTypeFilter] = useState("all");
-  const [sortField, setSortField] = useState("name");
-  const [sortDirection, setSortDirection] = useState("asc");
+  const [sortField, setSortField] = useState<SortField>("name");
+  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("asc");
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -28,7 +39,7 @@ export default function LabSearch() {
     isLoading: isTypesLoading,
   } = api.lab.getRoomTypes.useQuery();
 
-  const filteredData = labData.filter(lab => {
+  const filteredData = labData.filter((lab: Lab) => {
     return (
       (lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lab.facilityId.toString().toLowerCase().includes(searchTerm.toLowerCase())) &&
@@ -36,11 +47,11 @@ export default function LabSearch() {
     );
   });
 
-  const sortedData = [...filteredData].sort((a, b) => {
+  const sortedData = [...filteredData].sort((a: Lab, b: Lab) => {
     let aValue = a[sortField];
     let bValue = b[sortField];
     
-    if (typeof aValue === "string") {
+    if (typeof aValue === "string" && typeof bValue === "string") {
       aValue = aValue.toLowerCase();
       bValue = bValue.toLowerCase();
     }
@@ -57,7 +68,7 @@ export default function LabSearch() {
   const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
-  const handleSort = (field) => {
+  const handleSort = (field: SortField) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
     } else {
@@ -66,7 +77,7 @@ export default function LabSearch() {
     }
   };
 
-  const getCapacityColor = (capacity) => {
+  const getCapacityColor = (capacity: number) => {
     if (capacity >= 30) return "bg-green-100 text-green-800";
     if (capacity >= 1) return "bg-blue-100 text-blue-800";
     return "bg-amber-100 text-amber-800";

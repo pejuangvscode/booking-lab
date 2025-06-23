@@ -24,8 +24,8 @@ export const bookingRouter = createTRPCRouter({
         let userId;
         
         // Check if user is authenticated
-        if (ctx.userId) {
-          userId = ctx.userId;
+        if (ctx.auth && ctx.auth.userId) {
+          userId = ctx.auth.userId;
         } else {
           // Try to find an existing user or create a new one
           const existingUser = await ctx.db.users.findFirst();

@@ -2,7 +2,6 @@ import Head from "next/head";
 import Image from "next/legacy/image";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { SignedIn } from "@clerk/nextjs";
 
 const carouselItems = [
   {
@@ -81,10 +80,10 @@ export default function Home() {
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center text-white">
               <h1 className="text-4xl md:text-5xl font-bold mb-4 text-shadow-lg">
-                {carouselItems[currentSlide].title}
+                {carouselItems[currentSlide]?.title}
               </h1>
               <p className="text-xl md:text-2xl mb-8 text-shadow-lg">
-                {carouselItems[currentSlide].subTitle}
+                {carouselItems[currentSlide]?.subTitle}
               </p>
               <Button className="bg-orange-600 hover:bg-orange-800 text-white px-8 py-6 text-lg shadow-sm hover:shadow-lg cursor-pointer font-bold"
                 onClick={() => window.location.href = '/lab-search'}>
