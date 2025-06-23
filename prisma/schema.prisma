@@ -12,38 +12,49 @@ datasource db {
 }
 
 model Users {
-    id        String    @unique @default(uuid()) @id
-    createdAt DateTime @default(now())
+    id        String    @id @unique @default(uuid())
+    createdAt DateTime  @default(now())
 
     bookings  Bookings[]
 
     @@map("users")
 }
 
-// Update your Rooms model in schema.prisma if needed
-model Rooms {
-    id        String    @unique @id
-    name      String
-    type      String?
-    capacity  Int?
-    createdAt DateTime @default(now())
+model Lab {
+    id          String    @id @unique @default(uuid())
+    facilityId  String    @unique
+    name        String
+    type        String
+    capacity    Int
+    department  String
+    createdAt   DateTime  @default(now())
 
-    bookings  Bookings[]
+    bookings    Bookings[]
 
     @@map("rooms")
 }
 
 model Bookings {
-    id        Int      @id @default(autoincrement())
-    userId    String
-    roomId    String
-    startTime DateTime
-    endTime   DateTime
-    status    String @default("pending") // e.g., pending, confirmed, cancelled
-    createdAt DateTime @default(now())
+    id          Int      @id @default(autoincrement())
+    userId      String
+    roomId      String
+    bookingDate DateTime
+    startTime   String
+    endTime     String
+    participants Int
+    eventName   String
+    eventType   String
+    phone       String
+    faculty     String
+    equipment   String?
+    status      String   @default("pending")
+    createdAt   DateTime @default(now())
+    
+    requesterName String?
+    requesterNIM  String?
 
     user Users @relation(fields: [userId], references: [id])
-    room Rooms @relation(fields: [roomId], references: [id])
+    room Lab @relation(fields: [roomId], references: [id])
 
     @@map("bookings")
 }

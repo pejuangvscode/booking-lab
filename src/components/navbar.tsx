@@ -8,21 +8,15 @@ export function Navbar() {
   const [visible, setVisible] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
 
-  // Set isMounted to true after component mounts
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Add scroll event listener only after component has mounted
   useEffect(() => {
     if (!isMounted) return;
     
     const handleScroll = () => {
       const currentScrollPos = window.scrollY;
-      
-      // Make the navbar visible when:
-      // 1. Scrolling up OR
-      // 2. At the top of the page
       const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
       
       setPrevScrollPos(currentScrollPos);
@@ -46,12 +40,6 @@ export function Navbar() {
               <span className="text-xl font-bold text-orange-600">BookLab</span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link
-                href="/"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
-              >
-                Home
-              </Link>
               <Link
                 href="/lab-search"
                 className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
@@ -140,13 +128,6 @@ export function Navbar() {
       {/* Mobile menu, show/hide based on menu state */}
       <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden`}>
         <div className="pt-2 pb-3 space-y-1">
-          <Link
-            onClick={() => setIsMenuOpen(false)}
-            href="/"
-            className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
-          >
-            Home
-          </Link>
           <Link
             onClick={() => setIsMenuOpen(false)}
             href="/lab-search"

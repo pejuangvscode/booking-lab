@@ -1,21 +1,15 @@
 // filepath: d:\Kuliah UPH\Project Kuliah\SMT 4\booking-web\src\pages\Lab-Search\index.tsx
-import { useState } from 'react';
-import { Input } from "~/components/ui/input";
-import { Button } from "~/components/ui/button";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import { Badge } from "~/components/ui/badge";
-import { Search, Filter, ChevronDown, ChevronUp, Loader2 } from "lucide-react";
-import { api } from "~/utils/api";
+import { ChevronDown, ChevronUp, Loader2, Search } from "lucide-react";
 import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { useState } from 'react';
+import { Badge } from "~/components/ui/badge";
+import { Button } from "~/components/ui/button";
+import { Input } from "~/components/ui/input";
+import { api } from "~/utils/api";
 
 export default function LabSearch() {
-  // State for filtering, sorting, and pagination
+  const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
   const [roomTypeFilter, setRoomTypeFilter] = useState("all");
   const [sortField, setSortField] = useState("name");
@@ -23,20 +17,17 @@ export default function LabSearch() {
   const [itemsPerPage, setItemsPerPage] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
-  // Fetch labs using tRPC
   const {
     data: labData = [],
     isLoading: isLabsLoading,
     error: labsError,
   } = api.lab.getAll.useQuery();
 
-  // Fetch room types for the filter dropdown
   const {
     data: roomTypes = [],
     isLoading: isTypesLoading,
   } = api.lab.getRoomTypes.useQuery();
 
-  // Filter the data based on search term and room type
   const filteredData = labData.filter(lab => {
     return (
       (lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -45,7 +36,6 @@ export default function LabSearch() {
     );
   });
 
-  // Sort the data
   const sortedData = [...filteredData].sort((a, b) => {
     let aValue = a[sortField];
     let bValue = b[sortField];
@@ -62,13 +52,11 @@ export default function LabSearch() {
     }
   });
 
-  // Paginate the data
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
   const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
   const totalPages = Math.ceil(sortedData.length / itemsPerPage);
 
-  // Handle sorting
   const handleSort = (field) => {
     if (sortField === field) {
       setSortDirection(sortDirection === "asc" ? "desc" : "asc");
@@ -78,14 +66,12 @@ export default function LabSearch() {
     }
   };
 
-  // Get capacity color based on value
   const getCapacityColor = (capacity) => {
-    if (capacity >= 40) return "bg-green-100 text-green-800";
-    if (capacity >= 30) return "bg-blue-100 text-blue-800";
+    if (capacity >= 30) return "bg-green-100 text-green-800";
+    if (capacity >= 1) return "bg-blue-100 text-blue-800";
     return "bg-amber-100 text-amber-800";
   };
 
-  // Check if data is loading
   const isLoading = isLabsLoading || isTypesLoading;
   
   return (
@@ -222,7 +208,10 @@ export default function LabSearch() {
                     currentItems.map((lab) => (
                       <tr key={lab.id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <Button className="bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer font-bold">
+                          <Button
+                            className="bg-emerald-500 hover:bg-emerald-600 text-white cursor-pointer font-bold"
+                            onClick={() => router.push(`/booking?labId=${lab.id}`)}
+                          >
                             Book
                           </Button>
                         </td>
@@ -252,7 +241,7 @@ export default function LabSearch() {
               </table>
             </div>
             
-            {/* Pagination - Only show if we have data
+            {/* Pagination - Only show if we have data more than one page
             {sortedData.length > 0 && (
               <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">

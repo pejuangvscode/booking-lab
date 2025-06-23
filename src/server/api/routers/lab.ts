@@ -2,18 +2,17 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
 export const labRouter = createTRPCRouter({
-  // Get all labs
   getAll: publicProcedure.query(async ({ ctx }) => {
     try {
-      const labs = await ctx.db.rooms.findMany({
+      const labs = await ctx.db.lab.findMany({
         orderBy: { name: "asc" },
       });
       
       return labs.map(room => ({
         id: room.id,
         name: room.name || '',
-        facilityId: room.id, // Using ID as facilityId if you don't have a separate field
-        department: "Faculty of Information & Technology", // Default department
+        facilityId: room.facilityId,
+        department: "Faculty of Information & Technology",
         type: room.type || "Unknown",
         capacity: room.capacity || 0,
       }));
@@ -23,25 +22,40 @@ export const labRouter = createTRPCRouter({
     }
   }),
   
-  // Get unique room types for filtering
   getRoomTypes: publicProcedure.query(async ({ ctx }) => {
     try {
-      // Get distinct room types from the database
-      const rooms = await ctx.db.rooms.findMany({
+      // Simplify the query to avoid issues with the 'not' operator
+      const rooms = await ctx.db.lab.findMany({
         select: { type: true },
-        distinct: ['type'],
-        where: {
-          type: { not: null },
-        },
+        distinct: ['type']
       });
       
-      // Extract and return the unique types
+      // Filter out null values after fetching the data
       return rooms
         .map(room => room.type)
-        .filter(Boolean) as string[];
+        .filter(type => type !== null && type !== undefined) as string[];
     } catch (error) {
       console.error("Error fetching room types:", error);
       throw new Error("Failed to fetch room types");
     }
   }),
+
+  getById: publicProcedure
+    .input(z.object({ id: z.string() }))
+    .query(async ({ ctx, input }) => {
+      try {
+        const lab = await ctx.db.lab.findUnique({
+          where: { facilityId: input.id },
+        });
+        
+        if (!lab) {
+          throw new Error("Lab not found");
+        }
+        
+        return lab;
+      } catch (error) {
+        console.error("Error fetching lab by ID:", error);
+        throw new Error("Failed to fetch laboratory");
+      }
+    }),
 });

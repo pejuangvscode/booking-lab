@@ -6,6 +6,9 @@ import {
   ClerkProvider,
   useAuth
 } from '@clerk/nextjs'
+import { useRouter } from "next/router";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 
 import { Navbar } from "~/components/navbar";
 
@@ -15,20 +18,41 @@ const geist = Geist({
   subsets: ["latin"],
 });
 
-// Create a wrapper component to use Clerk hooks
 import type { AppProps } from "next/app";
 
 const AppContent = ({ Component, pageProps, router }: AppProps) => {
   const { isSignedIn, isLoaded } = useAuth();
   const syncUser = api.user.syncUser.useMutation();
+  const nextRouter = useRouter();
   
-  // Only attempt to sync user when auth is loaded and user is signed in
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       console.log("User is signed in, syncing with database");
       syncUser.mutate();
     }
   }, [isLoaded, isSignedIn]);
+
+  useEffect(() => {
+    NProgress.configure({ 
+      showSpinner: false,
+      easing: 'ease',
+      speed: 300,
+      minimum: 0.1
+    });
+
+    const handleRouteStart = () => NProgress.start();
+    const handleRouteDone = () => NProgress.done();
+
+    nextRouter.events.on("routeChangeStart", handleRouteStart);
+    nextRouter.events.on("routeChangeComplete", handleRouteDone);
+    nextRouter.events.on("routeChangeError", handleRouteDone);
+
+    return () => {
+      nextRouter.events.off("routeChangeStart", handleRouteStart);
+      nextRouter.events.off("routeChangeComplete", handleRouteDone);
+      nextRouter.events.off("routeChangeError", handleRouteDone);
+    };
+  }, [nextRouter]);
 
   return (
     <div className="min-h-screen flex flex-col">

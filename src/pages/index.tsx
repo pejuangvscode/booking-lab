@@ -1,13 +1,9 @@
 import Head from "next/head";
-import Link from "next/link";
-import Image from "next/image";
-import { useState, useEffect } from "react";
-import { SignInButton, SignedIn, SignedOut } from '@clerk/nextjs';
+import Image from "next/legacy/image";
+import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
+import { SignedIn } from "@clerk/nextjs";
 
-import { api } from "~/utils/api";
-
-// Carousel images and texts
 const carouselItems = [
   {
     id: 1,
@@ -38,7 +34,6 @@ const carouselItems = [
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   
-  // Auto-advance carousel
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
@@ -55,9 +50,8 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      {/* Hero Section with Carousel */}
+      {/* Landing Page (Carousel) */}
       <div className="relative h-screen w-full overflow-hidden">
-        {/* Carousel Images */}
         <div className="h-full w-full">
           {carouselItems.map((item, index) => (
             <div 
@@ -66,7 +60,6 @@ export default function Home() {
                 index === currentSlide ? "opacity-100" : "opacity-0"
               }`}
             >
-              {/* Image placeholder - replace with your actual images */}
               <div className="absolute inset-0 bg-gray-800">
                 <div className="h-full w-full bg-gradient-to-r from-blue-900/50 to-black/50" />
                 <Image 
@@ -79,13 +72,11 @@ export default function Home() {
                 />
               </div>
               
-              {/* Overlay gradient for better text readability */}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
             </div>
           ))}
         </div>
 
-        {/* Hero Content */}
         <div className="absolute inset-0 flex items-center justify-center">
           <div className="container mx-auto px-4">
             <div className="max-w-3xl mx-auto text-center text-white">
@@ -103,7 +94,6 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Carousel Navigation Dots */}
         <div className="absolute bottom-8 left-0 right-0">
           <div className="flex justify-center space-x-2">
             {carouselItems.map((_, index) => (
