@@ -5,6 +5,7 @@ import { format, parse, addDays } from 'date-fns';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { enUS } from 'date-fns/locale';
+import moment from 'moment';
 import {
   Card,
   CardContent,
@@ -67,11 +68,12 @@ const bookingFormSchema = z.object({
 });
 
 // Event colors by lab room
+// Event colors by lab room to match image style
 const roomColors = {
-  "F205": "#3174ad", // Blue
-  "B338": "#16a34a", // Green
-  "B357": "#ea580c", // Orange
-  "F209": "#9333ea", // Purple
+  "F205": "#4285F4", // Blue
+  "B338": "#3C7A0C", // Green
+  "B357": "#5E35B1", // Purple
+  "F209": "#F25022", // Red
 };
 
 // Define event type
@@ -87,7 +89,7 @@ type BookingEvent = {
 };
 
 export default function BookingCalendar() {
-  const { isLoaded, isSignedIn, userId } = useAuth();
+  const { isLoaded, isSignedIn, userId, user } = useAuth();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -127,6 +129,7 @@ export default function BookingCalendar() {
 
   // Transform API bookings to calendar events
   const [events, setEvents] = useState<BookingEvent[]>([]);
+  const checkConflicts = api.booking.checkConflicts.useMutation();
   
   useEffect(() => {
     if (bookingsData) {
@@ -209,17 +212,76 @@ export default function BookingCalendar() {
     return { style: baseStyle };
   };
 
+  // Add custom header for the month view
+  const CustomToolbar = (toolbar) => {
+    const goToBack = () => {
+      toolbar.date.setMonth(toolbar.date.getMonth() - 1);
+      toolbar.onNavigate('prev');
+    };
+
+    const goToNext = () => {
+      toolbar.date.setMonth(toolbar.date.getMonth() + 1);
+      toolbar.onNavigate('next');
+    };
+
+    const goToCurrent = () => {
+      const now = new Date();
+      toolbar.date.setMonth(now.getMonth());
+      toolbar.date.setYear(now.getFullYear());
+      toolbar.onNavigate('current');
+    };
+
+    const label = () => {
+      const date = moment(toolbar.date);
+      return (
+        <span className="text-2xl font-medium">
+          {date.format('MMMM YYYY')}
+        </span>
+      );
+    };
+
+    return (
+      <div className="flex items-center justify-between mb-4">
+        <div className="text-2xl font-medium">{label()}</div>
+        <div className="flex space-x-2">
+          <button
+            className="px-3 py-1 bg-gray-200 rounded"
+            onClick={goToBack}
+          >
+            ←
+          </button>
+          <button
+            className="px-3 py-1 bg-gray-200 rounded"
+            onClick={goToCurrent}
+          >
+            today
+          </button>
+          <button
+            className="px-3 py-1 bg-gray-200 rounded"
+            onClick={goToNext}
+          >
+            →
+          </button>
+        </div>
+      </div>
+    );
+  };
   // Custom event component to show both event name and booker
-  const EventComponent = ({ event }: { event: BookingEvent }) => (
-    <div 
-      className="text-xs h-full overflow-hidden p-1" 
-      onClick={() => handleSelectEvent(event)}
-    >
-      <div className="font-bold truncate">{event.title}</div>
-      <div className="text-xs opacity-90 truncate">{event.roomId}</div>
-      <div className="text-xs opacity-80 truncate">{event.bookedBy}</div>
+  // Custom event component to match the image format
+const EventComponent = ({ event }: { event: BookingEvent }) => (
+  <div 
+    className="text-xs h-full overflow-hidden p-1 text-white" 
+    onClick={() => handleSelectEvent(event)}
+    style={{ fontSize: '9px' }}
+  >
+    <div className="font-bold">
+      {format(event.start, 'H:mm')} - {format(event.end, 'H:mm')} {event.title}
     </div>
-  );
+    <div>
+      {event.roomId}, Requestor: {event.bookedBy}
+    </div>
+  </div>
+);
 
   // Handle event selection
   const handleSelectEvent = (event: BookingEvent) => {
@@ -265,15 +327,42 @@ export default function BookingCalendar() {
       phone: '123456789', // This would come from a form field
       faculty: 'Faculty of Information & Technology', // This would come from a form field
       userData: {
-        name: 'Current User', // This would be the actual user name from Clerk
-        nim: '12345678' // This would come from a form field
+        name: user?.fullName || 'Current User',
+        nim: '12345678' // You might want to store this in user metadata
       }
     };
 
-    // TODO: Submit bookingData to API here
-    // For now, just close the modal and refetch bookings
-    setIsBookingModalOpen(false);
-    refetchBookings();
+    checkConflicts.mutate(
+      {
+        labId: data.roomId,
+        bookingDate: formattedDate,
+        startTime: startTime,
+        endTime: endTime
+      },
+      {
+        onSuccess: (result) => {
+          if (result.hasConflicts) {
+            alert("This room is already booked for the selected time. Please choose a different time or room.");
+            return;
+          }
+          
+          // If no conflicts, proceed with booking
+          api.booking.create.mutate(bookingData, {
+            onSuccess: () => {
+              setIsBookingModalOpen(false);
+              form.reset();
+              void refetchBookings();
+            },
+            onError: (error) => {
+              alert(`Failed to create booking: ${error.message}`);
+            }
+          });
+        },
+        onError: (error) => {
+          alert(`Failed to check for conflicts: ${error.message}`);
+        }
+      }
+    );
   };
 
   // Only render content client-side to avoid hydration mismatch
@@ -391,19 +480,28 @@ export default function BookingCalendar() {
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: "100%" }}
-                    views={[Views.MONTH, Views.WEEK, Views.DAY]}
-                    defaultView={Views.WEEK}
+                    views={{
+                      month: true,
+                      week: true,
+                      day: true
+                    }}
+                    defaultView={Views.MONTH}
+                    toolbar={true}
                     step={60}
-                    timeslots={2}
+                    timeslots={1}
                     selectable
                     onSelectSlot={handleSelectSlot}
                     onSelectEvent={handleSelectEvent}
                     eventPropGetter={eventStyleGetter}
                     components={{
-                      event: EventComponent, // Custom event component
+                      event: EventComponent,
+                      toolbar: CustomToolbar,
                     }}
-                    dayLayoutAlgorithm="no-overlap" // Stack events vertically
-                    tooltipAccessor={event => `${event.title} - Room: ${event.roomId} - Booked by: ${event.bookedBy}`}
+                    dayLayoutAlgorithm="no-overlap"
+                    popup
+                    showMultiDayTimes
+                    min={new Date(0, 0, 0, 7, 0)} // Start day at 7am
+                    max={new Date(0, 0, 0, 21, 0)} // End day at 9pm
                   />
                 )}
               </div>
