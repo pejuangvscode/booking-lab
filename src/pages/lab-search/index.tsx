@@ -227,11 +227,12 @@ export default function LabSearch() {
                           </Button>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{lab.name}</div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
                           <Badge variant="outline" className="font-mono">{lab.facilityId}</Badge>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-gray-900">{lab.name}</div>
+                        </td>
+                        
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="text-sm text-gray-500">{lab.department}</div>
                         </td>

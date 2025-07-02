@@ -33,6 +33,20 @@ export default function BookingPage() {
   const [requestorNIM, setRequestorNIM] = useState("");
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
   const [faculty, setFaculty] = useState("Faculty of Information & Technology"); // Default faculty
+  const [checking, setChecking] = useState(false);
+
+  const conflictCheck = api.booking.checkConflicts.useQuery(
+    { 
+      labId: labId as string,
+      bookingDate: bookingDate,
+      startTime: `${startHour}:${startMinute}`,
+      endTime: `${endHour}:${endMinute}`
+    },
+    { 
+      enabled: false, // Don't run automatically
+      retry: false
+    }
+  );
 
   // Fetch lab details using tRPC query
   const {
@@ -72,7 +86,7 @@ export default function BookingPage() {
   ];
 
   // Handle form submission with tRPC mutation
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
     // Validate form
@@ -100,10 +114,25 @@ export default function BookingPage() {
       setFormErrors(errors);
       return;
     }
-
-    // Create booking data object
-    const bookingData = {
-        labId: labId as string,          // Changed from roomId to labId to match API expectation
+    
+    // Check for booking conflicts
+    setChecking(true);
+    try {
+      const conflict = await conflictCheck.refetch();
+      setChecking(false);
+      
+      if (conflict.data?.hasConflicts) {
+        // Show error about conflict
+        setFormErrors({
+          ...formErrors,
+          conflict: "This room is already booked for the selected time. Please choose a different time or room."
+        });
+        return;
+      }
+      
+      // No conflicts found, proceed with booking
+      const bookingData = {
+        labId: labId as string,
         bookingDate: new Date(bookingDate).toISOString(),
         startTime: startTimeValue,
         endTime: endTimeValue,
@@ -112,17 +141,22 @@ export default function BookingPage() {
         eventType,
         phone,
         faculty,
-        // Include user information
         userData: {
             name: requestorName,
             nim: requestorNIM
         }
-    };
-
-    console.log("Submitting booking:", bookingData);
-    
-    // Execute the mutation
-    bookingMutation.mutate(bookingData);
+      };
+      
+      // Execute the mutation
+      bookingMutation.mutate(bookingData);
+    } catch (error) {
+      setChecking(false);
+      console.error("Error checking conflicts:", error);
+      setFormErrors({
+        ...formErrors,
+        conflict: "Could not check for booking conflicts. Please try again."
+      });
+    }
   };
 
   return (
@@ -174,7 +208,7 @@ export default function BookingPage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-6 space-y-6">
+          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Booking Date */}
               <div className="space-y-2">
@@ -195,7 +229,7 @@ export default function BookingPage() {
               </div>
 
               {/* Time slots */}
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Start Time</label>
                   <div className="flex space-x-2">
@@ -329,18 +363,14 @@ export default function BookingPage() {
                 <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">
                   Faculty
                 </label>
-                <Select value={faculty} onValueChange={setFaculty}>
-                  <SelectTrigger className={formErrors.faculty ? "border-red-500" : ""}>
-                    <SelectValue placeholder="Select faculty" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {facultyOptions.map((option) => (
-                      <SelectItem key={option} value={option}>
-                        {option}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                <Input
+                  type="text"
+                  id="faculty"
+                  value={faculty}
+                  onChange={(e) => setFaculty(e.target.value)}
+                  placeholder="Enter your faculty name"
+                  className={formErrors.faculty ? "border-red-500" : ""}
+                />
                 {formErrors.faculty && (
                   <p className="text-red-500 text-xs">{formErrors.faculty}</p>
                 )}
@@ -356,7 +386,7 @@ export default function BookingPage() {
                   id="phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="E.g., 081234567890"
+                  placeholder="Phone number"  // Shorter placeholder for mobile
                   className={formErrors.phone ? "border-red-500" : ""}
                 />
                 {formErrors.phone && (
@@ -409,17 +439,29 @@ export default function BookingPage() {
               </p>
             </div>
 
+            {formErrors.conflict && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+                <strong className="font-bold">Booking Conflict: </strong>
+                <span className="block sm:inline">{formErrors.conflict}</span>
+              </div>
+            )}
+
             {/* Submit Button */}
             <div className="flex justify-center pt-4">
               <Button 
                 type="submit" 
-                className="w-full py-6 bg-blue-600 hover:bg-blue-700 text-lg"
-                disabled={bookingMutation.status === "pending"}
+                className="w-full py-4 sm:py-6 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg"
+                disabled={bookingMutation.status === "pending" || checking}
               >
                 {bookingMutation.status === "pending" ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
+                  </>
+                ) : checking ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Checking availability...
                   </>
                 ) : (
                   "Confirm booking"

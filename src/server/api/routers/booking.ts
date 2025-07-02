@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
+import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 
 export const bookingRouter = createTRPCRouter({
   create: publicProcedure
@@ -112,4 +112,277 @@ export const bookingRouter = createTRPCRouter({
         throw new Error("Failed to fetch booking details");
       }
     }),
+
+  // Get current user's active bookings
+  getCurrentUserBookings: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(10),
+        page: z.number().min(1).default(1),
+        search: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const { limit, page, search } = input;
+        const skip = (page - 1) * limit;
+
+        // Create search filter
+        const searchFilter = search
+          ? {
+              OR: [
+                { eventName: { contains: search } },
+                { room: { name: { contains: search } } },
+                { room: { facilityId: { contains: search } } },
+              ],
+            }
+          : {};
+
+        // Get active bookings (not completed or cancelled)
+        const bookings = await ctx.db.bookings.findMany({
+          where: {
+            userId: ctx.auth.userId,
+            status: {
+              notIn: ["completed", "cancelled"],
+            },
+            ...searchFilter,
+          },
+          include: {
+            room: {
+              select: {
+                name: true,
+                facilityId: true,
+              },
+            },
+          },
+          orderBy: {
+            bookingDate: "asc",
+          },
+          skip,
+          take: limit,
+        });
+
+        // Get total count for pagination
+        const total = await ctx.db.bookings.count({
+          where: {
+            userId: ctx.auth.userId,
+            status: {
+              notIn: ["completed", "cancelled"],
+            },
+            ...searchFilter,
+          },
+        });
+
+        return {
+          bookings,
+          total,
+        };
+      } catch (error) {
+        console.error("Error fetching current bookings:", error);
+        throw new Error("Failed to fetch current bookings");
+      }
+    }),
+
+  getCompletedUserBookings: protectedProcedure
+    .input(
+      z.object({
+        limit: z.number().min(1).max(100).default(10),
+        page: z.number().min(1).default(1),
+        search: z.string().optional(),
+      })
+    )
+    .query(async ({ ctx, input }) => {
+      try {
+        const { limit, page, search } = input;
+        const skip = (page - 1) * limit;
+
+        const searchFilter = search
+          ? {
+              OR: [
+                { eventName: { contains: search } },
+                { room: { name: { contains: search } } },
+                { room: { facilityId: { contains: search } } },
+              ],
+            }
+          : {};
+
+        // Get completed bookings
+        const bookings = await ctx.db.bookings.findMany({
+          where: {
+            userId: ctx.auth.userId,
+            status: {
+              in: ["completed", "cancelled"],
+            },
+            ...searchFilter,
+          },
+          include: {
+            room: {
+              select: {
+                name: true,
+                facilityId: true,
+              },
+            },
+          },
+          orderBy: {
+            bookingDate: "desc",
+          },
+          skip,
+          take: limit,
+        });
+
+        // Get total count for pagination
+        const total = await ctx.db.bookings.count({
+          where: {
+            userId: ctx.auth.userId,
+            status: {
+              in: ["completed", "cancelled"],
+            },
+            ...searchFilter,
+          },
+        });
+
+        return {
+          bookings,
+          total,
+        };
+      } catch (error) {
+        console.error("Error fetching completed bookings:", error);
+        throw new Error("Failed to fetch completed bookings");
+      }
+    }),
+
+  // Cancel a booking
+  cancelBooking: protectedProcedure
+  .input(z.object({ 
+    id: z.union([z.string(), z.number()]) 
+  }))
+  .mutation(async ({ ctx, input }) => {
+    try {
+      // Convert the ID to the correct type based on your database schema
+      // If your DB uses numeric IDs:
+      const bookingId = typeof input.id === "string" ? parseInt(input.id) : input.id;
+      
+      const booking = await ctx.db.bookings.findUnique({
+        where: { id: bookingId },
+      });
+
+      if (!booking) {
+        throw new Error("Booking not found");
+      }
+
+      if (booking.userId !== ctx.auth.userId) {
+        throw new Error("You can only cancel your own bookings");
+      }
+
+      return ctx.db.bookings.update({
+        where: { id: bookingId },
+        data: { status: "cancelled" },
+      });
+    } catch (error) {
+      console.error("Error cancelling booking:", error);
+      throw new Error("Failed to cancel booking");
+    }
+  }),
+
+  // Add this to your booking.ts router file
+
+// Get all bookings for the calendar
+  // Get all bookings for the calendar
+  getAllBookings: publicProcedure.query(async ({ ctx }) => {
+    try {
+      const bookings = await ctx.db.bookings.findMany({
+        include: {
+          room: {
+            select: {
+              name: true,
+              facilityId: true
+            }
+          },
+          user: true
+        },
+        orderBy: {
+          bookingDate: 'asc',
+        },
+      });
+      
+      // Make sure data is properly formatted for the client
+      const formattedBookings = bookings.map(booking => ({
+        ...booking,
+        // Ensure consistent date format
+        bookingDate: booking.bookingDate instanceof Date 
+          ? booking.bookingDate.toISOString().split('T')[0]
+          : booking.bookingDate
+      }));
+      
+      return formattedBookings;
+    } catch (error) {
+      console.error("Error fetching all bookings:", error);
+      throw new Error("Failed to fetch bookings for calendar");
+    }
+  }),
+
+  // Add this to your booking router (src/server/api/routers/booking.ts)
+checkConflicts: publicProcedure
+  .input(z.object({
+    labId: z.string(),
+    bookingDate: z.string(),
+    startTime: z.string(),
+    endTime: z.string(),
+    excludeBookingId: z.string().optional() // Optional ID to exclude from conflict checking (for updates)
+  }))
+  .query(async ({ ctx, input }) => {
+    // Format the booking date for comparison
+    const date = new Date(input.bookingDate);
+    const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
+    
+    // Find any overlapping bookings for the same lab
+    const conflictingBookings = await ctx.db.bookings.findMany({
+      where: {
+        labId: input.labId,
+        bookingDate: formattedDate,
+        status: {
+          notIn: ['cancelled', 'rejected'] // Don't count cancelled or rejected bookings
+        },
+        id: input.excludeBookingId ? {
+          not: input.excludeBookingId // Exclude the current booking if updating
+        } : undefined,
+        // Check for time overlap
+        OR: [
+          // Case 1: New booking starts during an existing booking
+          {
+            startTime: {
+              lte: input.startTime
+            },
+            endTime: {
+              gt: input.startTime
+            }
+          },
+          // Case 2: New booking ends during an existing booking
+          {
+            startTime: {
+              lt: input.endTime
+            },
+            endTime: {
+              gte: input.endTime
+            }
+          },
+          // Case 3: New booking completely contains an existing booking
+          {
+            startTime: {
+              gte: input.startTime
+            },
+            endTime: {
+              lte: input.endTime
+            }
+          }
+        ]
+      }
+    });
+    
+    return {
+      hasConflicts: conflictingBookings.length > 0,
+      conflictingBookings
+    };
+  }),
+  
 });
