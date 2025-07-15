@@ -284,10 +284,6 @@ export const bookingRouter = createTRPCRouter({
     }
   }),
 
-  // Add this to your booking.ts router file
-
-// Get all bookings for the calendar
-  // Get all bookings for the calendar
   getAllBookings: publicProcedure.query(async ({ ctx }) => {
     try {
       const bookings = await ctx.db.bookings.findMany({
@@ -328,61 +324,82 @@ checkConflicts: publicProcedure
     bookingDate: z.string(),
     startTime: z.string(),
     endTime: z.string(),
-    excludeBookingId: z.string().optional() // Optional ID to exclude from conflict checking (for updates)
+    excludeBookingId: z.union([z.string(), z.number()]).optional()
   }))
   .query(async ({ ctx, input }) => {
-    // Format the booking date for comparison
-    const date = new Date(input.bookingDate);
-    const formattedDate = date.toISOString().split('T')[0]; // YYYY-MM-DD format
-    
-    // Find any overlapping bookings for the same lab
-    const conflictingBookings = await ctx.db.bookings.findMany({
-      where: {
-        labId: input.labId,
-        bookingDate: formattedDate,
-        status: {
-          notIn: ['cancelled', 'rejected'] // Don't count cancelled or rejected bookings
-        },
-        id: input.excludeBookingId ? {
-          not: input.excludeBookingId // Exclude the current booking if updating
-        } : undefined,
-        // Check for time overlap
-        OR: [
-          // Case 1: New booking starts during an existing booking
-          {
-            startTime: {
-              lte: input.startTime
-            },
-            endTime: {
-              gt: input.startTime
-            }
-          },
-          // Case 2: New booking ends during an existing booking
-          {
-            startTime: {
-              lt: input.endTime
-            },
-            endTime: {
-              gte: input.endTime
-            }
-          },
-          // Case 3: New booking completely contains an existing booking
-          {
-            startTime: {
-              gte: input.startTime
-            },
-            endTime: {
-              lte: input.endTime
-            }
-          }
-        ]
+    try {
+      // Validate and format the booking date
+      const inputDate = new Date(input.bookingDate);
+      if (isNaN(inputDate.getTime())) {
+        throw new Error("Invalid booking date provided");
       }
-    });
-    
-    return {
-      hasConflicts: conflictingBookings.length > 0,
-      conflictingBookings
-    };
+      
+      const formattedDate = inputDate.toISOString().split('T')[0]; // YYYY-MM-DD format
+      
+      // Convert excludeBookingId to number if provided
+      const excludeId = input.excludeBookingId 
+        ? (typeof input.excludeBookingId === 'string' 
+            ? parseInt(input.excludeBookingId) 
+            : input.excludeBookingId)
+        : undefined;
+      
+      // Validate excludeId if provided
+      if (excludeId !== undefined && isNaN(excludeId)) {
+        throw new Error("Invalid excludeBookingId provided");
+      }
+      
+      // Find any overlapping bookings for the same lab
+      const conflictingBookings = await ctx.db.bookings.findMany({
+        where: {
+          roomId: input.labId,
+          bookingDate: formattedDate ? new Date(formattedDate) : undefined, // Now guaranteed to be a valid date string
+          status: {
+            notIn: ['cancelled', 'rejected']
+          },
+          id: excludeId ? {
+            not: excludeId
+          } : undefined,
+          // Check for time overlap
+          OR: [
+            // Case 1: New booking starts during an existing booking
+            {
+              startTime: {
+                lte: input.startTime
+              },
+              endTime: {
+                gt: input.startTime
+              }
+            },
+            // Case 2: New booking ends during an existing booking
+            {
+              startTime: {
+                lt: input.endTime
+              },
+              endTime: {
+                gte: input.endTime
+              }
+            },
+            // Case 3: New booking completely contains an existing booking
+            {
+              startTime: {
+                gte: input.startTime
+              },
+              endTime: {
+                lte: input.endTime
+              }
+            }
+          ]
+        }
+      });
+      
+      return {
+        hasConflicts: conflictingBookings.length > 0,
+        conflictingBookings
+      };
+    } catch (error) {
+      console.error("Error checking conflicts:", error);
+      throw new Error("Failed to check booking conflicts");
+    }
   }),
   
 });
