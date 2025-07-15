@@ -10,13 +10,21 @@ import Head from 'next/head';
 
 // Define booking type with optional structure to handle both room and lab properties
 type Booking = {
-  id: string;
-  bookingDate: string;
+  id: number;  // Change from number | string to number to match API
+  createdAt: Date;
+  userId: string;
+  roomId: string;
+  bookingDate: Date;  // Change from string to Date
   startTime: string;
   endTime: string;
+  participants: number;
   eventName: string;
+  eventType: string;
+  phone: string;
+  faculty: string;
   status: string;
-  // Handle both possible structures
+  requesterName: string | null;
+  requesterNIM: string | null;
   lab?: {
     name: string;
     facilityId: string;
@@ -90,7 +98,7 @@ export default function Dashboard() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  const handleCancelBooking = (bookingId: string) => {
+  const handleCancelBooking = (bookingId: number) => {
     if (confirm('Are you sure you want to cancel this booking?')) {
       cancelBookingMutation.mutate({ id: String(bookingId) });
     }
@@ -108,14 +116,18 @@ export default function Dashboard() {
   });
 
   // Format date function
-  const formatDate = (dateString: string) => {
-    const options: Intl.DateTimeFormatOptions = { 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric' 
-    };
-    return new Date(dateString).toLocaleDateString('en-US', options);
+  // Update the formatDate function to handle Date objects
+const formatDate = (date: Date | string) => {
+  const options: Intl.DateTimeFormatOptions = { 
+    year: 'numeric', 
+    month: 'long', 
+    day: 'numeric' 
   };
+  
+  // Handle both Date objects and date strings
+  const dateObj = typeof date === 'string' ? new Date(date) : date;
+  return dateObj.toLocaleDateString('en-US', options);
+};
 
   // Get status badge color
   const getStatusBadge = (status: string) => {
@@ -278,9 +290,9 @@ export default function Dashboard() {
                               size="sm" 
                               className="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 border-red-200"
                               onClick={() => handleCancelBooking(booking.id)}
-                              disabled={cancelBookingMutation.isLoading}
+                              disabled={cancelBookingMutation.isPending} // Changed from isLoading to isPending
                             >
-                              {cancelBookingMutation.isLoading ? (
+                              {cancelBookingMutation.isPending ? ( // Changed from isLoading to isPending
                                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                               ) : (
                                 <XCircle className="h-4 w-4 mr-1" />

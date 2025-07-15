@@ -70,16 +70,16 @@ const bookingFormSchema = z.object({
 
 // Event colors by lab room
 // Event colors by lab room to match image style
-const roomColors = {
+const roomColors: Record<string, string> = {
   "F205": "#4285F4", // Blue
   "B338": "#3C7A0C", // Green
   "B357": "#5E35B1", // Purple
   "F209": "#F25022", // Red
 };
 
-// Define event type
+// Update your BookingEvent type to accept both string and number
 type BookingEvent = {
-  id: string;
+  id: string;  // Allow both types
   title: string;
   start: Date;
   end: Date;
@@ -177,19 +177,17 @@ export default function BookingCalendar() {
         }
         
         return {
-          id: String(booking.id), // Convert number to string
+          id: String(booking.id), // Ensure this conversion is present
           title: booking.eventName || "Unnamed Event",
           start: startDate,
           end: endDate,
           roomId: booking.room?.facilityId || "Unknown",
-          bookedBy: booking.requesterName || 
-                  (booking.user ? `User ID: ${booking.user.id.substring(0, 6)}...` : "Unknown"),
+          bookedBy: booking.requesterName || (booking.user ? `User ID: ${booking.user.id.substring(0, 6)}...` : "Unknown"),
           description: booking.eventType || "No description",
           status: booking.status || "pending"
         };
       });
       
-      console.log("Transformed events:", transformedEvents); // Debug: Check transformed events
       setEvents(transformedEvents);
     }
   }, [bookingsData]);
@@ -201,26 +199,26 @@ export default function BookingCalendar() {
 
   // Event style getter to color events by room
   const eventStyleGetter = (event: BookingEvent) => {
-    const baseStyle = {
-      backgroundColor: roomColors[event.roomId] || '#3174ad',
-      color: 'white',
-      borderRadius: '4px',
-      border: 'none',
-    };
-
-    // Apply opacity to cancelled events
-    if (event.status?.toLowerCase() === 'cancelled') {
-      return {
-        style: {
-          ...baseStyle,
-          opacity: 0.5,
-          textDecoration: 'line-through',
-        }
-      };
-    }
-
-    return { style: baseStyle };
+  const baseStyle = {
+    backgroundColor: (roomColors as Record<string, string>)[event.roomId] || '#3174ad',
+    color: 'white',
+    borderRadius: '4px',
+    border: 'none',
   };
+
+  // Apply opacity to cancelled events
+  if (event.status?.toLowerCase() === 'cancelled') {
+    return {
+      style: {
+        ...baseStyle,
+        opacity: 0.5,
+        textDecoration: 'line-through',
+      }
+    };
+  }
+
+  return { style: baseStyle };
+};
 
   // Add custom header for the month view
   const CustomToolbar = (toolbar: any) => {
@@ -408,7 +406,7 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
                         <div key={room.id} className="flex items-center">
                           <span 
                             className="inline-block w-4 h-4 mr-2 rounded-sm" 
-                            style={{ backgroundColor: roomColors[room.id] }}
+                            style={{ backgroundColor: roomColors[room.id] || '#3174ad' }}
                           />
                           <span className="text-sm">{room.name} ({room.capacity} seats)</span>
                         </div>
