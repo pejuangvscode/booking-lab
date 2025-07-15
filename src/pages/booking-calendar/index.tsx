@@ -6,6 +6,7 @@ import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { enUS } from 'date-fns/locale';
 import moment from 'moment';
+import {  useUser } from '@clerk/nextjs';
 import {
   Card,
   CardContent,
@@ -54,7 +55,7 @@ const localizer = dateFnsLocalizer({
   format,
   parse,
   startOfWeek: () => addDays(new Date(), 0), // Start week on Sunday
-  getDay: (date) => date.getDay(),
+  getDay: (date: Date) => date.getDay(),  // Add the Date type annotation here
   locales,
 });
 
@@ -89,7 +90,8 @@ type BookingEvent = {
 };
 
 export default function BookingCalendar() {
-  const { isLoaded, isSignedIn, userId, user } = useAuth();
+  const { isLoaded, isSignedIn, userId } = useAuth();
+  const { user } = useUser();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
@@ -129,7 +131,17 @@ export default function BookingCalendar() {
 
   // Transform API bookings to calendar events
   const [events, setEvents] = useState<BookingEvent[]>([]);
-  const checkConflicts = api.booking.checkConflicts.useMutation();
+  const checkConflictsQuery = api.booking.checkConflicts.useQuery(
+    {
+      labId: "", // Default empty values
+      bookingDate: "",
+      startTime: "",
+      endTime: ""
+    },
+    {
+      enabled: false, // Don't run until explicitly asked to
+    }
+  );
   
   useEffect(() => {
     if (bookingsData) {
@@ -141,9 +153,9 @@ export default function BookingCalendar() {
         
         try {
           // Handle date + time string combination
-          const bookingDateStr = booking.bookingDate instanceof Date 
-            ? booking.bookingDate.toISOString().split('T')[0] 
-            : new Date(booking.bookingDate).toISOString().split('T')[0];
+          const bookingDateStr = typeof booking.bookingDate === 'object' 
+            ? (booking.bookingDate as Date).toISOString().split('T')[0]
+            : new Date(String(booking.bookingDate)).toISOString().split('T')[0];
           
           startDate = new Date(`${bookingDateStr}T${booking.startTime}`);
           endDate = new Date(`${bookingDateStr}T${booking.endTime}`);
@@ -165,15 +177,13 @@ export default function BookingCalendar() {
         }
         
         return {
-          id: booking.id,
+          id: String(booking.id), // Convert number to string
           title: booking.eventName || "Unnamed Event",
           start: startDate,
           end: endDate,
-          // Handle both room and lab properties to be safe
-          roomId: booking.room?.facilityId || booking.lab?.facilityId || "Unknown",
+          roomId: booking.room?.facilityId || "Unknown",
           bookedBy: booking.requesterName || 
-                  (booking.user ? (booking.user.firstName ? 
-                    `${booking.user.firstName} ${booking.user.lastName || ''}` : "User") : "Unknown"),
+                  (booking.user ? `User ID: ${booking.user.id.substring(0, 6)}...` : "Unknown"),
           description: booking.eventType || "No description",
           status: booking.status || "pending"
         };
@@ -213,7 +223,7 @@ export default function BookingCalendar() {
   };
 
   // Add custom header for the month view
-  const CustomToolbar = (toolbar) => {
+  const CustomToolbar = (toolbar: any) => {
     const goToBack = () => {
       toolbar.date.setMonth(toolbar.date.getMonth() - 1);
       toolbar.onNavigate('prev');
@@ -290,7 +300,7 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
   };
 
   // Handle slot selection
-  const handleSelectSlot = ({ start, end }) => {
+  const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     if (!isSignedIn) {
       // If not signed in, prompt to sign in
       alert("Please sign in to book a laboratory");
@@ -303,7 +313,8 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
   };
 
   // Handle form submission
-  const onSubmit = (data) => {    
+  // Fix the onSubmit function
+  const onSubmit = async (data: z.infer<typeof bookingFormSchema>) => {
     // Make sure dates are valid
     if (!data.start || !data.end || isNaN(data.start.getTime()) || isNaN(data.end.getTime())) {
       alert("Please select valid dates and times");
@@ -315,54 +326,48 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
     const startTime = format(data.start, 'HH:mm:ss');
     const endTime = format(data.end, 'HH:mm:ss');
     
-    // Create new booking
-    const bookingData = {
-      labId: data.roomId,
-      bookingDate: formattedDate,
-      startTime: startTime,
-      endTime: endTime,
-      participants: 1, // Default value
-      eventName: data.title,
-      eventType: data.description || 'Not specified',
-      phone: '123456789', // This would come from a form field
-      faculty: 'Faculty of Information & Technology', // This would come from a form field
-      userData: {
-        name: user?.fullName || 'Current User',
-        nim: '12345678' // You might want to store this in user metadata
+    try {
+      // Check for conflicts first
+      const result = await checkConflictsQuery.refetch();
+      
+      if (result.data?.hasConflicts) {
+        alert("This room is already booked for the selected time. Please choose a different time or room.");
+        return;
       }
-    };
-
-    checkConflicts.mutate(
-      {
+      
+      // Create booking data
+      const bookingData = {
         labId: data.roomId,
         bookingDate: formattedDate,
         startTime: startTime,
-        endTime: endTime
-      },
-      {
-        onSuccess: (result) => {
-          if (result.hasConflicts) {
-            alert("This room is already booked for the selected time. Please choose a different time or room.");
-            return;
-          }
-          
-          // If no conflicts, proceed with booking
-          api.booking.create.mutate(bookingData, {
-            onSuccess: () => {
-              setIsBookingModalOpen(false);
-              form.reset();
-              void refetchBookings();
-            },
-            onError: (error) => {
-              alert(`Failed to create booking: ${error.message}`);
-            }
-          });
+        endTime: endTime,
+        participants: 1,
+        eventName: data.title,
+        eventType: data.description || 'Not specified',
+        phone: '123456789',
+        faculty: 'Faculty of Information & Technology',
+        userData: {
+          name: user?.fullName || 'Current User',
+          nim: '12345678'
+        }
+      };
+      
+      // Submit booking using the create mutation
+      const createBookingMutation = api.booking.create.useMutation({
+        onSuccess: () => {
+          setIsBookingModalOpen(false);
+          form.reset();
+          void refetchBookings();
         },
         onError: (error) => {
-          alert(`Failed to check for conflicts: ${error.message}`);
+          alert(`Failed to create booking: ${error.message}`);
         }
-      }
-    );
+      });
+      
+      createBookingMutation.mutate(bookingData);
+    } catch (error) {
+      alert(`Failed to check for conflicts: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
   };
 
   // Only render content client-side to avoid hydration mismatch
@@ -413,7 +418,7 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
                 </CardContent>
               </Card>
               
-              <Card>
+              {/* <Card>
                 <CardHeader className="pb-3">
                   <CardTitle>Quick Book</CardTitle>
                 </CardHeader>
@@ -441,9 +446,9 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
                     </Button>
                   )}
                 </CardContent>
-              </Card>
+              </Card> */}
               
-              <Card>
+              {/* <Card>
                 <CardHeader className="pb-3">
                   <CardTitle>Calendar Info</CardTitle>
                 </CardHeader>
@@ -459,7 +464,7 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
                     </div>
                   </div>
                 </CardContent>
-              </Card>
+              </Card> */}
             </div>
             
             {/* Calendar */}
@@ -511,7 +516,7 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
       </div>
       
       {/* Booking Dialog */}
-      <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
+      {/* <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Book a Laboratory</DialogTitle>
@@ -641,7 +646,7 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
             </form>
           </Form>
         </DialogContent>
-      </Dialog>
+      </Dialog> */}
       
       {/* Event Details Dialog */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
