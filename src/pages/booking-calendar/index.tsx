@@ -97,6 +97,8 @@ export default function BookingCalendar() {
   const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<BookingEvent | null>(null);
+  const [currentDate, setCurrentDate] = useState(new Date());
+
   
   // Form for booking
   const form = useForm({
@@ -133,22 +135,22 @@ export default function BookingCalendar() {
   const [events, setEvents] = useState<BookingEvent[]>([]);
   const checkConflictsQuery = api.booking.checkConflicts.useQuery(
     {
-      labId: "", // Default empty values
+      labId: "",
       bookingDate: "",
       startTime: "",
-      endTime: ""
+      endTime: "",
+      participants: 1,
+      bookingType: "full"
     },
     {
       enabled: false, // Don't run until explicitly asked to
     }
   );
   
+  // Update your useEffect for transforming events
   useEffect(() => {
-    if (bookingsData) {
-      console.log("Raw booking data:", bookingsData); // Debug: Check raw data
-      
+    if (bookingsData) {      
       const transformedEvents = bookingsData.map(booking => {
-        // Ensure proper date parsing by handling various date formats
         let startDate, endDate;
         
         try {
@@ -163,21 +165,15 @@ export default function BookingCalendar() {
           // Check if dates are valid
           if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
             console.error("Invalid date detected:", { booking, startDate, endDate });
-            // Use current date as fallback
-            const today = new Date();
-            startDate = today;
-            endDate = new Date(today.getTime() + 60*60*1000); // +1 hour
+            return null; // Skip invalid bookings
           }
+          
         } catch (error) {
-          console.error("Error parsing dates:", error, { booking });
-          // Use current date as fallback
-          const today = new Date();
-          startDate = today;
-          endDate = new Date(today.getTime() + 60*60*1000); // +1 hour
+          return null;
         }
         
         return {
-          id: String(booking.id), // Ensure this conversion is present
+          id: String(booking.id),
           title: booking.eventName || "Unnamed Event",
           start: startDate,
           end: endDate,
@@ -186,12 +182,11 @@ export default function BookingCalendar() {
           description: booking.eventType || "No description",
           status: booking.status || "pending"
         };
-      });
+      }).filter(Boolean); // Remove null entries
       
-      setEvents(transformedEvents);
+      setEvents(transformedEvents as BookingEvent[]);
     }
   }, [bookingsData]);
-
   // Set isMounted to true when component mounts on client
   useEffect(() => {
     setIsMounted(true);
@@ -221,55 +216,57 @@ export default function BookingCalendar() {
 };
 
   // Add custom header for the month view
-  const CustomToolbar = (toolbar: any) => {
-    const goToBack = () => {
-      toolbar.date.setMonth(toolbar.date.getMonth() - 1);
-      toolbar.onNavigate('prev');
-    };
-
-    const goToNext = () => {
-      toolbar.date.setMonth(toolbar.date.getMonth() + 1);
-      toolbar.onNavigate('next');
-    };
-
-    const goToCurrent = () => {
-      const now = new Date();
-      toolbar.date.setMonth(now.getMonth());
-      toolbar.date.setYear(now.getFullYear());
-      toolbar.onNavigate('current');
-    };
-
-    const label = () => {
-      const date = moment(toolbar.date);
-      return (
-        <span className="text-2xl font-medium">
-          {date.format('MMMM YYYY')}
-        </span>
-      );
+  // Replace your current CustomToolbar with this fixed version:
+  // Replace your current CustomToolbar with this corrected version:
+  const CustomToolbar = ({ date, onNavigate, label }: any) => {
+    const handleNavigation = (action: string) => {
+      try {
+        onNavigate(action);
+        
+        // Update our local state to track the current date
+        let newDate = new Date(date);
+        if (action === 'NEXT') {
+          newDate.setMonth(newDate.getMonth() + 1);
+        } else if (action === 'PREV') {
+          newDate.setMonth(newDate.getMonth() - 1);
+        } else if (action === 'TODAY') {
+          newDate = new Date();
+        }
+        setCurrentDate(newDate);
+        
+      } catch (error) {
+        console.error('Navigation error:', error);
+      }
     };
 
     return (
-      <div className="flex items-center justify-between mb-4">
-        <div className="text-2xl font-medium">{label()}</div>
+      <div className="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-lg">
+        <div className="text-2xl font-bold text-gray-800">{label}</div>
         <div className="flex space-x-2">
-          <button
-            className="px-3 py-1 bg-gray-200 rounded"
-            onClick={goToBack}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleNavigation('PREV')}
+            className="hover:bg-gray-100 hover:cursor-pointer"
           >
-            ←
-          </button>
-          <button
-            className="px-3 py-1 bg-gray-200 rounded"
-            onClick={goToCurrent}
+            ← Previous
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleNavigation('TODAY')}
+            className="hover:bg-gray-100 hover:cursor-pointer"
           >
-            today
-          </button>
-          <button
-            className="px-3 py-1 bg-gray-200 rounded"
-            onClick={goToNext}
+            Today
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => handleNavigation('NEXT')}
+            className="hover:bg-gray-100 hover:cursor-pointer"
           >
-            →
-          </button>
+            Next →
+          </Button>
         </div>
       </div>
     );
@@ -503,8 +500,12 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
                     dayLayoutAlgorithm="no-overlap"
                     popup
                     showMultiDayTimes
-                    min={new Date(0, 0, 0, 7, 0)} // Start day at 7am
-                    max={new Date(0, 0, 0, 21, 0)} // End day at 9pm
+                    min={new Date(0, 0, 0, 7, 0)}
+                    max={new Date(0, 0, 0, 21, 0)}
+                    onNavigate={(date, view) => {
+                      setCurrentDate(date);
+                    }}
+                    date={currentDate} // Add this to control the calendar date
                   />
                 )}
               </div>

@@ -1,8 +1,10 @@
 import Link from "next/link";
+import { useRouter } from "next/router";
 import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 
 export function Navbar() {
+  const router = useRouter();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [visible, setVisible] = useState(true);
@@ -27,6 +29,33 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos, isMounted]);
 
+  // Function to check if route is active
+  const isActive = (path: string) => {
+    return router.pathname === path;
+  };
+
+  // Function to get link classes for desktop navigation
+  const getLinkClasses = (path: string) => {
+    const baseClasses = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200";
+    
+    if (isActive(path)) {
+      return `${baseClasses} border-orange-500 text-orange-600 font-semibold`;
+    }
+    
+    return `${baseClasses} border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700`;
+  };
+
+  // Function to get link classes for mobile navigation
+  const getMobileLinkClasses = (path: string) => {
+    const baseClasses = "block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200";
+    
+    if (isActive(path)) {
+      return `${baseClasses} border-orange-500 text-orange-600 bg-orange-50 font-semibold`;
+    }
+    
+    return `${baseClasses} border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700`;
+  };
+
   return (
     <nav 
       className={`fixed top-0 left-0 right-0 z-50 bg-white shadow-sm transition-transform duration-300 ${
@@ -37,25 +66,29 @@ export function Navbar() {
         <div className="flex justify-between h-16">
           <div className="flex items-center">
             <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className="text-xl font-bold text-orange-600">BookLab</span>
+              <span className={`text-xl font-bold transition-colors duration-200 ${
+                isActive('/') ? 'text-orange-700' : 'text-orange-600'
+              }`}>
+                BookLab
+              </span>
             </Link>
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <Link
                 href="/lab-search"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                className={getLinkClasses('/lab-search')}
               >
                 Lab Search
               </Link>
               <Link
                 href="/booking-calendar"
-                className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                className={getLinkClasses('/booking-calendar')}
               >
                 Booking Calendar
               </Link>
               <SignedIn>
                 <Link
                   href="/dashboard"
-                  className="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium"
+                  className={getLinkClasses('/dashboard')}
                 >
                   Dashboard
                 </Link>
@@ -65,7 +98,7 @@ export function Navbar() {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                   Sign in
                 </button>
               </SignInButton>
@@ -83,7 +116,7 @@ export function Navbar() {
           <div className="-mr-2 flex items-center sm:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
               aria-expanded={isMenuOpen}
             >
               <span className="sr-only">Open main menu</span>
@@ -131,14 +164,14 @@ export function Navbar() {
           <Link
             onClick={() => setIsMenuOpen(false)}
             href="/lab-search"
-            className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            className={getMobileLinkClasses('/lab-search')}
           >
             Lab Search
           </Link>
           <Link
             onClick={() => setIsMenuOpen(false)}
             href="/booking-calendar"
-            className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+            className={getMobileLinkClasses('/booking-calendar')}
           >
             Booking Calendar
           </Link>
@@ -146,7 +179,7 @@ export function Navbar() {
             <Link
               onClick={() => setIsMenuOpen(false)}
               href="/dashboard"
-              className="border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 block pl-3 pr-4 py-2 border-l-4 text-base font-medium"
+              className={getMobileLinkClasses('/dashboard')}
             >
               Dashboard
             </Link>
@@ -156,7 +189,7 @@ export function Navbar() {
           <div className="flex items-center px-4">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                   Sign in
                 </button>
               </SignInButton>

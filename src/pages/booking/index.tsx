@@ -1,9 +1,10 @@
-import { useState } from "react";
-import { useRouter } from "next/router";
+import { AlertTriangle, Loader2, Users, Building } from "lucide-react";
 import Head from "next/head";
-import { Input } from "~/components/ui/input";
+import { useRouter } from "next/router";
+import { useState, useEffect } from "react";
+import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
-import { Textarea } from "~/components/ui/textarea";
+import { Input } from "~/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -11,20 +12,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { Loader2, AlertTriangle } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { Label } from "~/components/ui/label";
+import { Card, CardContent } from "~/components/ui/card";
 import { api } from "~/utils/api";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 
 export default function BookingPage() {
   const router = useRouter();
   const { labId } = router.query;
   
   // Form state
+  const utils = api.useUtils();
   const [bookingDate, setBookingDate] = useState("");
   const [startHour, setStartHour] = useState("");
   const [startMinute, setStartMinute] = useState("");
   const [endHour, setEndHour] = useState("");
   const [endMinute, setEndMinute] = useState("");
+  const [bookingType, setBookingType] = useState("partial"); // "full" or "partial"
   const [participants, setParticipants] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState("");
@@ -32,23 +36,12 @@ export default function BookingPage() {
   const [requestorName, setRequestorName] = useState("");
   const [requestorNIM, setRequestorNIM] = useState("");
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  const [faculty, setFaculty] = useState("Faculty of Information & Technology"); // Default faculty
+  const [faculty, setFaculty] = useState("Faculty of Information & Technology");
   const [checking, setChecking] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  
 
-  const conflictCheck = api.booking.checkConflicts.useQuery(
-    { 
-      labId: labId as string,
-      bookingDate: bookingDate,
-      startTime: `${startHour}:${startMinute}`,
-      endTime: `${endHour}:${endMinute}`
-    },
-    { 
-      enabled: false, // Don't run automatically
-      retry: false
-    }
-  );
-
-  // Fetch lab details using tRPC query
+  // Fetch lab details using tRPC query (MOVED BEFORE conflictCheck)
   const {
     data: labDetail,
     isLoading: isLabLoading,
@@ -61,13 +54,47 @@ export default function BookingPage() {
     }
   );
 
+  // Helper function to calculate participants
+  const calculateParticipants = () => {
+    if (!labDetail) return 1; // Default value when labDetail is not loaded yet
+    
+    if (labDetail.capacity === 0) {
+      return parseInt(participants) || 1;
+    } else if (bookingType === "full") {
+      return labDetail.capacity || parseInt(participants) || 1;
+    } else {
+      return parseInt(participants) || 1;
+    }
+  };
+
+  // Update the conflict check query (MOVED AFTER labDetail definition)
+  const conflictCheck = api.booking.checkConflicts.useQuery(
+    { 
+      labId: labId as string,
+      bookingDate: bookingDate,
+      startTime: `${startHour}:${startMinute}`,
+      endTime: `${endHour}:${endMinute}`,
+      participants: calculateParticipants(),
+      bookingType: bookingType as "full" | "partial"
+    },
+    { 
+      enabled: false,
+      retry: false
+    }
+  );
+
   // Define the booking mutation
   const bookingMutation = api.booking.create.useMutation({
+    onMutate: () => {
+      setIsSubmitting(true);
+    },
     onSuccess: async () => {
+      setIsSubmitting(false);
       alert("Booking successful!");
       await router.push("/dashboard");
     },
     onError: (error) => {
+      setIsSubmitting(false);
       alert(`Error: ${error.message}`);
     }
   });
@@ -77,13 +104,64 @@ export default function BookingPage() {
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
   
   const eventTypes = ["Class", "Seminar", "Workshop", "Meeting", "Exam", "Other"];
-  const facultyOptions = [
-    "Faculty of Information & Technology", 
-    "Faculty of Science", 
-    "Faculty of Business", 
-    "Faculty of Engineering",
-    "Faculty of Arts & Design"
-  ];
+
+  // Handle booking type change
+  const handleBookingTypeChange = (value: string) => {
+    setBookingType(value);
+    if (value === "full") {
+      // Untuk ruangan dengan kapasitas 0 atau undefined, set default ke 1
+      const capacity = labDetail?.capacity || 0;
+      setParticipants(capacity > 0 ? capacity.toString() : "1");
+    } else if (value === "partial") {
+      setParticipants("");
+    }
+    // Clear any previous error for participants
+    if (formErrors.participants) {
+      const newErrors = { ...formErrors };
+      delete newErrors.participants;
+      setFormErrors(newErrors);
+    }
+  };
+
+  // Add useEffect to automatically set booking type for zero capacity rooms
+  useEffect(() => {
+    if (labDetail?.capacity === 0) {
+      setBookingType("full");
+      setParticipants("1");
+    }
+  }, [labDetail]);
+
+  // Debug useEffect with proper dependency checking
+  // Update the conflict check to be more aggressive
+  useEffect(() => { 
+    const checkAvailabilityDebounced = async () => {
+      if (bookingDate && startHour && startMinute && endHour && endMinute && labDetail) {
+        try {
+          const result = await conflictCheck.refetch();
+          
+          // Update form errors based on result
+          if (result.data?.hasConflicts) {
+            setFormErrors(prev => ({
+              ...prev,
+              conflict: result.data.message
+            }));
+          } else {
+            // Clear conflict errors if no conflicts
+            setFormErrors(prev => {
+              const newErrors = { ...prev };
+              delete newErrors.conflict;
+              return newErrors;
+            });
+          }
+        } catch (error) {
+        }
+      }
+    };
+
+    // Debounce the check
+    const timeoutId = setTimeout(checkAvailabilityDebounced, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [bookingDate, startHour, startMinute, endHour, endMinute, participants, bookingType, labDetail]);
 
   // Handle form submission with tRPC mutation
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -94,13 +172,31 @@ export default function BookingPage() {
     if (!bookingDate) errors.bookingDate = "Booking date is required";
     if (!startHour || !startMinute) errors.startTime = "Start time is required";
     if (!endHour || !endMinute) errors.endTime = "End time is required";
-    if (!participants) errors.participants = "Number of participants is required";
     if (!eventName) errors.eventName = "Event name is required";
     if (!eventType) errors.eventType = "Event type is required";
     if (!phone) errors.phone = "Phone number is required";
     if (!requestorName) errors.requestorName = "Requestor name is required";
     if (!requestorNIM) errors.requestorNIM = "Requestor NIM is required";
     if (!faculty) errors.faculty = "Faculty is required";
+
+    // Validate participants based on booking type
+    if (labDetail?.capacity === 0) {
+      // For zero capacity rooms, participants is always required
+      if (!participants) {
+        errors.participants = "Number of participants is required for flexible space rooms";
+      } else if (parseInt(participants) <= 0) {
+        errors.participants = "Number of participants must be greater than 0";
+      }
+    } else if (bookingType === "partial") {
+      // Original validation for partial bookings in regular rooms
+      if (!participants) {
+        errors.participants = "Number of participants is required";
+      } else if (parseInt(participants) <= 0) {
+        errors.participants = "Number of participants must be greater than 0";
+      } else if (labDetail?.capacity && parseInt(participants) > labDetail.capacity) {
+        errors.participants = `Number of participants cannot exceed room capacity (${labDetail.capacity})`;
+      }
+    }
 
     // Check time validity
     const startTimeValue = `${startHour}:${startMinute}`;
@@ -115,20 +211,52 @@ export default function BookingPage() {
       return;
     }
     
-    // Check for booking conflicts
+    const finalParticipants = labDetail?.capacity === 0 
+      ? parseInt(participants) || 1
+      : bookingType === "full" 
+        ? (labDetail?.capacity || parseInt(participants))
+        : parseInt(participants);
+
+    // FIXED: Use utils.client to make imperative query call
     setChecking(true);
     try {
-      const conflict = await conflictCheck.refetch();
+      const conflictResult = await utils.client.booking.checkConflicts.query({
+        labId: labId as string,
+        bookingDate: bookingDate,
+        startTime: startTimeValue,
+        endTime: endTimeValue,
+        participants: finalParticipants,
+        bookingType: bookingType as "full" | "partial"
+      });
+      
       setChecking(false);
       
-      if (conflict.data?.hasConflicts) {
-        // Show error about conflict
+      
+      if (conflictResult?.hasConflicts) {
+        let errorMessage = "";
+        
+        switch (conflictResult.conflictType) {
+          case "FULL_ROOM_CONFLICT":
+            errorMessage = conflictResult.message;
+            break;
+          case "CAPACITY_EXCEEDED":
+            const { capacityInfo } = conflictResult;
+            if (capacityInfo) {
+              errorMessage = `Room capacity exceeded! Room has ${capacityInfo.roomCapacity} seats. Currently booked: ${capacityInfo.currentlyBooked} participants. You requested: ${capacityInfo.requested} participants. Available spots: ${capacityInfo.available}`;
+            } else {
+              errorMessage = "Room capacity exceeded! (Capacity details unavailable)";
+            }
+            break;
+          default:
+            errorMessage = "This room is already booked for the selected time. Please choose a different time or reduce the number of participants.";
+        }
+        
         setFormErrors({
-          ...formErrors,
-          conflict: "This room is already booked for the selected time. Please choose a different time or room."
+          conflict: errorMessage
         });
-        return;
+        return; // STOP submission
       }
+      
       
       // No conflicts found, proceed with booking
       const bookingData = {
@@ -136,24 +264,25 @@ export default function BookingPage() {
         bookingDate: new Date(bookingDate).toISOString(),
         startTime: startTimeValue,
         endTime: endTimeValue,
-        participants: parseInt(participants),
+        participants: finalParticipants,
         eventName,
         eventType,
         phone,
         faculty,
         userData: {
-            name: requestorName,
-            nim: requestorNIM
+          name: requestorName,
+          nim: requestorNIM
         }
       };
       
+      
       // Execute the mutation
       bookingMutation.mutate(bookingData);
+      
     } catch (error) {
       setChecking(false);
       console.error("Error checking conflicts:", error);
       setFormErrors({
-        ...formErrors,
         conflict: "Could not check for booking conflicts. Please try again."
       });
     }
@@ -171,7 +300,11 @@ export default function BookingPage() {
           </h2>
           {labDetail && (
             <p className="text-blue-100 mt-2">
-              {labDetail.type} • {labDetail.capacity} seats • {labDetail.department}
+              {labDetail.type} • {
+                labDetail.capacity && labDetail.capacity > 0 
+                  ? `${labDetail.capacity} seats` 
+                  : "Flexible space"
+              } • {labDetail.department}
             </p>
           )}
           <div className="mt-2 flex space-x-2">
@@ -298,11 +431,108 @@ export default function BookingPage() {
                   )}
                 </div>
               </div>
+            </div>
 
-              {/* Number of participants */}
+            {/* Booking Type Selection - conditional rendering */}
+            <div className="space-y-4">
+              <label className="block text-sm font-medium text-gray-700">
+                Booking Type
+              </label>
+              
+              {/* Show warning for zero capacity rooms */}
+              {labDetail?.capacity === 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
+                  <div className="flex items-center space-x-2">
+                    <svg className="h-5 w-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <div className="font-medium text-amber-800">Flexible Space Room</div>
+                      <div className="text-sm text-amber-700">
+                        This room has no fixed seating. You must book the entire space and specify the number of participants.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <RadioGroup 
+                value={bookingType} 
+                onValueChange={handleBookingTypeChange}
+                className={`grid gap-4 ${labDetail?.capacity === 0 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
+              >
+                {/* Full Room Option - always show */}
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem 
+                    value="full" 
+                    id="full" 
+                    disabled={labDetail?.capacity === 0} // Disabled visual but still selected
+                  />
+                  <Label htmlFor="full" className="flex-1 cursor-pointer">
+                    <Card className={`p-4 border-2 transition-all duration-200 ${
+                      bookingType === "full" 
+                        ? "border-orange-500 bg-orange-50" 
+                        : "border-gray-200 hover:border-gray-300"
+                    } ${labDetail?.capacity === 0 ? 'opacity-100' : ''}`}>
+                      <CardContent className="p-0">
+                        <div className="flex items-center space-x-3">
+                          <Building className={`h-5 w-5 ${
+                            bookingType === "full" ? "text-orange-600" : "text-gray-400"
+                          }`} />
+                          <div>
+                            <div className="font-medium text-sm">
+                              {labDetail?.capacity === 0 ? "Book Entire Space" : "Book Full Room"}
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {labDetail?.capacity === 0 
+                                ? "Flexible space - specify participants below"
+                                : labDetail?.capacity && labDetail.capacity > 0 
+                                  ? `${labDetail.capacity} seats` 
+                                  : "All available seats"
+                              }
+                            </div>
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  </Label>
+                </div>
+
+                {/* Partial Room Option - only show if capacity > 0 */}
+                {labDetail?.capacity !== 0 && (
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="partial" id="partial" />
+                    <Label htmlFor="partial" className="flex-1 cursor-pointer">
+                      <Card className={`p-4 border-2 transition-all duration-200 ${
+                        bookingType === "partial" 
+                          ? "border-orange-500 bg-orange-50" 
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}>
+                        <CardContent className="p-0">
+                          <div className="flex items-center space-x-3">
+                            <Users className={`h-5 w-5 ${
+                              bookingType === "partial" ? "text-orange-600" : "text-gray-400"
+                            }`} />
+                            <div>
+                              <div className="font-medium text-sm">Specify Participants</div>
+                              <div className="text-xs text-gray-500">
+                                Choose number of people
+                              </div>
+                            </div>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </Label>
+                  </div>
+                )}
+              </RadioGroup>
+            </div>
+
+            {/* Participants Count - show for both partial booking AND zero capacity rooms */}
+            {(bookingType === "partial" || labDetail?.capacity === 0) && (
               <div className="space-y-2">
                 <label htmlFor="participants" className="block text-sm font-medium text-gray-700">
-                  Number of participants
+                  Number of Participants {labDetail?.capacity === 0 && <span className="text-red-500">*</span>}
                 </label>
                 <Input
                   type="number"
@@ -310,14 +540,52 @@ export default function BookingPage() {
                   value={participants}
                   onChange={(e) => setParticipants(e.target.value)}
                   min="1"
-                  max={labDetail?.capacity || 999}
+                  max={labDetail?.capacity && labDetail.capacity > 0 ? labDetail.capacity : 999}
+                  placeholder={
+                    labDetail?.capacity === 0
+                      ? "Enter number of participants (required)"
+                      : labDetail?.capacity && labDetail.capacity > 0 
+                        ? `Enter number (max: ${labDetail.capacity})`
+                        : "Enter number of participants"
+                  }
                   className={formErrors.participants ? "border-red-500" : ""}
+                  required={labDetail?.capacity === 0}
                 />
                 {formErrors.participants && (
                   <p className="text-red-500 text-xs">{formErrors.participants}</p>
                 )}
+                {labDetail?.capacity === 0 ? (
+                  <p className="text-xs text-orange-600 font-medium">
+                    ⚠️ Required: This flexible space requires you to specify the number of participants
+                  </p>
+                ) : labDetail?.capacity && labDetail.capacity > 0 ? (
+                  <p className="text-xs text-gray-500">
+                    Room capacity: {labDetail.capacity} seats
+                  </p>
+                ) : (
+                  <p className="text-xs text-gray-500">
+                    This room has flexible seating arrangements
+                  </p>
+                )}
               </div>
+            )}
 
+            {/* Full Room Confirmation Display - update text for zero capacity */}
+            {bookingType === "full" && labDetail && labDetail.capacity !== 0 && (
+              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  <Building className="h-5 w-5 text-orange-600" />
+                  <div>
+                    <div className="font-medium text-orange-800">Full Room Booking</div>
+                    <div className="text-sm text-orange-700">
+                      You are booking the entire room ({labDetail.capacity} seats)
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Event Name/Purpose */}
               <div className="space-y-2">
                 <label htmlFor="eventName" className="block text-sm font-medium text-gray-700">
@@ -386,7 +654,7 @@ export default function BookingPage() {
                   id="phone"
                   value={phone}
                   onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Phone number"  // Shorter placeholder for mobile
+                  placeholder="Phone number"
                   className={formErrors.phone ? "border-red-500" : ""}
                 />
                 {formErrors.phone && (
@@ -439,10 +707,51 @@ export default function BookingPage() {
               </p>
             </div>
 
+{bookingDate && startHour && startMinute && endHour && endMinute && (
+  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+    <div className="flex items-center space-x-2">
+      {checking ? (
+        <>
+          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+          <span className="text-sm text-blue-700">Checking availability...</span>
+        </>
+      ) : formErrors.conflict ? (
+        <>
+          <AlertTriangle className="h-4 w-4 text-red-600" />
+          <span className="text-sm text-red-700">Time slot not available</span>
+        </>
+      ) : (
+        <>
+          <div className="h-4 w-4 bg-green-500 rounded-full"></div>
+          <span className="text-sm text-green-700">Time slot available</span>
+        </>
+      )}
+    </div>
+  </div>
+)}
+
             {formErrors.conflict && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
-                <strong className="font-bold">Booking Conflict: </strong>
-                <span className="block sm:inline">{formErrors.conflict}</span>
+                <div className="flex items-start space-x-2">
+                  <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <strong className="font-bold">Booking Conflict:</strong>
+                    <div className="mt-1 text-sm">{formErrors.conflict}</div>
+                    <div className="mt-2 text-xs">
+                      <strong>Suggestions:</strong>
+                      <ul className="list-disc list-inside mt-1 space-y-1">
+                        <li>Try a different time slot</li>
+                        <li>Choose a different room</li>
+                        {bookingType === "partial" && (
+                          <li>Reduce the number of participants</li>
+                        )}
+                        {bookingType === "full" && (
+                          <li>Consider partial booking if you don't need the full room</li>
+                        )}
+                      </ul>
+                    </div>
+                  </div>
+                </div>
               </div>
             )}
 
@@ -451,9 +760,9 @@ export default function BookingPage() {
               <Button 
                 type="submit" 
                 className="w-full py-4 sm:py-6 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg"
-                disabled={bookingMutation.status === "pending" || checking}
+                disabled={bookingMutation.status === "pending" || checking || isSubmitting}
               >
-                {bookingMutation.status === "pending" ? (
+                {bookingMutation.status === "pending" || isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Processing...
@@ -464,7 +773,7 @@ export default function BookingPage() {
                     Checking availability...
                   </>
                 ) : (
-                  "Confirm booking"
+                  `Confirm booking ${bookingType === "full" ? "(Full Room)" : ""}`
                 )}
               </Button>
             </div>
