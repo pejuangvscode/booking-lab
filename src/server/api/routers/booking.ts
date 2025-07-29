@@ -67,7 +67,6 @@ export const bookingRouter = createTRPCRouter({
           bookingId: booking.id
         };
       } catch (error) {
-        console.error("Error creating booking:", error);
         throw new Error("Failed to create booking. Please try again.");
       }
     }),
@@ -354,8 +353,6 @@ export const bookingRouter = createTRPCRouter({
     }))
     .query(async ({ ctx, input }) => {
       try {
-        console.log("=== CONFLICT CHECK START ===");
-        console.log("Input parameters:", input);
         
         // Validate and format the booking date
         const inputDate = new Date(input.bookingDate);
@@ -365,7 +362,6 @@ export const bookingRouter = createTRPCRouter({
         
         // Format date consistently
         const formattedDate = inputDate.toISOString().split('T')[0];
-        console.log("Formatted date:", formattedDate);
         
         // Convert excludeBookingId to number if provided
         const excludeId = input.excludeBookingId 
@@ -380,16 +376,8 @@ export const bookingRouter = createTRPCRouter({
         });
         
         if (!room) {
-          console.log("Room not found for facilityId:", input.labId);
           throw new Error(`Room not found for facilityId: ${input.labId}`);
         }
-        
-        console.log("Room details:", { 
-          id: room.id, 
-          facilityId: room.facilityId,
-          capacity: room.capacity, 
-          name: room.name 
-        });
         
         // Find ALL bookings for the same room and date
         const allBookingsOnDate = await ctx.db.bookings.findMany({
@@ -409,14 +397,6 @@ export const bookingRouter = createTRPCRouter({
           }
         });
 
-        console.log("Found bookings on date:", allBookingsOnDate.map(b => ({
-          id: b.id,
-          startTime: b.startTime,
-          endTime: b.endTime,
-          participants: b.participants,
-          status: b.status,
-          eventName: b.eventName
-        })));
 
         // Helper function to check if two time ranges overlap
         const timesOverlap = (start1: string, end1: string, start2: string, end2: string) => {
@@ -432,12 +412,7 @@ export const bookingRouter = createTRPCRouter({
           const end1Min = timeToMinutes(end1);
           const start2Min = timeToMinutes(start2);
           const end2Min = timeToMinutes(end2);
-          
-          console.log("Time overlap check:", {
-            newBooking: `${start1} (${start1Min}) - ${end1} (${end1Min})`,
-            existingBooking: `${start2} (${start2Min}) - ${end2} (${end2Min})`,
-            overlaps: start1Min < end2Min && end1Min > start2Min
-          });
+        
           
           return start1Min < end2Min && end1Min > start2Min;
         };
@@ -452,13 +427,6 @@ export const bookingRouter = createTRPCRouter({
           );
         });
 
-        console.log("Overlapping bookings found:", overlappingBookings.length);
-        console.log("Overlapping booking details:", overlappingBookings.map(b => ({
-          id: b.id,
-          time: `${b.startTime}-${b.endTime}`,
-          participants: b.participants,
-          eventName: b.eventName
-        })));
 
         // **CRITICAL: If ANY overlapping booking exists, check conflicts**
         if (overlappingBookings.length > 0) {
@@ -467,15 +435,12 @@ export const bookingRouter = createTRPCRouter({
           const newBookingIsFullRoom = input.bookingType === "full" || 
                                     (room.capacity > 0 && input.participants >= room.capacity);
           
-          console.log("New booking is full room:", newBookingIsFullRoom);
           
           for (const booking of overlappingBookings) {
             const existingIsFullRoom = room.capacity === 0 || booking.participants >= room.capacity;
-            console.log(`Existing booking ${booking.id} is full room:`, existingIsFullRoom);
             
             // If either booking is full room, there's a conflict
             if (newBookingIsFullRoom || existingIsFullRoom) {
-              console.log("FULL ROOM CONFLICT DETECTED");
               return {
                 hasConflicts: true,
                 conflictType: "FULL_ROOM_CONFLICT",
@@ -495,15 +460,8 @@ export const bookingRouter = createTRPCRouter({
 
             const totalAfterNewBooking = totalExistingParticipants + input.participants;
 
-            console.log("Capacity check:", {
-              roomCapacity: room.capacity,
-              existingParticipants: totalExistingParticipants,
-              newParticipants: input.participants,
-              totalAfter: totalAfterNewBooking
-            });
 
             if (totalAfterNewBooking > room.capacity) {
-              console.log("CAPACITY EXCEEDED CONFLICT DETECTED");
               return {
                 hasConflicts: true,
                 conflictType: "CAPACITY_EXCEEDED",
@@ -519,9 +477,7 @@ export const bookingRouter = createTRPCRouter({
             }
           }
         }
-        
-        console.log("NO CONFLICTS FOUND");
-        console.log("=== CONFLICT CHECK END ===");
+
         
         return {
           hasConflicts: false,

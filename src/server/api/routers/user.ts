@@ -24,13 +24,11 @@ export const userRouter = createTRPCRouter({
 
       // If the user exists, return the user data
       if (existingUser) {
-        console.log("User already exists in the database:", existingUser.id);
         return existingUser;
       }
 
       // User doesn't exist, create a new record with just the ID
       try {
-        console.log("Creating new user with ID:", userId);
         
         // Create new user with just the ID field
         const newUser = await ctx.db.users.create({
@@ -40,7 +38,6 @@ export const userRouter = createTRPCRouter({
           },
         });
         
-        console.log("Created new user with ID:", newUser.id);
         return newUser;
         
       } catch (clerkError) {
