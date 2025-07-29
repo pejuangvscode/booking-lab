@@ -10,8 +10,11 @@ import { api } from "~/utils/api";
 import Link from "next/link";
 import { format } from "date-fns";
 import { useEffect } from "react";
+import { CustomDialog } from "~/components/ui/custom-dialog";
+import { useCustomDialog } from "~/hooks/useCustomDialog";
 
 export default function BookingDetailPage() {
+  const { dialogState, closeDialog, confirm, success, error } = useCustomDialog();
   const router = useRouter();
   const { bookingId } = router.query;
   const { isLoaded, isSignedIn } = useAuth();
@@ -52,12 +55,12 @@ export default function BookingDetailPage() {
   // Cancel booking mutation with improved error handling
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
-      alert("Booking cancelled successfully!");
-      void refetch(); // Add void to suppress promise warning
+      success("Booking cancelled successfully!");
+      void refetch();
     },
     onError: (error) => {
       console.error("Cancel booking error:", error);
-      alert(`Error cancelling booking: ${error.message}`);
+      error(`Error cancelling booking: ${error.message}`);
     }
   });
 
@@ -441,13 +444,18 @@ export default function BookingDetailPage() {
                   <Button 
                     variant="destructive" 
                     className="w-full"
-                    onClick={() => {
-                      if (confirm("Are you sure you want to cancel this booking?")) {
+                    onClick={async () => {
+                      const confirmed = await confirm(
+                        "Are you sure you want to cancel this booking? This action cannot be undone.",
+                        "Cancel Booking"
+                      );
+                      
+                      if (confirmed) {
                         const numericId = parseInt(bookingId as string, 10);
                         if (!isNaN(numericId)) {
                           cancelBookingMutation.mutate({ id: numericId });
                         } else {
-                          alert("Invalid booking ID");
+                          error("Invalid booking ID", "Error");
                         }
                       }
                     }}
@@ -510,7 +518,7 @@ export default function BookingDetailPage() {
                     }
                   </span>
                 </div>
-
+                
                 <div className="flex justify-between">
                   <span className="text-gray-600">Room ID:</span>
                   <span className="font-medium">{booking.roomId || 'N/A'}</span>
@@ -520,6 +528,16 @@ export default function BookingDetailPage() {
           </div>
         </div>
       </div>
+      <CustomDialog
+        isOpen={dialogState.isOpen}
+        onClose={closeDialog}
+        onConfirm={dialogState.onConfirm}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+        confirmText={dialogState.confirmText}
+        cancelText={dialogState.cancelText}
+      />
     </div>
   );
 }

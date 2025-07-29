@@ -7,6 +7,8 @@ import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
 import { api } from '~/utils/api';
 import Head from 'next/head';
+import { CustomDialog } from "~/components/ui/custom-dialog";
+import { useCustomDialog } from "~/hooks/useCustomDialog";
 
 // Define booking type with optional structure to handle both room and lab properties
 type Booking = {
@@ -36,6 +38,7 @@ type Booking = {
 };
 
 export default function Dashboard() {
+  const { dialogState, closeDialog, confirm, success, error } = useCustomDialog();
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
@@ -98,21 +101,27 @@ export default function Dashboard() {
     }
   }, [isLoaded, isSignedIn, router]);
 
-  const handleCancelBooking = (bookingId: number) => {
-    if (confirm('Are you sure you want to cancel this booking?')) {
-      // Remove String() conversion - pass the number directly
+  const handleCancelBooking = async (bookingId: number) => {
+    const confirmed = await confirm(
+      'Are you sure you want to cancel this booking? This action cannot be undone.',
+      'Cancel Booking'
+    );
+    
+    if (confirmed) {
       cancelBookingMutation.mutate({ id: bookingId });
     }
   };
 
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
-      // Refetch both queries to update the UI
+      success("Booking cancelled successfully!");
+      // Fix: Use the correct function names
       void refetchCurrentBookings();
       void refetchCompletedBookings();
     },
     onError: (error) => {
-      alert(`Failed to cancel booking: ${error.message}`);
+      console.error("Cancel booking error:", error);
+      error(`Error cancelling booking: ${error.message}`);
     }
   });
 
@@ -417,7 +426,7 @@ const formatDate = (date: Date | string) => {
                               variant="outline" 
                               size="sm" 
                               className="text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border-blue-200 hover:cursor-pointer"
-                              onClick={() => router.push(`/detail?bookingId=${booking.id}`)}
+                              onClick={() => router.push(`/booking-detail?bookingId=${booking.id}`)}
                             >
                               <Info className="h-4 w-4 mr-1" />
                               Details
@@ -475,6 +484,16 @@ const formatDate = (date: Date | string) => {
           </div>
         </div>
       </div>
+      <CustomDialog
+        isOpen={dialogState.isOpen}
+        onClose={closeDialog}
+        onConfirm={dialogState.onConfirm}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+        confirmText={dialogState.confirmText}
+        cancelText={dialogState.cancelText}
+      />
     </div>
   );
 }

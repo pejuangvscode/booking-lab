@@ -18,6 +18,8 @@ import { Label } from "~/components/ui/label";
 import { Card, CardContent } from "~/components/ui/card";
 import { api } from "~/utils/api";
 import Link from "next/link";
+import { CustomDialog } from "~/components/ui/custom-dialog";
+import { useCustomDialog } from "~/hooks/useCustomDialog";
 
 export default function BookingPage() {
   const router = useRouter();
@@ -26,6 +28,8 @@ export default function BookingPage() {
   // Authentication hooks
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
+  const { dialogState, closeDialog, confirm, success, error, alert } = useCustomDialog();
+
 
   // Form state (all hooks must be called unconditionally, before any return)
   const utils = api.useUtils();
@@ -163,12 +167,14 @@ export default function BookingPage() {
     },
     onSuccess: async () => {
       setIsSubmitting(false);
-      alert("Booking successful!");
+      // Ganti alert dengan custom success dialog
+      await success("Booking successful! Redirecting to dashboard...", "Success");
       await router.push("/dashboard");
     },
     onError: (error) => {
       setIsSubmitting(false);
-      alert(`Error: ${error.message}`);
+      // Ganti alert dengan custom error dialog
+      error(`Failed to create booking: ${error.message}`, "Booking Error");
     }
   });
 
@@ -274,6 +280,8 @@ export default function BookingPage() {
 
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
+      // Tambahkan alert untuk validation errors
+      await alert("Please fix the form errors before submitting.", "Form Validation");
       return;
     }
     
@@ -316,9 +324,21 @@ export default function BookingPage() {
             errorMessage = "This room is already booked for the selected time. Please choose a different time or reduce the number of participants.";
         }
         
+        // Ganti setFormErrors dengan custom error dialog
+        await error(errorMessage, "Booking Conflict");
         setFormErrors({
           conflict: errorMessage
         });
+        return;
+      }
+      
+      // Show confirmation dialog before proceeding
+      const confirmed = await confirm(
+        `Are you sure you want to book ${labDetail?.name} for ${eventName} on ${new Date(bookingDate).toLocaleDateString()} from ${startTimeValue} to ${endTimeValue}?`,
+        "Confirm Booking"
+      );
+      
+      if (!confirmed) {
         return;
       }
       
@@ -345,6 +365,8 @@ export default function BookingPage() {
     } catch (error) {
       setChecking(false);
       console.error("Error checking conflicts:", error);
+      // Ganti setFormErrors dengan custom error dialog
+      await error("Could not check for booking conflicts. Please try again.", "Connection Error");
       setFormErrors({
         conflict: "Could not check for booking conflicts. Please try again."
       });
@@ -863,6 +885,16 @@ export default function BookingPage() {
           </form>
         )}
       </div>
+      <CustomDialog
+        isOpen={dialogState.isOpen}
+        onClose={closeDialog}
+        onConfirm={dialogState.onConfirm}
+        title={dialogState.title}
+        message={dialogState.message}
+        type={dialogState.type}
+        confirmText={dialogState.confirmText}
+        cancelText={dialogState.cancelText}
+      />
     </div>
   );
 }
