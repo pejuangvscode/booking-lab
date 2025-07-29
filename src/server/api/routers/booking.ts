@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
+import { TRPCError } from "@trpc/server";
 
 export const bookingRouter = createTRPCRouter({
   create: publicProcedure
@@ -254,33 +255,56 @@ export const bookingRouter = createTRPCRouter({
   // Cancel a booking
   cancelBooking: protectedProcedure
   .input(z.object({ 
-    id: z.union([z.string(), z.number()]) 
+    id: z.number() // Should be z.number(), not z.string()
   }))
   .mutation(async ({ ctx, input }) => {
     try {
-      // Convert the ID to the correct type based on your database schema
-      // If your DB uses numeric IDs:
-      const bookingId = typeof input.id === "string" ? parseInt(input.id) : input.id;
-      
-      const booking = await ctx.db.bookings.findUnique({
-        where: { id: bookingId },
+      // Check if booking exists and belongs to user
+      const existingBooking = await ctx.db.bookings.findUnique({
+        where: { 
+          id: input.id, // input.id is now guaranteed to be a number
+          userId: ctx.auth.userId
+        }
       });
 
-      if (!booking) {
-        throw new Error("Booking not found");
+      if (!existingBooking) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Booking not found or you don't have permission to cancel it",
+        });
       }
 
-      if (booking.userId !== ctx.auth.userId) {
-        throw new Error("You can only cancel your own bookings");
+      // Check if booking can be cancelled
+      if (existingBooking.status.toLowerCase() === 'cancelled') {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Booking is already cancelled",
+        });
       }
 
-      return ctx.db.bookings.update({
-        where: { id: bookingId },
-        data: { status: "cancelled" },
+      // Update booking status to cancelled
+      const cancelledBooking = await ctx.db.bookings.update({
+        where: { id: input.id },
+        data: { 
+          status: 'cancelled',
+        },
+        include: {
+          room: true
+        }
       });
+
+      return cancelledBooking;
     } catch (error) {
       console.error("Error cancelling booking:", error);
-      throw new Error("Failed to cancel booking");
+      
+      if (error instanceof TRPCError) {
+        throw error;
+      }
+      
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: "Failed to cancel booking",
+      });
     }
   }),
 

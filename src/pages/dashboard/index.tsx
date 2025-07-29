@@ -100,7 +100,8 @@ export default function Dashboard() {
 
   const handleCancelBooking = (bookingId: number) => {
     if (confirm('Are you sure you want to cancel this booking?')) {
-      cancelBookingMutation.mutate({ id: String(bookingId) });
+      // Remove String() conversion - pass the number directly
+      cancelBookingMutation.mutate({ id: bookingId });
     }
   };
 
@@ -279,8 +280,8 @@ const formatDate = (date: Date | string) => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border-blue-200"
-                              onClick={() => router.push(`/booking/${booking.id}/details`)}
+                              className="text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border-blue-200 hover:cursor-pointer"
+                              onClick={() => router.push(`/booking-detail?bookingId=${booking.id}`)}
                             >
                               <Info className="h-4 w-4 mr-1" />
                               Details
@@ -288,7 +289,7 @@ const formatDate = (date: Date | string) => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 border-red-200"
+                              className="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 border-red-200 hover:cursor-pointer"
                               onClick={() => handleCancelBooking(booking.id)}
                               disabled={cancelBookingMutation.isPending} // Changed from isLoading to isPending
                             >
@@ -415,14 +416,14 @@ const formatDate = (date: Date | string) => {
                             <Button 
                               variant="outline" 
                               size="sm" 
-                              className="text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border-blue-200"
-                              onClick={() => router.push(`/booking/${booking.id}/details`)}
+                              className="text-blue-600 hover:text-blue-800 bg-blue-100 hover:bg-blue-200 border-blue-200 hover:cursor-pointer"
+                              onClick={() => router.push(`/detail?bookingId=${booking.id}`)}
                             >
                               <Info className="h-4 w-4 mr-1" />
                               Details
                             </Button>
                           </div>
-                        </td>
+                        </td>   
                       </tr>
                     );
                   })

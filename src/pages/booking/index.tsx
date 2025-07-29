@@ -2,6 +2,7 @@ import { AlertTriangle, Loader2, Users, Building } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import { useAuth, useUser, SignInButton } from '@clerk/nextjs'; // Add SignInButton import
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
@@ -16,19 +17,24 @@ import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import { Label } from "~/components/ui/label";
 import { Card, CardContent } from "~/components/ui/card";
 import { api } from "~/utils/api";
+import Link from "next/link";
 
 export default function BookingPage() {
   const router = useRouter();
   const { labId } = router.query;
   
-  // Form state
+  // Authentication hooks
+  const { isLoaded, isSignedIn } = useAuth();
+  const { user } = useUser();
+
+  // Form state (all hooks must be called unconditionally, before any return)
   const utils = api.useUtils();
   const [bookingDate, setBookingDate] = useState("");
   const [startHour, setStartHour] = useState("");
   const [startMinute, setStartMinute] = useState("");
   const [endHour, setEndHour] = useState("");
   const [endMinute, setEndMinute] = useState("");
-  const [bookingType, setBookingType] = useState("partial"); // "full" or "partial"
+  const [bookingType, setBookingType] = useState("partial");
   const [participants, setParticipants] = useState("");
   const [eventName, setEventName] = useState("");
   const [eventType, setEventType] = useState("");
@@ -39,7 +45,74 @@ export default function BookingPage() {
   const [faculty, setFaculty] = useState("Faculty of Information & Technology");
   const [checking, setChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
+
+  // Show loading state while auth is loading
+  if (!isLoaded) {
+    return (
+      <div className="container mx-auto px-4 py-8 mt-20">
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-12 flex justify-center">
+            <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show sign-in prompt if user is not authenticated
+  if (!isSignedIn) {
+    return (
+      <div className="container mx-auto px-4 py-8 mt-20">
+        <Head>
+          <title>Sign In Required | UPH Facility Booking</title>
+        </Head>
+        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+          <div className="p-6 bg-gradient-to-r from-orange-600 to-orange-700">
+            <h2 className="text-3xl font-bold text-white">Authentication Required</h2>
+            <p className="text-orange-100 mt-2">
+              You need to sign in to book laboratory facilities
+            </p>
+          </div>
+          
+          <div className="p-8 text-center">
+            <div className="max-w-md mx-auto">
+              <div className="mb-6">
+                <AlertTriangle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                  Sign In Required
+                </h3>
+                <p className="text-gray-600">
+                  To book laboratory facilities, you need to sign in to your account. 
+                  This helps us manage bookings and send you important updates.
+                </p>
+              </div>
+              
+              <div className="space-y-3">
+                <SignInButton
+                  mode="modal"
+                  fallbackRedirectUrl={router.asPath} // Changed from redirectUrl to fallbackRedirectUrl
+                >
+                  <Button className="hover:cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center">
+                    Sign In to Continue
+                  </Button>
+                </SignInButton>
+                
+                <div className="text-sm text-gray-500">
+                  Don't have an account? You can create one during sign in.
+                </div>
+                
+                <Link href="/">
+                  <Button variant="outline" className="hover:cursor-pointer w-full">
+                    Return to Home
+                  </Button>
+                </Link>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   // Fetch lab details using tRPC query (MOVED BEFORE conflictCheck)
   const {
@@ -56,7 +129,7 @@ export default function BookingPage() {
 
   // Helper function to calculate participants
   const calculateParticipants = () => {
-    if (!labDetail) return 1; // Default value when labDetail is not loaded yet
+    if (!labDetail) return 1;
     
     if (labDetail.capacity === 0) {
       return parseInt(participants) || 1;
@@ -109,13 +182,11 @@ export default function BookingPage() {
   const handleBookingTypeChange = (value: string) => {
     setBookingType(value);
     if (value === "full") {
-      // Untuk ruangan dengan kapasitas 0 atau undefined, set default ke 1
       const capacity = labDetail?.capacity || 0;
       setParticipants(capacity > 0 ? capacity.toString() : "1");
     } else if (value === "partial") {
       setParticipants("");
     }
-    // Clear any previous error for participants
     if (formErrors.participants) {
       const newErrors = { ...formErrors };
       delete newErrors.participants;
@@ -131,7 +202,6 @@ export default function BookingPage() {
     }
   }, [labDetail]);
 
-  // Debug useEffect with proper dependency checking
   // Update the conflict check to be more aggressive
   useEffect(() => { 
     const checkAvailabilityDebounced = async () => {
@@ -139,14 +209,12 @@ export default function BookingPage() {
         try {
           const result = await conflictCheck.refetch();
           
-          // Update form errors based on result
           if (result.data?.hasConflicts) {
             setFormErrors(prev => ({
               ...prev,
               conflict: result.data.message
             }));
           } else {
-            // Clear conflict errors if no conflicts
             setFormErrors(prev => {
               const newErrors = { ...prev };
               delete newErrors.conflict;
@@ -154,11 +222,11 @@ export default function BookingPage() {
             });
           }
         } catch (error) {
+          // Handle error silently
         }
       }
     };
 
-    // Debounce the check
     const timeoutId = setTimeout(checkAvailabilityDebounced, 1000);
     return () => clearTimeout(timeoutId);
   }, [bookingDate, startHour, startMinute, endHour, endMinute, participants, bookingType, labDetail]);
@@ -181,14 +249,12 @@ export default function BookingPage() {
 
     // Validate participants based on booking type
     if (labDetail?.capacity === 0) {
-      // For zero capacity rooms, participants is always required
       if (!participants) {
         errors.participants = "Number of participants is required for flexible space rooms";
       } else if (parseInt(participants) <= 0) {
         errors.participants = "Number of participants must be greater than 0";
       }
     } else if (bookingType === "partial") {
-      // Original validation for partial bookings in regular rooms
       if (!participants) {
         errors.participants = "Number of participants is required";
       } else if (parseInt(participants) <= 0) {
@@ -231,7 +297,6 @@ export default function BookingPage() {
       
       setChecking(false);
       
-      
       if (conflictResult?.hasConflicts) {
         let errorMessage = "";
         
@@ -254,9 +319,8 @@ export default function BookingPage() {
         setFormErrors({
           conflict: errorMessage
         });
-        return; // STOP submission
+        return;
       }
-      
       
       // No conflicts found, proceed with booking
       const bookingData = {
@@ -275,7 +339,6 @@ export default function BookingPage() {
         }
       };
       
-      
       // Execute the mutation
       bookingMutation.mutate(bookingData);
       
@@ -293,13 +356,32 @@ export default function BookingPage() {
       <Head>
         <title>Book a Lab | UPH Facility Booking</title>
       </Head>
+      
+      {/* User Info Bar */}
+      <div className="max-w-4xl mx-auto mb-4">
+        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
+              <span className="text-sm text-blue-700">
+                Signed in as: <span className="font-medium">{user?.firstName} {user?.lastName}</span>
+              </span>
+            </div>
+            <span className="text-xs text-blue-600">
+              {user?.emailAddresses[0]?.emailAddress}
+            </span>
+          </div>
+        </div>
+      </div>
+
       <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+        {/* Header section */}
         <div className="p-6 bg-gradient-to-r from-orange-600 to-orange-700">
           <h2 className="text-3xl font-bold text-white">
             {labDetail?.name ? `Book ${labDetail.name}` : "Book Laboratory"}
           </h2>
           {labDetail && (
-            <p className="text-blue-100 mt-2">
+            <p className="text-orange-100 mt-2">
               {labDetail.type} • {
                 labDetail.capacity && labDetail.capacity > 0 
                   ? `${labDetail.capacity} seats` 
@@ -319,6 +401,7 @@ export default function BookingPage() {
           </div>
         </div>
 
+        {/* Form section */}
         {isLabLoading ? (
           <div className="p-12 flex justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
@@ -754,7 +837,7 @@ export default function BookingPage() {
                 </div>
               </div>
             )}
-
+            
             {/* Submit Button */}
             <div className="flex justify-center pt-4">
               <Button 
