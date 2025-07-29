@@ -8,12 +8,23 @@ interface DialogOptions {
   cancelText?: string;
 }
 
+// Fix: Update the type definition to match DialogOptions
+interface DialogState {
+  isOpen: boolean;
+  title: string;
+  message: string;
+  type: 'confirm' | 'alert' | 'success' | 'error'; // Changed from 'alert' as const
+  confirmText: string;
+  cancelText: string;
+  onConfirm: () => void;
+}
+
 export function useCustomDialog() {
-  const [dialogState, setDialogState] = useState({
+  const [dialogState, setDialogState] = useState<DialogState>({
     isOpen: false,
     title: '',
     message: '',
-    type: 'alert' as const,
+    type: 'alert', // Remove 'as const'
     confirmText: 'OK',
     cancelText: 'Cancel',
     onConfirm: () => {},
@@ -25,11 +36,12 @@ export function useCustomDialog() {
         isOpen: true,
         title: options.title,
         message: options.message,
-        type: options.type || 'alert',
+        type: options.type || 'alert', // This should now work correctly
         confirmText: options.confirmText || 'OK',
         cancelText: options.cancelText || 'Cancel',
         onConfirm: () => {
           resolve(true);
+          setDialogState(prev => ({ ...prev, isOpen: false }));
         },
       });
     });

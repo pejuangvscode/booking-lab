@@ -119,9 +119,9 @@ export default function Dashboard() {
       void refetchCurrentBookings();
       void refetchCompletedBookings();
     },
-    onError: (error) => {
-      console.error("Cancel booking error:", error);
-      error(`Error cancelling booking: ${error.message}`);
+    onError: (err) => {
+      console.error("Cancel booking error:", err);
+      error(`Error cancelling booking: ${err.message}`);
     }
   });
 

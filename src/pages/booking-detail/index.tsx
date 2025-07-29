@@ -52,15 +52,14 @@ export default function BookingDetailPage() {
     }
   }, [bookingError]);
 
-  // Cancel booking mutation with improved error handling
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
       success("Booking cancelled successfully!");
       void refetch();
     },
-    onError: (error) => {
-      console.error("Cancel booking error:", error);
-      error(`Error cancelling booking: ${error.message}`);
+    onError: (mutationError) => { // Changed parameter name from 'error' to 'mutationError'
+      console.error("Cancel booking error:", mutationError);
+      error(`Error cancelling booking: ${mutationError.message}`); // Now 'error' refers to the dialog function
     }
   });
 

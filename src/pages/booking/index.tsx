@@ -171,10 +171,10 @@ export default function BookingPage() {
       await success("Booking successful! Redirecting to dashboard...", "Success");
       await router.push("/dashboard");
     },
-    onError: (error) => {
+    onError: async (err) => {
       setIsSubmitting(false);
       // Ganti alert dengan custom error dialog
-      error(`Failed to create booking: ${error.message}`, "Booking Error");
+      await error(`Failed to create booking: ${err.message}`, "Booking Error");
     }
   });
 
@@ -362,9 +362,9 @@ export default function BookingPage() {
       // Execute the mutation
       bookingMutation.mutate(bookingData);
       
-    } catch (error) {
+    } catch (err) {
       setChecking(false);
-      console.error("Error checking conflicts:", error);
+      console.error("Error checking conflicts:", err);
       // Ganti setFormErrors dengan custom error dialog
       await error("Could not check for booking conflicts. Please try again.", "Connection Error");
       setFormErrors({
