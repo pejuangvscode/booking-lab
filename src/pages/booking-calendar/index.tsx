@@ -51,6 +51,7 @@ const locales = {
   'en-US': enUS,
 };
 
+
 const localizer = dateFnsLocalizer({
   format,
   parse,
@@ -79,7 +80,7 @@ const roomColors: Record<string, string> = {
 
 // Update your BookingEvent type to accept both string and number
 type BookingEvent = {
-  id: string;  // Allow both types
+  id: string;
   title: string;
   start: Date;
   end: Date;
@@ -87,6 +88,9 @@ type BookingEvent = {
   bookedBy: string;
   description?: string;
   status?: string;
+  bookingType?: 'full' | 'partial'; // Tambahkan ini
+  participants?: number; // Tambahkan ini
+  roomCapacity?: number; // Tambahkan ini untuk context
 };
 
 export default function BookingCalendar() {
@@ -149,12 +153,11 @@ export default function BookingCalendar() {
   
   // Update your useEffect for transforming events
   useEffect(() => {
-    if (bookingsData) {      
+    if (bookingsData && rooms.length > 0) {      
       const transformedEvents = bookingsData.map(booking => {
         let startDate, endDate;
         
         try {
-          // Handle date + time string combination
           const bookingDateStr = typeof booking.bookingDate === 'object' 
             ? (booking.bookingDate as Date).toISOString().split('T')[0]
             : new Date(String(booking.bookingDate)).toISOString().split('T')[0];
@@ -162,14 +165,29 @@ export default function BookingCalendar() {
           startDate = new Date(`${bookingDateStr}T${booking.startTime}`);
           endDate = new Date(`${bookingDateStr}T${booking.endTime}`);
           
-          // Check if dates are valid
           if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
             console.error("Invalid date detected:", { booking, startDate, endDate });
-            return null; // Skip invalid bookings
+            return null;
           }
           
         } catch (error) {
           return null;
+        }
+        
+        const matchedRoom = rooms.find(room => 
+          room.id === booking.roomId || // Coba dengan roomId
+          room.id === booking.room?.facilityId || // Gunakan facilityId, bukan id
+          room.name.includes(booking.room?.facilityId || '') // Atau dengan facilityId
+        );
+
+        const roomCapacity = matchedRoom?.capacity || 0;
+
+        // Determine booking type based on participants vs room capacity
+        let bookingType: 'full' | 'partial' = 'partial';
+        if (roomCapacity === 0) {
+          bookingType = 'full'; // Flexible space rooms
+        } else if (booking.participants >= roomCapacity) {
+          bookingType = 'full';
         }
         
         return {
@@ -177,16 +195,19 @@ export default function BookingCalendar() {
           title: booking.eventName || "Unnamed Event",
           start: startDate,
           end: endDate,
-          roomId: booking.room?.facilityId || "Unknown",
+          roomId: booking.room?.facilityId || matchedRoom?.name || "Unknown",
           bookedBy: booking.requesterName || (booking.user ? `User ID: ${booking.user.id.substring(0, 6)}...` : "Unknown"),
           description: booking.eventType || "No description",
-          status: booking.status || "pending"
+          status: booking.status || "pending",
+          bookingType: bookingType,
+          participants: booking.participants || 0,
+          roomCapacity: roomCapacity, // Gunakan roomCapacity yang sudah di-match
         };
-      }).filter(Boolean); // Remove null entries
+      }).filter(Boolean);
       
       setEvents(transformedEvents as BookingEvent[]);
     }
-  }, [bookingsData]);
+  }, [bookingsData, rooms]);
   // Set isMounted to true when component mounts on client
   useEffect(() => {
     setIsMounted(true);
@@ -194,36 +215,32 @@ export default function BookingCalendar() {
 
   // Event style getter to color events by room
   const eventStyleGetter = (event: BookingEvent) => {
-  const baseStyle = {
-    backgroundColor: (roomColors as Record<string, string>)[event.roomId] || '#3174ad',
-    color: 'white',
-    borderRadius: '4px',
-    border: 'none',
+    const baseStyle = {
+      backgroundColor: (roomColors as Record<string, string>)[event.roomId] || '#3174ad',
+      color: 'white',
+      borderRadius: '4px',
+      border: 'none',
+    };
+
+    // Apply opacity to cancelled events
+    if (event.status?.toLowerCase() === 'cancelled') {
+      return {
+        style: {
+          ...baseStyle,
+          opacity: 0.5,
+          textDecoration: 'line-through',
+        }
+      };
+    }
+
+    return { style: baseStyle };
   };
 
-  // Apply opacity to cancelled events
-  if (event.status?.toLowerCase() === 'cancelled') {
-    return {
-      style: {
-        ...baseStyle,
-        opacity: 0.5,
-        textDecoration: 'line-through',
-      }
-    };
-  }
-
-  return { style: baseStyle };
-};
-
-  // Add custom header for the month view
-  // Replace your current CustomToolbar with this fixed version:
-  // Replace your current CustomToolbar with this corrected version:
   const CustomToolbar = ({ date, onNavigate, label }: any) => {
     const handleNavigation = (action: string) => {
       try {
         onNavigate(action);
         
-        // Update our local state to track the current date
         let newDate = new Date(date);
         if (action === 'NEXT') {
           newDate.setMonth(newDate.getMonth() + 1);
@@ -240,22 +257,23 @@ export default function BookingCalendar() {
     };
 
     return (
-      <div className="flex items-center justify-between mb-4 p-4 bg-gray-50 rounded-lg">
-        <div className="text-2xl font-bold text-gray-800">{label}</div>
-        <div className="flex space-x-2">
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-2 sm:mb-4 p-2 sm:p-4 bg-gray-50 rounded-lg gap-2 sm:gap-0">
+        <div className="text-lg sm:text-2xl font-bold text-gray-800 order-1 sm:order-1">{label}</div>
+        <div className="flex space-x-1 sm:space-x-2 order-2 sm:order-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('PREV')}
-            className="hover:bg-gray-100 hover:cursor-pointer"
+            className="hover:bg-gray-100 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
           >
-            ← Previous
+            <span className="hidden sm:inline">← Previous</span>
+            <span className="sm:hidden">← Prev</span>
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('TODAY')}
-            className="hover:bg-gray-100 hover:cursor-pointer"
+            className="hover:bg-gray-100 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
           >
             Today
           </Button>
@@ -263,30 +281,54 @@ export default function BookingCalendar() {
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('NEXT')}
-            className="hover:bg-gray-100 hover:cursor-pointer"
+            className="hover:bg-gray-100 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
           >
-            Next →
+            <span className="hidden sm:inline">Next →</span>
+            <span className="sm:hidden">Next →</span>
           </Button>
         </div>
       </div>
     );
   };
-  // Custom event component to show both event name and booker
-  // Custom event component to match the image format
-const EventComponent = ({ event }: { event: BookingEvent }) => (
-  <div 
-    className="text-xs h-full overflow-hidden p-1 text-white" 
-    onClick={() => handleSelectEvent(event)}
-    style={{ fontSize: '9px' }}
-  >
-    <div className="font-bold">
-      {format(event.start, 'H:mm')} - {format(event.end, 'H:mm')} {event.title}
+
+  const EventComponent = ({ event }: { event: BookingEvent }) => (
+    <div 
+      className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer" 
+      onClick={() => handleSelectEvent(event)}
+      style={{ fontSize: '10px' }}
+    >
+      <div className="font-bold leading-tight">
+        <span className="hidden sm:inline">
+          {format(event.start, 'H:mm')} - {format(event.end, 'H:mm')} 
+        </span>
+        <span className="sm:hidden">
+          {format(event.start, 'H:mm')}
+        </span>
+        <div className="truncate">{event.title}</div>
+      </div>
+      <div className="truncate opacity-90">
+        {event.roomId}
+        <span className="hidden sm:inline">, {event.bookedBy}</span>
+      </div>
+      {/* Mobile: Show simplified info */}
+      <div className="opacity-90">
+        <span className="sm:hidden">
+          {event.bookingType === 'full' ? 'Full' : `${event.participants}p`}
+        </span>
+        <span className="hidden sm:inline">
+          {event.bookingType === 'full' ? (
+            event.roomCapacity === 0 ? (
+              `Full Space (${event.participants} people)`
+            ) : (
+              `Full Room (${event.roomCapacity} seats)`
+            )
+          ) : (
+            `Partial (${event.participants}/${event.roomCapacity} seats)`
+          )}
+        </span>
+      </div>
     </div>
-    <div>
-      {event.roomId}, Requestor: {event.bookedBy}
-    </div>
-  </div>
-);
+  );
 
   // Handle event selection
   const handleSelectEvent = (event: BookingEvent) => {
@@ -374,104 +416,69 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
     );
   }
 
+  // SINGLE RETURN STATEMENT - Remove the duplicated structure
   return (
-    <div className="container mx-auto px-4 py-8 mt-20">
+    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 mt-16 sm:mt-20">
       <Head>
         <title>Laboratory Booking Calendar</title>
         <meta name="description" content="Book laboratory rooms for your classes and events" />
       </Head>
       
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6 bg-gradient-to-r from-orange-600 to-orange-700">
-          <h2 className="text-3xl font-bold text-white">Laboratory Booking Calendar</h2>
-          <p className="text-blue-100 mt-2">View and book available laboratory time slots</p>
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden"> 
+        <div className="p-3 sm:p-6 bg-gradient-to-r from-orange-600 to-orange-700">
+          <h2 className="text-xl sm:text-3xl font-bold text-white">Laboratory Booking Calendar</h2>
+          <p className="text-orange-100 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
         </div>
         
-        <div className="p-6">
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Left Sidebar */}
-            <div className="lg:col-span-1 space-y-4">
-              <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Available Laboratories</CardTitle>
+        <div className="p-3 sm:p-6">
+          <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
+            {/* Sidebar - pada mobile akan ada di atas */}
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              <Card className="mb-8 lg:mb-0">
+                <CardHeader className="pb-2 sm:pb-3">
+                  <CardTitle className="text-sm sm:text-base">Available Laboratories</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="mt-2">
-                    <div className="text-sm font-medium mb-2">Room Legend:</div>
-                    <div className="space-y-2">
+                <CardContent className="space-y-2 sm:space-y-4">
+                  <div className="mt-1 sm:mt-2">
+                    <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Room Legend:</div>
+                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-1 sm:gap-2">
                       {rooms.map((room) => (
                         <div key={room.id} className="flex items-center">
                           <span 
-                            className="inline-block w-4 h-4 mr-2 rounded-sm" 
+                            className="inline-block w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: roomColors[room.id] || '#3174ad' }}
                           />
-                          <span className="text-sm">{room.name} ({room.capacity} seats)</span>
+                          <span className="text-xs sm:text-sm truncate">
+                            {room.name} 
+                            {room.capacity === 0 ? " (Flex)" : ` (${room.capacity})`}
+                          </span>
                         </div>
                       ))}
                     </div>
                   </div>
-                </CardContent>
-              </Card>
-              
-              {/* <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Quick Book</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  {isSignedIn ? (
-                    <Button 
-                      className="w-full" 
-                      variant="default"
-                      onClick={() => {
-                        const now = new Date();
-                        const oneHourLater = new Date(now);
-                        oneHourLater.setHours(oneHourLater.getHours() + 1);
-                        handleSelectSlot({ start: now, end: oneHourLater });
-                      }}
-                    >
-                      Book a Laboratory
-                    </Button>
-                  ) : (
-                    <Button 
-                      className="w-full" 
-                      variant="outline"
-                      onClick={() => alert("Please sign in to book a laboratory")}
-                    >
-                      Sign in to Book
-                    </Button>
-                  )}
-                </CardContent>
-              </Card> */}
-              
-              {/* <Card>
-                <CardHeader className="pb-3">
-                  <CardTitle>Calendar Info</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2">
-                  <div className="text-sm">
-                    <p>• Click on a time slot to book</p>
-                    <p>• Click on an event to see details</p>
-                    <p>• Navigate views using toolbar</p>
-                    <p className="mt-2 font-medium">Color Legend:</p>
-                    <div className="flex items-center mt-1">
-                      <span className="inline-block w-4 h-4 mr-2 opacity-50" style={{ backgroundColor: '#3174ad' }}></span>
-                      <span>Cancelled booking</span>
+                  
+                  {/* Mobile: Collapse this section, Desktop: Show full */}
+                  <div className="border-t pt-2 sm:pt-3 hidden sm:block">
+                    <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Booking Types:</div>
+                    <div className="space-y-1 text-xs text-gray-600">
+                      <div>• <span className="font-medium text-orange-600">Full</span>: Entire room/space</div>
+                      <div>• <span className="font-medium text-blue-600">Partial</span>: Specific number of seats</div>
+                      <div>• Numbers show participants/capacity</div>
                     </div>
                   </div>
                 </CardContent>
-              </Card> */}
+              </Card>
             </div>
             
-            {/* Calendar */}
-            <div className="lg:col-span-3">
-              <div className="h-[700px]">
+            <div className="lg:col-span-3 order-1 lg:order-2">
+              <div className="h-[1200px]">
                 {isLoadingBookings ? (
                   <div className="flex items-center justify-center h-full">
-                    <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+                    <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-orange-600" />
                   </div>
                 ) : bookingsError ? (
-                  <div className="flex items-center justify-center h-full">
-                    <p className="text-red-500">Error loading bookings: {bookingsError.message}</p>
+                  <div className="flex items-center justify-center h-full p-4">
+                    <p className="text-red-500 text-sm text-center">Error loading bookings: {bookingsError.message}</p>
                   </div>
                 ) : (
                   <Calendar
@@ -498,14 +505,21 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
                       toolbar: CustomToolbar,
                     }}
                     dayLayoutAlgorithm="no-overlap"
-                    popup
-                    showMultiDayTimes
+                    popup={true}
+                    showMultiDayTimes={false}
                     min={new Date(0, 0, 0, 7, 0)}
                     max={new Date(0, 0, 0, 21, 0)}
                     onNavigate={(date, view) => {
                       setCurrentDate(date);
                     }}
-                    date={currentDate} // Add this to control the calendar date
+                    date={currentDate}
+                    // Perbaikan: Gunakan eventLimit, bukan length
+                    showAllEvents={false} // Pastikan false
+                    onShowMore={(events, date) => {
+                      console.log(`Show ${events.length} more events for date:`, date);
+                      // Optional: bisa tambahkan modal untuk show all events
+                    }}
+                    popupOffset={5} // Offset untuk popup positioning
                   />
                 )}
               </div>
@@ -513,157 +527,25 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
           </div>
         </div>
       </div>
-      
-      {/* Booking Dialog */}
-      {/* <Dialog open={isBookingModalOpen} onOpenChange={setIsBookingModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Book a Laboratory</DialogTitle>
-            <DialogDescription>
-              Complete this form to book a laboratory room.
-            </DialogDescription>
-          </DialogHeader>
-          
-          <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-              <FormField
-                control={form.control}
-                name="roomId"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Select Laboratory</FormLabel>
-                    <Select 
-                      onValueChange={field.onChange}
-                      defaultValue={field.value}
-                    >
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a laboratory" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        {rooms.map((room) => (
-                          <SelectItem key={room.id} value={room.id}>
-                            {room.name} ({room.capacity} seats)
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="title"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Event Title</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      A brief title for your booking
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description (Optional)</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormDescription>
-                      Additional details about your booking
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              
-              <div className="grid grid-cols-2 gap-4">
-                <FormField
-                  control={form.control}
-                  name="start"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Start Time</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="datetime-local" 
-                          value={field.value ? format(field.value, "yyyy-MM-dd'T'HH:mm") : ""}
-                          onChange={(e) => {
-                            const date = new Date(e.target.value);
-                            field.onChange(date);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <FormField
-                  control={form.control}
-                  name="end"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>End Time</FormLabel>
-                      <FormControl>
-                        <Input 
-                          type="datetime-local"
-                          value={field.value ? format(field.value, "yyyy-MM-dd'T'HH:mm") : ""}
-                          onChange={(e) => {
-                            const date = new Date(e.target.value);
-                            field.onChange(date);
-                          }}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              
-              <DialogFooter className="pt-4">
-                <Button 
-                  type="button" 
-                  variant="outline" 
-                  onClick={() => setIsBookingModalOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button type="submit">Book Laboratory</Button>
-              </DialogFooter>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog> */}
-      
+
       {/* Event Details Dialog */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[500px] max-w-[95vw] max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Event Details</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Event Details</DialogTitle>
           </DialogHeader>
           
           {selectedEvent && (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div>
-                <h3 className="text-lg font-medium">{selectedEvent.title}</h3>
+                <h3 className="text-base sm:text-lg font-medium">{selectedEvent.title}</h3>
                 <p className="text-sm text-gray-500">
                   {format(selectedEvent.start, "EEEE, MMMM d, yyyy")}
                 </p>
               </div>
               
-              <div className="grid grid-cols-2 gap-4">
+              {/* Mobile: Stack vertically, Desktop: Grid */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                 <div>
                   <p className="text-sm font-medium">Start Time</p>
                   <p className="text-sm text-gray-600">{format(selectedEvent.start, "h:mm a")}</p>
@@ -674,40 +556,75 @@ const EventComponent = ({ event }: { event: BookingEvent }) => (
                 </div>
               </div>
               
-              <div>
-                <p className="text-sm font-medium">Room</p>
-                <p className="text-sm text-gray-600">{selectedEvent.roomId}</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <p className="text-sm font-medium">Room</p>
+                  <p className="text-sm text-gray-600">{selectedEvent.roomId}</p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Room Capacity</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedEvent.roomCapacity === 0 ? "Flexible Space" : `${selectedEvent.roomCapacity} seats`}
+                  </p>
+                </div>
+              </div>
+              
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div>
+                  <p className="text-sm font-medium">Booking Type</p>
+                  <p className={`text-sm font-semibold ${
+                    selectedEvent.bookingType === 'full' ? 'text-orange-600' : 'text-blue-600'
+                  }`}>
+                    {selectedEvent.bookingType === 'full' ? 'Full Room/Space' : 'Partial Room'}
+                  </p>
+                </div>
+                <div>
+                  <p className="text-sm font-medium">Participants</p>
+                  <p className="text-sm text-gray-600">
+                    {selectedEvent.participants} 
+                    {selectedEvent.bookingType === 'partial' && (selectedEvent.roomCapacity ?? 0) > 0 && (
+                      <span className="text-gray-500"> seat(s)</span>
+                    )}
+                    {selectedEvent.bookingType === 'full' && (selectedEvent.roomCapacity ?? 0) > 0 && (
+                      <span className="text-gray-500"> (Full Room)</span>
+                    )}
+                    {(selectedEvent.roomCapacity ?? 0) === 0 && (
+                      <span className="text-gray-500"> (Flexible Space)</span>
+                    )}
+                  </p>
+                </div>
               </div>
               
               <div>
                 <p className="text-sm font-medium">Booked By</p>
-                <p className="text-sm text-gray-600">{selectedEvent.bookedBy}</p>
+                <p className="text-sm text-gray-600 break-words">{selectedEvent.bookedBy}</p>
               </div>
               
               {selectedEvent.description && (
                 <div>
                   <p className="text-sm font-medium">Description</p>
-                  <p className="text-sm text-gray-600">{selectedEvent.description}</p>
+                  <p className="text-sm text-gray-600 break-words">{selectedEvent.description}</p>
                 </div>
               )}
               
               {selectedEvent.status && (
                 <div>
                   <p className="text-sm font-medium">Status</p>
-                  <p className={`text-sm ${
+                  <p className={`text-sm font-semibold ${
                     selectedEvent.status.toLowerCase() === 'cancelled' 
                     ? 'text-red-600' 
-                    : selectedEvent.status.toLowerCase() === 'accepted' 
+                    : selectedEvent.status.toLowerCase() === 'confirmed' 
                       ? 'text-green-600' 
                       : 'text-amber-600'
                   }`}>
-                    {selectedEvent.status}
+                    {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
                   </p>
                 </div>
               )}
               
-              <DialogFooter>
+              <DialogFooter className="pt-3 sm:pt-4">
                 <Button 
+                  className="w-full sm:w-auto hover:bg-gray-100 hover:cursor-pointer"
                   variant="outline"
                   onClick={() => setIsDetailsModalOpen(false)}
                 >

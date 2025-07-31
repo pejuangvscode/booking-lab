@@ -25,11 +25,11 @@ export default function BookingPage() {
   const router = useRouter();
   const { labId } = router.query;
   
+  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL RETURNS
   // Authentication hooks
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const { dialogState, closeDialog, confirm, success, error, alert } = useCustomDialog();
-
 
   // Form state (all hooks must be called unconditionally, before any return)
   const utils = api.useUtils();
@@ -50,6 +50,172 @@ export default function BookingPage() {
   const [checking, setChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Fetch lab details using tRPC query - MUST BE CALLED BEFORE RETURNS
+  const {
+    data: labDetail,
+    isLoading: isLabLoading,
+    error: labError
+  } = api.lab.getById.useQuery(
+    { id: labId as string },
+    { 
+      enabled: !!labId,
+      retry: 1
+    }
+  );
+
+  // Helper function to calculate participants
+  const calculateParticipants = () => {
+    if (!labDetail) return 1;
+    
+    if (labDetail.capacity === 0) {
+      return parseInt(participants) || 1;
+    } else if (bookingType === "full") {
+      return labDetail.capacity || parseInt(participants) || 1;
+    } else {
+      return parseInt(participants) || 1;
+    }
+  };
+
+  // Conflict check query - MUST BE CALLED BEFORE RETURNS
+  // Update conflict check query untuk menghindari unnecessary calls
+  const conflictCheck = api.booking.checkConflicts.useQuery(
+    { 
+      labId: labId as string,
+      bookingDate: bookingDate,
+      startTime: `${startHour}:${startMinute}`,
+      endTime: `${endHour}:${endMinute}`,
+      participants: calculateParticipants(),
+      bookingType: bookingType as "full" | "partial"
+    },
+    { 
+      enabled: false, // Keep this disabled - we'll use manual calls only
+      retry: false,
+      refetchOnWindowFocus: false, // Add this
+      refetchOnMount: false, // Add this
+      staleTime: 30000, // Cache results for 30 seconds
+    }
+  );
+
+  // Booking mutation - MUST BE CALLED BEFORE RETURNS
+  const bookingMutation = api.booking.create.useMutation({
+    onMutate: () => {
+      setIsSubmitting(true);
+    },
+    onSuccess: async () => {
+      setIsSubmitting(false);
+      await success("Booking successful! Redirecting to dashboard...", "Success");
+      await router.push("/dashboard");
+    },
+    onError: async (err) => {
+      setIsSubmitting(false);
+      await error(`Failed to create booking: ${err.message}`, "Booking Error");
+    }
+  });
+
+  // ALL useEffect HOOKS MUST ALSO BE CALLED BEFORE RETURNS
+  // Handle booking type change for zero capacity rooms
+  useEffect(() => {
+    if (labDetail?.capacity === 0) {
+      setBookingType("full");
+      setParticipants("");
+    }
+  }, [labDetail]);
+
+  // Conflict check effect
+  // Conflict check effect - tambahkan validasi waktu di sini juga
+  // Update useEffect untuk conflict check (hapus conflictCheck dari dependencies)
+  useEffect(() => { 
+    const checkAvailabilityDebounced = async () => {
+      if (bookingDate && startHour && startMinute && endHour && endMinute && labDetail) {
+        
+        // TAMBAHKAN VALIDASI WAKTU YANG SUDAH LEWAT
+        const now = new Date();
+        const startTimeValue = `${startHour}:${startMinute}`;
+        const bookingDateTime = new Date(`${bookingDate}T${startTimeValue}:00`);
+        const minimumAdvanceTime = new Date(now.getTime() + (60 * 60 * 1000)); // 1 hour from now
+        
+        // Clear previous time-related errors first
+        setFormErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors.conflict;
+          delete newErrors.startTime;
+          return newErrors;
+        });
+        
+        // Check if booking time is in the past
+        if (bookingDateTime <= now) {
+          setFormErrors(prev => ({
+            ...prev,
+            startTime: "Cannot book for past time. Please select a future time."
+          }));
+          return;
+        }
+        
+        // Check minimum advance booking time
+        if (bookingDateTime < minimumAdvanceTime) {
+          setFormErrors(prev => ({
+            ...prev,
+            startTime: "Booking must be at least 1 hour in advance."
+          }));
+          return;
+        }
+        
+        // If time validation passes, then check for conflicts
+        try {
+          // Use utils.client instead of conflictCheck.refetch to avoid dependency issues
+          const finalParticipants = labDetail?.capacity === 0 
+            ? parseInt(participants) || 1
+            : bookingType === "full" 
+              ? (labDetail?.capacity || parseInt(participants) || 1)
+              : parseInt(participants) || 1;
+
+          const conflictResult = await utils.client.booking.checkConflicts.query({
+            labId: labId as string,
+            bookingDate: bookingDate,
+            startTime: startTimeValue,
+            endTime: `${endHour}:${endMinute}`,
+            participants: finalParticipants,
+            bookingType: bookingType as "full" | "partial"
+          });
+          
+          if (conflictResult?.hasConflicts) {
+            setFormErrors(prev => ({
+              ...prev,
+              conflict: conflictResult.message
+            }));
+          } else {
+            setFormErrors(prev => {
+              const newErrors = { ...prev };
+              delete newErrors.conflict;
+              return newErrors;
+            });
+          }
+        } catch (error) {
+          // Handle error silently or show a non-intrusive message
+          console.error("Availability check failed:", error);
+        }
+      }
+    };
+
+    const timeoutId = setTimeout(checkAvailabilityDebounced, 1000);
+    return () => clearTimeout(timeoutId);
+  }, [
+    bookingDate, 
+    startHour, 
+    startMinute, 
+    endHour, 
+    endMinute, 
+    participants, 
+    bookingType, 
+    labDetail?.capacity, // Use specific property instead of entire object
+    labDetail?.id, // Add lab ID to detect lab changes
+    labId, // Add labId
+    utils.client // This is stable
+    // REMOVED: conflictCheck - this was causing the infinite loop
+  ]);
+
+  // NOW YOU CAN HAVE CONDITIONAL RETURNS AFTER ALL HOOKS ARE CALLED
+  
   // Show loading state while auth is loading
   if (!isLoaded) {
     return (
@@ -59,6 +225,16 @@ export default function BookingPage() {
             <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
           </div>
         </div>
+        <CustomDialog
+          isOpen={dialogState.isOpen}
+          onClose={closeDialog}
+          onConfirm={dialogState.onConfirm}
+          title={dialogState.title}
+          message={dialogState.message}
+          type={dialogState.type}
+          confirmText={dialogState.confirmText}
+          cancelText={dialogState.cancelText}
+        />
       </div>
     );
   }
@@ -94,7 +270,7 @@ export default function BookingPage() {
               <div className="space-y-3">
                 <SignInButton
                   mode="modal"
-                  fallbackRedirectUrl={router.asPath} // Changed from redirectUrl to fallbackRedirectUrl
+                  fallbackRedirectUrl={router.asPath}
                 >
                   <Button className="hover:cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center">
                     Sign In to Continue
@@ -114,77 +290,26 @@ export default function BookingPage() {
             </div>
           </div>
         </div>
+        <CustomDialog
+          isOpen={dialogState.isOpen}
+          onClose={closeDialog}
+          onConfirm={dialogState.onConfirm}
+          title={dialogState.title}
+          message={dialogState.message}
+          type={dialogState.type}
+          confirmText={dialogState.confirmText}
+          cancelText={dialogState.cancelText}
+        />
       </div>
     );
   }
 
-  // Fetch lab details using tRPC query (MOVED BEFORE conflictCheck)
-  const {
-    data: labDetail,
-    isLoading: isLabLoading,
-    error: labError
-  } = api.lab.getById.useQuery(
-    { id: labId as string },
-    { 
-      enabled: !!labId,
-      retry: 1
-    }
-  );
-
-  // Helper function to calculate participants
-  const calculateParticipants = () => {
-    if (!labDetail) return 1;
-    
-    if (labDetail.capacity === 0) {
-      return parseInt(participants) || 1;
-    } else if (bookingType === "full") {
-      return labDetail.capacity || parseInt(participants) || 1;
-    } else {
-      return parseInt(participants) || 1;
-    }
-  };
-
-  // Update the conflict check query (MOVED AFTER labDetail definition)
-  const conflictCheck = api.booking.checkConflicts.useQuery(
-    { 
-      labId: labId as string,
-      bookingDate: bookingDate,
-      startTime: `${startHour}:${startMinute}`,
-      endTime: `${endHour}:${endMinute}`,
-      participants: calculateParticipants(),
-      bookingType: bookingType as "full" | "partial"
-    },
-    { 
-      enabled: false,
-      retry: false
-    }
-  );
-
-  // Define the booking mutation
-  const bookingMutation = api.booking.create.useMutation({
-    onMutate: () => {
-      setIsSubmitting(true);
-    },
-    onSuccess: async () => {
-      setIsSubmitting(false);
-      // Ganti alert dengan custom success dialog
-      await success("Booking successful! Redirecting to dashboard...", "Success");
-      await router.push("/dashboard");
-    },
-    onError: async (err) => {
-      setIsSubmitting(false);
-      // Ganti alert dengan custom error dialog
-      await error(`Failed to create booking: ${err.message}`, "Booking Error");
-    }
-  });
-
-  // Generate hour/minute options
-  const hourOptions = Array.from({ length: 24 }, (_, i) => i.toString().padStart(2, '0'));
+  // Generate hour/minute options - these can be after conditional returns since they're not hooks
+  const hourOptions = Array.from({ length: 13 }, (_, i) => (i + 7).toString().padStart(2, '0'));
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
-  
   const eventTypes = ["Class", "Seminar", "Workshop", "Meeting", "Exam", "Other"];
 
-  // Handle booking type change
+  // Handle booking type change function
   const handleBookingTypeChange = (value: string) => {
     setBookingType(value);
     if (value === "full") {
@@ -199,45 +324,7 @@ export default function BookingPage() {
       setFormErrors(newErrors);
     }
   };
-
-  // Add useEffect to automatically set booking type for zero capacity rooms
-  useEffect(() => {
-    if (labDetail?.capacity === 0) {
-      setBookingType("full");
-      setParticipants("1");
-    }
-  }, [labDetail]);
-
-  // Update the conflict check to be more aggressive
-  useEffect(() => { 
-    const checkAvailabilityDebounced = async () => {
-      if (bookingDate && startHour && startMinute && endHour && endMinute && labDetail) {
-        try {
-          const result = await conflictCheck.refetch();
-          
-          if (result.data?.hasConflicts) {
-            setFormErrors(prev => ({
-              ...prev,
-              conflict: result.data.message
-            }));
-          } else {
-            setFormErrors(prev => {
-              const newErrors = { ...prev };
-              delete newErrors.conflict;
-              return newErrors;
-            });
-          }
-        } catch (error) {
-          // Handle error silently
-        }
-      }
-    };
-
-    const timeoutId = setTimeout(checkAvailabilityDebounced, 1000);
-    return () => clearTimeout(timeoutId);
-  }, [bookingDate, startHour, startMinute, endHour, endMinute, participants, bookingType, labDetail]);
-
-  // Handle form submission with tRPC mutation
+  
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
@@ -252,6 +339,29 @@ export default function BookingPage() {
     if (!requestorName) errors.requestorName = "Requestor name is required";
     if (!requestorNIM) errors.requestorNIM = "Requestor NIM is required";
     if (!faculty) errors.faculty = "Faculty is required";
+
+    // Check time validity
+    const startTimeValue = `${startHour}:${startMinute}`;
+    const endTimeValue = `${endHour}:${endMinute}`;
+    
+    if (startTimeValue >= endTimeValue) {
+      errors.endTime = "End time must be after start time";
+    }
+
+    // TAMBAHKAN VALIDASI WAKTU YANG SUDAH LEWAT
+    if (bookingDate && startHour && startMinute) {
+      const now = new Date();
+      const bookingDateTime = new Date(`${bookingDate}T${startTimeValue}:00`);
+      
+      // Add buffer time (e.g., 1 hour minimum advance booking)
+      const minimumAdvanceTime = new Date(now.getTime() + (60 * 60 * 1000)); // 1 hour from now
+      
+      if (bookingDateTime <= now) {
+        errors.startTime = "Cannot book for past time. Please select a future time.";
+      } else if (bookingDateTime < minimumAdvanceTime) {
+        errors.startTime = "Booking must be at least 1 hour in advance.";
+      }
+    }
 
     // Validate participants based on booking type
     if (labDetail?.capacity === 0) {
@@ -270,17 +380,8 @@ export default function BookingPage() {
       }
     }
 
-    // Check time validity
-    const startTimeValue = `${startHour}:${startMinute}`;
-    const endTimeValue = `${endHour}:${endMinute}`;
-    
-    if (startTimeValue >= endTimeValue) {
-      errors.endTime = "End time must be after start time";
-    }
-
     if (Object.keys(errors).length > 0) {
       setFormErrors(errors);
-      // Tambahkan alert untuk validation errors
       await alert("Please fix the form errors before submitting.", "Form Validation");
       return;
     }
@@ -472,7 +573,7 @@ export default function BookingPage() {
                   <label className="block text-sm font-medium text-gray-700">Start Time</label>
                   <div className="flex space-x-2">
                     <Select value={startHour} onValueChange={setStartHour}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
                         <SelectValue placeholder="Hour" />
                       </SelectTrigger>
                       <SelectContent>
@@ -485,7 +586,7 @@ export default function BookingPage() {
                     </Select>
 
                     <Select value={startMinute} onValueChange={setStartMinute}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
                         <SelectValue placeholder="Minute" />
                       </SelectTrigger>
                       <SelectContent>
@@ -659,9 +760,14 @@ export default function BookingPage() {
                 {formErrors.participants && (
                   <p className="text-red-500 text-xs">{formErrors.participants}</p>
                 )}
-                {labDetail?.capacity === 0 ? (
+                {/* Conditional warning message - only show when field is empty AND it's a flexible space */}
+                {labDetail?.capacity === 0 && !participants ? (
                   <p className="text-xs text-orange-600 font-medium">
                     ⚠️ Required: This flexible space requires you to specify the number of participants
+                  </p>
+                ) : labDetail?.capacity === 0 && participants ? (
+                  <p className="text-xs text-green-600 font-medium">
+                    Participants specified: {participants}
                   </p>
                 ) : labDetail?.capacity && labDetail.capacity > 0 ? (
                   <p className="text-xs text-gray-500">
@@ -812,28 +918,33 @@ export default function BookingPage() {
               </p>
             </div>
 
-{bookingDate && startHour && startMinute && endHour && endMinute && (
-  <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-    <div className="flex items-center space-x-2">
-      {checking ? (
-        <>
-          <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-          <span className="text-sm text-blue-700">Checking availability...</span>
-        </>
-      ) : formErrors.conflict ? (
-        <>
-          <AlertTriangle className="h-4 w-4 text-red-600" />
-          <span className="text-sm text-red-700">Time slot not available</span>
-        </>
-      ) : (
-        <>
-          <div className="h-4 w-4 bg-green-500 rounded-full"></div>
-          <span className="text-sm text-green-700">Time slot available</span>
-        </>
-      )}
-    </div>
-  </div>
-)}
+            {bookingDate && startHour && startMinute && endHour && endMinute && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                <div className="flex items-center space-x-2">
+                  {checking ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
+                      <span className="text-sm text-blue-700">Checking availability...</span>
+                    </>
+                  ) : formErrors.startTime ? (
+                    <>
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm text-red-700">Invalid booking time</span>
+                    </>
+                  ) : formErrors.conflict ? (
+                    <>
+                      <AlertTriangle className="h-4 w-4 text-red-600" />
+                      <span className="text-sm text-red-700">Time slot not available</span>
+                    </>
+                  ) : (
+                    <>
+                      <div className="h-4 w-4 bg-green-500 rounded-full"></div>
+                      <span className="text-sm text-green-700">Time slot available</span>
+                    </>
+                  )}
+                </div>
+              </div>
+            )}
 
             {formErrors.conflict && (
               <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
@@ -864,7 +975,7 @@ export default function BookingPage() {
             <div className="flex justify-center pt-4">
               <Button 
                 type="submit" 
-                className="w-full py-4 sm:py-6 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg"
+                className="w-full py-4 sm:py-6 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg hover:cursor-pointer"
                 disabled={bookingMutation.status === "pending" || checking || isSubmitting}
               >
                 {bookingMutation.status === "pending" || isSubmitting ? (

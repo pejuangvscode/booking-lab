@@ -81,7 +81,7 @@ export function CustomDialog({
           </div>
           <button
             onClick={handleClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors"
+            className="text-gray-400 hover:text-gray-600 hover:cursor-pointer transition-colors"
           >
             <X className="h-5 w-5" />
           </button>
@@ -97,14 +97,14 @@ export function CustomDialog({
           {type === 'confirm' && (
             <button
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
+              className="px-4 py-2 text-sm font-medium hover:cursor-pointer text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors"
             >
               {cancelText}
             </button>
           )}
           <button
             onClick={handleConfirm}
-            className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors ${
+            className={`px-4 py-2 text-sm font-medium text-white rounded-md transition-colors hover:cursor-pointer ${
               type === 'error' 
                 ? 'bg-red-600 hover:bg-red-700' 
                 : type === 'success'

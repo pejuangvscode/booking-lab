@@ -442,7 +442,7 @@ export default function BookingDetailPage() {
                 {canCancel && (
                   <Button 
                     variant="destructive" 
-                    className="w-full"
+                    className="w-full hover:cursor-pointer"
                     onClick={async () => {
                       const confirmed = await confirm(
                         "Are you sure you want to cancel this booking? This action cannot be undone.",
@@ -465,13 +465,13 @@ export default function BookingDetailPage() {
                 )}
                 
                 <Link href="/dashboard">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full hover:cursor-pointer mb-3">
                     Return to Dashboard
                   </Button>
                 </Link>
                 
                 <Link href="/lab-search">
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full hover:cursor-pointer">
                     Book Another Lab
                   </Button>
                 </Link>
