@@ -1,12 +1,17 @@
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
-import { format, parse, addDays } from 'date-fns';
+import { format, parse } from 'date-fns';
+import { enUS } from 'date-fns/locale';
+import { useRouter } from 'next/router';
+import { useEffect, useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
-import { enUS } from 'date-fns/locale';
-import moment from 'moment';
-import {  useUser } from '@clerk/nextjs';
+import { useUser } from '@clerk/nextjs';
+import { zodResolver } from "@hookform/resolvers/zod";
+import { Loader2 } from "lucide-react";
+import Head from 'next/head';
+import { useForm } from "react-hook-form";
+import * as z from "zod";
+import { Button } from "~/components/ui/button";
 import {
   Card,
   CardContent,
@@ -16,37 +21,14 @@ import {
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogFooter,
   DialogHeader,
-  DialogTitle,
+  DialogTitle
 } from "~/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "~/components/ui/select";
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "~/components/ui/form";
-import { Button } from "~/components/ui/button";
-import { Input } from "~/components/ui/input";
-import { Loader2 } from "lucide-react";
 import { api } from "~/utils/api";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { useForm } from "react-hook-form";
-import * as z from "zod";
-import Head from 'next/head';
+import { startOfWeek, getDay } from 'date-fns';
 
-// Date localizer for the calendar
+
 const locales = {
   'en-US': enUS,
 };
@@ -55,8 +37,8 @@ const locales = {
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: () => addDays(new Date(), 0), // Start week on Sunday
-  getDay: (date: Date) => date.getDay(),  // Add the Date type annotation here
+  startOfWeek: (date: Date) => startOfWeek(date, { weekStartsOn: 0 }), // 0 = Sunday
+  getDay, // Import getDay from date-fns directly
   locales,
 });
 
@@ -102,7 +84,11 @@ export default function BookingCalendar() {
   const [isDetailsModalOpen, setIsDetailsModalOpen] = useState(false);
   const [selectedEvent, setSelectedEvent] = useState<BookingEvent | null>(null);
   const [currentDate, setCurrentDate] = useState(new Date());
-
+  const [showMoreEventsModal, setShowMoreEventsModal] = useState(false);
+  const [moreEventsData, setMoreEventsData] = useState<{
+    date: Date;
+    events: BookingEvent[];
+  } | null>(null);
   
   // Form for booking
   const form = useForm({
@@ -134,6 +120,57 @@ export default function BookingCalendar() {
     enabled: isMounted,
     refetchOnWindowFocus: false
   });
+
+  const limitEventsPerDay = (events: BookingEvent[], limit: number = 2) => {
+    const eventsByDate: Record<string, BookingEvent[]> = {};
+    
+    // Group events by date (yyyy-mm-dd format)
+    events.forEach(event => {
+      const dateKey = format(event.start, 'yyyy-MM-dd');
+      if (!eventsByDate[dateKey]) {
+        eventsByDate[dateKey] = [];
+      }
+      eventsByDate[dateKey].push(event);
+    });
+    
+    // Create limited events with "+X more" indicators
+    const limitedEvents: BookingEvent[] = [];
+    
+    Object.entries(eventsByDate).forEach(([dateKey, dayEvents]) => {
+      // Sort events by start time
+      const sortedEvents = dayEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
+      
+      // Take only the first 'limit' events
+      const visibleEvents = sortedEvents.slice(0, limit);
+      limitedEvents.push(...visibleEvents);
+      
+      // If there are more events, create a "+X more" event
+      if (sortedEvents.length > limit) {
+        const overflowCount = sortedEvents.length - limit;
+        const lastVisibleEvent = visibleEvents[visibleEvents.length - 1];
+        
+        if (lastVisibleEvent) {
+          // Create a special "+X more" event
+          const moreEvent: BookingEvent = {
+            id: `more-${dateKey}`,
+            title: `+${overflowCount} more`,
+            start: new Date(lastVisibleEvent.start.getTime() + 1000), // Slightly after last event
+            end: new Date(lastVisibleEvent.end.getTime() + 1000),
+            roomId: 'MORE',
+            bookedBy: '',
+            description: `${overflowCount} additional events on this date`,
+            status: 'overflow',
+            bookingType: 'partial',
+            participants: overflowCount,
+            roomCapacity: 0,
+          };
+          limitedEvents.push(moreEvent);
+        }
+      }
+    });
+    
+    return limitedEvents;
+  };
 
   // Transform API bookings to calendar events
   const [events, setEvents] = useState<BookingEvent[]>([]);
@@ -215,6 +252,20 @@ export default function BookingCalendar() {
 
   // Event style getter to color events by room
   const eventStyleGetter = (event: BookingEvent) => {
+    // Handle "+X more" events dengan style khusus
+    if (event.status === 'overflow') {
+      return {
+        style: {
+          backgroundColor: '#6b7280', // Gray color
+          color: 'white',
+          borderRadius: '4px',
+          border: '1px solid #9ca3af',
+          fontStyle: 'italic',
+          textAlign: 'center' as const,
+        }
+      };
+    }
+
     const baseStyle = {
       backgroundColor: (roomColors as Record<string, string>)[event.roomId] || '#3174ad',
       color: 'white',
@@ -291,44 +342,60 @@ export default function BookingCalendar() {
     );
   };
 
-  const EventComponent = ({ event }: { event: BookingEvent }) => (
-    <div 
-      className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer" 
-      onClick={() => handleSelectEvent(event)}
-      style={{ fontSize: '10px' }}
-    >
-      <div className="font-bold leading-tight">
-        <span className="hidden sm:inline">
-          {format(event.start, 'H:mm')} - {format(event.end, 'H:mm')} 
-        </span>
-        <span className="sm:hidden">
-          {format(event.start, 'H:mm')}
-        </span>
-        <div className="truncate">{event.title}</div>
-      </div>
-      <div className="truncate opacity-90">
-        {event.roomId}
-        <span className="hidden sm:inline">, {event.bookedBy}</span>
-      </div>
-      {/* Mobile: Show simplified info */}
-      <div className="opacity-90">
-        <span className="sm:hidden">
-          {event.bookingType === 'full' ? 'Full' : `${event.participants}p`}
-        </span>
-        <span className="hidden sm:inline">
-          {event.bookingType === 'full' ? (
-            event.roomCapacity === 0 ? (
-              `Full Space (${event.participants} people)`
+  const EventComponent = ({ event }: { event: BookingEvent }) => {
+    if (event.status === 'overflow') {
+      return (
+        <div 
+          className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer bg-gray-500 rounded border border-gray-400"
+          style={{ fontSize: '10px' }}
+        >
+          <div className="font-bold text-center leading-tight">
+            {event.title}
+          </div>
+          <div className="text-center opacity-90 text-xs">
+            Click to see all
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div 
+        className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer" 
+        style={{ fontSize: '10px' }}
+      >
+        <div className="font-bold leading-tight">
+          <span className="hidden sm:inline">
+            {format(event.start, 'H:mm')} - {format(event.end, 'H:mm')} 
+          </span>
+          <span className="sm:hidden">
+            {format(event.start, 'H:mm')}
+          </span>
+          <div className="truncate">{event.title}</div>
+        </div>
+        <div className="truncate opacity-90">
+          {event.roomId}
+          <span className="hidden sm:inline">, {event.bookedBy}</span>
+        </div>
+        <div className="opacity-90">
+          <span className="sm:hidden">
+            {event.bookingType === 'full' ? 'Full' : `${event.participants}p`}
+          </span>
+          <span className="hidden sm:inline">
+            {event.bookingType === 'full' ? (
+              event.roomCapacity === 0 ? (
+                `Full Space (${event.participants} people)`
+              ) : (
+                `Full Room (${event.roomCapacity} seats)`
+              )
             ) : (
-              `Full Room (${event.roomCapacity} seats)`
-            )
-          ) : (
-            `Partial (${event.participants}/${event.roomCapacity} seats)`
-          )}
-        </span>
+              `Partial (${event.participants}/${event.roomCapacity} seats)`
+            )}
+          </span>
+        </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   // Handle event selection
   const handleSelectEvent = (event: BookingEvent) => {
@@ -471,7 +538,7 @@ export default function BookingCalendar() {
             </div>
             
             <div className="lg:col-span-3 order-1 lg:order-2">
-              <div className="h-[1200px]">
+              <div className="h-[950px]">
                 {isLoadingBookings ? (
                   <div className="flex items-center justify-center h-full">
                     <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-orange-600" />
@@ -483,7 +550,7 @@ export default function BookingCalendar() {
                 ) : (
                   <Calendar
                     localizer={localizer}
-                    events={events}
+                    events={limitEventsPerDay(events, 1)}
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: "100%" }}
@@ -498,14 +565,34 @@ export default function BookingCalendar() {
                     timeslots={1}
                     selectable
                     onSelectSlot={handleSelectSlot}
-                    onSelectEvent={handleSelectEvent}
+                    onSelectEvent={(event) => {
+                      console.log('Event selected:', event.title, 'Status:', event.status);
+                      
+                      // Handle "+X more" event clicks
+                      if (event.status === 'overflow') {
+                        const dateKey = event.id.replace('more-', '');                        
+
+                        const allEventsForDate = events.filter(e => {
+                          const eventDateKey = format(e.start, 'yyyy-MM-dd');
+                          return eventDateKey === dateKey;
+                        });
+
+                        setMoreEventsData({
+                          date: new Date(dateKey + 'T12:00:00'),
+                          events: allEventsForDate
+                        });
+                        setShowMoreEventsModal(true);
+                      } else {
+                        handleSelectEvent(event);
+                      }
+                    }}
                     eventPropGetter={eventStyleGetter}
                     components={{
                       event: EventComponent,
                       toolbar: CustomToolbar,
                     }}
                     dayLayoutAlgorithm="no-overlap"
-                    popup={true}
+                    popup={false}
                     showMultiDayTimes={false}
                     min={new Date(0, 0, 0, 7, 0)}
                     max={new Date(0, 0, 0, 21, 0)}
@@ -513,13 +600,8 @@ export default function BookingCalendar() {
                       setCurrentDate(date);
                     }}
                     date={currentDate}
-                    // Perbaikan: Gunakan eventLimit, bukan length
-                    showAllEvents={false} // Pastikan false
-                    onShowMore={(events, date) => {
-                      console.log(`Show ${events.length} more events for date:`, date);
-                      // Optional: bisa tambahkan modal untuk show all events
-                    }}
-                    popupOffset={5} // Offset untuk popup positioning
+                    // Tambahkan konfigurasi untuk memastikan minggu dimulai dari Minggu
+                    culture="en-US" // Menggunakan kultur US yang memulai minggu dari Minggu
                   />
                 )}
               </div>
@@ -528,111 +610,152 @@ export default function BookingCalendar() {
         </div>
       </div>
 
-      {/* Event Details Dialog */}
-      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[500px] max-w-[95vw] max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-lg sm:text-xl">Event Details</DialogTitle>
+      <Dialog open={showMoreEventsModal} onOpenChange={setShowMoreEventsModal}>
+        <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b">
+            <DialogTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
+              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+              Events on {moreEventsData?.date && format(moreEventsData.date, "EEEE, MMMM d, yyyy")}
+            </DialogTitle>
+            <p className="text-sm text-gray-500 mt-1">
+              {moreEventsData?.events.length} event{moreEventsData?.events.length !== 1 ? 's' : ''} scheduled
+            </p>
           </DialogHeader>
           
-          {selectedEvent && (
-            <div className="space-y-3 sm:space-y-4">
-              <div>
-                <h3 className="text-base sm:text-lg font-medium">{selectedEvent.title}</h3>
-                <p className="text-sm text-gray-500">
-                  {format(selectedEvent.start, "EEEE, MMMM d, yyyy")}
-                </p>
+          {moreEventsData && (
+            <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+              <div className="space-y-3 py-4">
+                {moreEventsData.events.map((event, index) => (
+                  <Card 
+                    key={event.id} 
+                    className="group relative overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      
+                      
+                      setTimeout(() => {
+                        setSelectedEvent(event);
+                        setIsDetailsModalOpen(true);
+                      }, 100);
+                    }}
+                  >
+                    {/* Colored left border indicator */}
+                    <div 
+                      className="absolute left-0 top-0 bottom-0 w-1"
+                      style={{ backgroundColor: roomColors[event.roomId] || '#3174ad' }}
+                    />
+                    
+                    <div className="p-4 pl-6">
+                      <div className="flex items-start justify-between">
+                        <div className="flex-1 min-w-0">
+                          {/* Event title and time */}
+                          <div className="flex items-center gap-3 mb-2">
+                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
+                              {event.title}
+                            </h4>
+                            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md whitespace-nowrap">
+                              {format(event.start, 'HH:mm')} - {format(event.end, 'HH:mm')}
+                            </span>
+                          </div>
+                          
+                          {/* Room and booked by info */}
+                          <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <span 
+                                className="w-3 h-3 rounded-sm flex-shrink-0" 
+                                style={{ backgroundColor: roomColors[event.roomId] || '#3174ad' }}
+                              />
+                              <span className="font-medium">{event.roomId}</span>
+                            </div>
+                            <div className="flex items-center gap-1 truncate">
+                              <span className="text-gray-400">•</span>
+                              <span className="truncate">{event.bookedBy}</span>
+                            </div>
+                          </div>
+                          
+                          {/* Description */}
+                          {event.description && (
+                            <p className="text-sm text-gray-500 mb-3 line-clamp-2">
+                              {event.description}
+                            </p>
+                          )}
+                          
+                          {/* Booking type and status badges */}
+                          <div className="flex items-center gap-2 flex-wrap">
+                            {/* Booking type badge */}
+                            {event.bookingType === 'full' ? (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-1.5"></div>
+                                Full {event.roomCapacity === 0 ? 'Space' : 'Room'}
+                                <span className="ml-1 text-orange-600">• {event.participants} people</span>
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5"></div>
+                                Partial • {event.participants}/{event.roomCapacity} seats
+                              </span>
+                            )}
+                            
+                            {/* Status badge */}
+                            {event.status && (
+                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
+                                event.status.toLowerCase() === 'cancelled' 
+                                ? 'bg-red-100 text-red-800' 
+                                : event.status.toLowerCase() === 'confirmed' 
+                                  ? 'bg-green-100 text-green-800' 
+                                  : 'bg-yellow-100 text-yellow-800'
+                              }`}>
+                                <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
+                                  event.status.toLowerCase() === 'cancelled' 
+                                  ? 'bg-red-400' 
+                                  : event.status.toLowerCase() === 'confirmed' 
+                                    ? 'bg-green-400' 
+                                    : 'bg-yellow-400'
+                                }`}></div>
+                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        
+                        {/* Click indicator */}
+                        <div className="flex-shrink-0 ml-4">
+                          <div className="text-gray-400 group-hover:text-blue-500 transition-colors">
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              {/* <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /> */}
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    
+                    {/* Hover overlay */}
+                    <div className="absolute inset-0 opacity-0 transition-opacity duration-200 pointer-events-none" />
+                  </Card>
+                ))}
               </div>
-              
-              {/* Mobile: Stack vertically, Desktop: Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <p className="text-sm font-medium">Start Time</p>
-                  <p className="text-sm text-gray-600">{format(selectedEvent.start, "h:mm a")}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">End Time</p>
-                  <p className="text-sm text-gray-600">{format(selectedEvent.end, "h:mm a")}</p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <p className="text-sm font-medium">Room</p>
-                  <p className="text-sm text-gray-600">{selectedEvent.roomId}</p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Room Capacity</p>
-                  <p className="text-sm text-gray-600">
-                    {selectedEvent.roomCapacity === 0 ? "Flexible Space" : `${selectedEvent.roomCapacity} seats`}
-                  </p>
-                </div>
-              </div>
-              
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
-                <div>
-                  <p className="text-sm font-medium">Booking Type</p>
-                  <p className={`text-sm font-semibold ${
-                    selectedEvent.bookingType === 'full' ? 'text-orange-600' : 'text-blue-600'
-                  }`}>
-                    {selectedEvent.bookingType === 'full' ? 'Full Room/Space' : 'Partial Room'}
-                  </p>
-                </div>
-                <div>
-                  <p className="text-sm font-medium">Participants</p>
-                  <p className="text-sm text-gray-600">
-                    {selectedEvent.participants} 
-                    {selectedEvent.bookingType === 'partial' && (selectedEvent.roomCapacity ?? 0) > 0 && (
-                      <span className="text-gray-500"> seat(s)</span>
-                    )}
-                    {selectedEvent.bookingType === 'full' && (selectedEvent.roomCapacity ?? 0) > 0 && (
-                      <span className="text-gray-500"> (Full Room)</span>
-                    )}
-                    {(selectedEvent.roomCapacity ?? 0) === 0 && (
-                      <span className="text-gray-500"> (Flexible Space)</span>
-                    )}
-                  </p>
-                </div>
-              </div>
-              
-              <div>
-                <p className="text-sm font-medium">Booked By</p>
-                <p className="text-sm text-gray-600 break-words">{selectedEvent.bookedBy}</p>
-              </div>
-              
-              {selectedEvent.description && (
-                <div>
-                  <p className="text-sm font-medium">Description</p>
-                  <p className="text-sm text-gray-600 break-words">{selectedEvent.description}</p>
-                </div>
-              )}
-              
-              {selectedEvent.status && (
-                <div>
-                  <p className="text-sm font-medium">Status</p>
-                  <p className={`text-sm font-semibold ${
-                    selectedEvent.status.toLowerCase() === 'cancelled' 
-                    ? 'text-red-600' 
-                    : selectedEvent.status.toLowerCase() === 'confirmed' 
-                      ? 'text-green-600' 
-                      : 'text-amber-600'
-                  }`}>
-                    {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
-                  </p>
-                </div>
-              )}
-              
-              <DialogFooter className="pt-3 sm:pt-4">
-                <Button 
-                  className="w-full sm:w-auto hover:bg-gray-100 hover:cursor-pointer"
-                  variant="outline"
-                  onClick={() => setIsDetailsModalOpen(false)}
-                >
-                  Close
-                </Button>
-              </DialogFooter>
             </div>
           )}
+          
+          {/* Footer with summary and close button */}
+          <DialogFooter className="flex-shrink-0 pt-4 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+            <div className="flex items-center justify-between w-full">
+              <div className="text-sm text-gray-500">
+
+              </div>
+              <Button 
+                variant="outline"
+                onClick={() => setShowMoreEventsModal(false)}
+                className="hover:bg-gray-100 transition-colors hover:cursor-pointer"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+                Close
+              </Button>
+            </div>
+          </DialogFooter>
         </DialogContent>
       </Dialog>
     </div>

@@ -115,7 +115,6 @@ export default function Dashboard() {
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
       success("Booking cancelled successfully!");
-      // Fix: Use the correct function names
       void refetchCurrentBookings();
       void refetchCompletedBookings();
     },
