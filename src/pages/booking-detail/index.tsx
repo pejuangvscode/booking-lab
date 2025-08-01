@@ -312,15 +312,6 @@ export default function BookingDetailPage() {
                     <span className="text-sm text-gray-600">Faculty:</span>
                     <span className="font-medium">{booking.faculty || 'Not specified'}</span>
                   </div>
-
-                  {/* Add Equipment if available */}
-                  {booking.equipment && (
-                    <div className="flex items-center gap-2 sm:col-span-2">
-                      <Info className="h-4 w-4 text-gray-500" />
-                      <span className="text-sm text-gray-600">Equipment:</span>
-                      <span className="font-medium">{booking.equipment}</span>
-                    </div>
-                  )}
                 </div>
               </CardContent>
             </Card>

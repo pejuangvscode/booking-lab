@@ -121,11 +121,17 @@ export default function BookingCalendar() {
     refetchOnWindowFocus: false
   });
 
+  // Update the limitEventsPerDay function to sort by start time and filter cancelled events
   const limitEventsPerDay = (events: BookingEvent[], limit: number = 2) => {
+    // First, filter out cancelled events
+    const activeEvents = events.filter(event => 
+      event.status?.toLowerCase() !== 'cancelled'
+    );
+
     const eventsByDate: Record<string, BookingEvent[]> = {};
     
-    // Group events by date (yyyy-mm-dd format)
-    events.forEach(event => {
+    // Group active events by date (yyyy-mm-dd format)
+    activeEvents.forEach(event => {
       const dateKey = format(event.start, 'yyyy-MM-dd');
       if (!eventsByDate[dateKey]) {
         eventsByDate[dateKey] = [];
@@ -137,10 +143,14 @@ export default function BookingCalendar() {
     const limitedEvents: BookingEvent[] = [];
     
     Object.entries(eventsByDate).forEach(([dateKey, dayEvents]) => {
-      // Sort events by start time
-      const sortedEvents = dayEvents.sort((a, b) => a.start.getTime() - b.start.getTime());
+      // Sort events by start time (ascending order - earliest first)
+      const sortedEvents = dayEvents.sort((a, b) => {
+        const timeA = a.start.getTime();
+        const timeB = b.start.getTime();
+        return timeA - timeB;
+      });
       
-      // Take only the first 'limit' events
+      // Take only the first 'limit' events (earliest events)
       const visibleEvents = sortedEvents.slice(0, limit);
       limitedEvents.push(...visibleEvents);
       
@@ -150,12 +160,12 @@ export default function BookingCalendar() {
         const lastVisibleEvent = visibleEvents[visibleEvents.length - 1];
         
         if (lastVisibleEvent) {
-          // Create a special "+X more" event
+          // Create a special "+X more" event positioned after the last visible event
           const moreEvent: BookingEvent = {
             id: `more-${dateKey}`,
             title: `+${overflowCount} more`,
-            start: new Date(lastVisibleEvent.start.getTime() + 1000), // Slightly after last event
-            end: new Date(lastVisibleEvent.end.getTime() + 1000),
+            start: new Date(lastVisibleEvent.end.getTime()), // Start right after last visible event
+            end: new Date(lastVisibleEvent.end.getTime() + 30 * 60 * 1000), // 30 minutes duration
             roomId: 'MORE',
             bookedBy: '',
             description: `${overflowCount} additional events on this date`,
@@ -191,56 +201,62 @@ export default function BookingCalendar() {
   // Update your useEffect for transforming events
   useEffect(() => {
     if (bookingsData && rooms.length > 0) {      
-      const transformedEvents = bookingsData.map(booking => {
-        let startDate, endDate;
-        
-        try {
-          const bookingDateStr = typeof booking.bookingDate === 'object' 
-            ? (booking.bookingDate as Date).toISOString().split('T')[0]
-            : new Date(String(booking.bookingDate)).toISOString().split('T')[0];
+      const transformedEvents = bookingsData
+        .filter(booking => 
+          // Filter out cancelled bookings at the source
+          booking.status?.toLowerCase() !== 'cancelled'
+        )
+        .map(booking => {
+          let startDate, endDate;
           
-          startDate = new Date(`${bookingDateStr}T${booking.startTime}`);
-          endDate = new Date(`${bookingDateStr}T${booking.endTime}`);
-          
-          if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-            console.error("Invalid date detected:", { booking, startDate, endDate });
+          try {
+            const bookingDateStr = typeof booking.bookingDate === 'object' 
+              ? (booking.bookingDate as Date).toISOString().split('T')[0]
+              : new Date(String(booking.bookingDate)).toISOString().split('T')[0];
+            
+            startDate = new Date(`${bookingDateStr}T${booking.startTime}`);
+            endDate = new Date(`${bookingDateStr}T${booking.endTime}`);
+            
+            if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+              console.error("Invalid date detected:", { booking, startDate, endDate });
+              return null;
+            }
+            
+          } catch (error) {
             return null;
           }
           
-        } catch (error) {
-          return null;
-        }
-        
-        const matchedRoom = rooms.find(room => 
-          room.id === booking.roomId || // Coba dengan roomId
-          room.id === booking.room?.facilityId || // Gunakan facilityId, bukan id
-          room.name.includes(booking.room?.facilityId || '') // Atau dengan facilityId
-        );
+          const matchedRoom = rooms.find(room => 
+            room.id === booking.roomId || 
+            room.id === booking.room?.facilityId || 
+            room.name.includes(booking.room?.facilityId || '')
+          );
 
-        const roomCapacity = matchedRoom?.capacity || 0;
+          const roomCapacity = matchedRoom?.capacity || 0;
 
-        // Determine booking type based on participants vs room capacity
-        let bookingType: 'full' | 'partial' = 'partial';
-        if (roomCapacity === 0) {
-          bookingType = 'full'; // Flexible space rooms
-        } else if (booking.participants >= roomCapacity) {
-          bookingType = 'full';
-        }
-        
-        return {
-          id: String(booking.id),
-          title: booking.eventName || "Unnamed Event",
-          start: startDate,
-          end: endDate,
-          roomId: booking.room?.facilityId || matchedRoom?.name || "Unknown",
-          bookedBy: booking.requesterName || (booking.user ? `User ID: ${booking.user.id.substring(0, 6)}...` : "Unknown"),
-          description: booking.eventType || "No description",
-          status: booking.status || "pending",
-          bookingType: bookingType,
-          participants: booking.participants || 0,
-          roomCapacity: roomCapacity, // Gunakan roomCapacity yang sudah di-match
-        };
-      }).filter(Boolean);
+          // Determine booking type based on participants vs room capacity
+          let bookingType: 'full' | 'partial' = 'partial';
+          if (roomCapacity === 0) {
+            bookingType = 'full'; // Flexible space rooms
+          } else if (booking.participants >= roomCapacity) {
+            bookingType = 'full';
+          }
+          
+          return {
+            id: String(booking.id),
+            title: booking.eventName || "Unnamed Event",
+            start: startDate,
+            end: endDate,
+            roomId: booking.room?.facilityId || matchedRoom?.name || "Unknown",
+            bookedBy: booking.requesterName || (booking.user ? `User ID: ${booking.user.id.substring(0, 6)}...` : "Unknown"),
+            description: booking.eventType || "No description",
+            status: booking.status || "pending",
+            bookingType: bookingType,
+            participants: booking.participants || 0,
+            roomCapacity: roomCapacity,
+          };
+        })
+        .filter(Boolean);
       
       setEvents(transformedEvents as BookingEvent[]);
     }
@@ -273,18 +289,22 @@ export default function BookingCalendar() {
       border: 'none',
     };
 
-    // Apply opacity to cancelled events
-    if (event.status?.toLowerCase() === 'cancelled') {
-      return {
-        style: {
-          ...baseStyle,
-          opacity: 0.5,
-          textDecoration: 'line-through',
-        }
-      };
-    }
-
     return { style: baseStyle };
+  };
+
+  const handleMoreEventsClick = (dateKey: string) => {
+    const allEventsForDate = events
+      .filter(e => {
+        const eventDateKey = format(e.start, 'yyyy-MM-dd');
+        return eventDateKey === dateKey;
+      })
+      .sort((a, b) => a.start.getTime() - b.start.getTime()); // Sort by start time
+
+    setMoreEventsData({
+      date: new Date(dateKey + 'T12:00:00'),
+      events: allEventsForDate
+    });
+    setShowMoreEventsModal(true);
   };
 
   const CustomToolbar = ({ date, onNavigate, label }: any) => {
@@ -397,6 +417,16 @@ export default function BookingCalendar() {
     );
   };
 
+  const safeFormat = (date: Date, formatStr: string) => {
+    try {
+      if (!date || isNaN(date.getTime())) return 'Invalid';
+      return format(date, formatStr);
+    } catch (error) {
+      console.error('Error formatting date:', error);
+      return 'Invalid';
+    }
+  };
+
   // Handle event selection
   const handleSelectEvent = (event: BookingEvent) => {
     setSelectedEvent(event);
@@ -416,64 +446,6 @@ export default function BookingCalendar() {
     setIsBookingModalOpen(true);
   };
 
-  // Handle form submission
-  // Fix the onSubmit function
-  const onSubmit = async (data: z.infer<typeof bookingFormSchema>) => {
-    // Make sure dates are valid
-    if (!data.start || !data.end || isNaN(data.start.getTime()) || isNaN(data.end.getTime())) {
-      alert("Please select valid dates and times");
-      return;
-    }
-    
-    // Format dates properly
-    const formattedDate = format(data.start, 'yyyy-MM-dd');
-    const startTime = format(data.start, 'HH:mm:ss');
-    const endTime = format(data.end, 'HH:mm:ss');
-    
-    try {
-      // Check for conflicts first
-      const result = await checkConflictsQuery.refetch();
-      
-      if (result.data?.hasConflicts) {
-        alert("This room is already booked for the selected time. Please choose a different time or room.");
-        return;
-      }
-      
-      // Create booking data
-      const bookingData = {
-        labId: data.roomId,
-        bookingDate: formattedDate,
-        startTime: startTime,
-        endTime: endTime,
-        participants: 1,
-        eventName: data.title,
-        eventType: data.description || 'Not specified',
-        phone: '123456789',
-        faculty: 'Faculty of Information & Technology',
-        userData: {
-          name: user?.fullName || 'Current User',
-          nim: '12345678'
-        }
-      };
-      
-      // Submit booking using the create mutation
-      const createBookingMutation = api.booking.create.useMutation({
-        onSuccess: () => {
-          setIsBookingModalOpen(false);
-          form.reset();
-          void refetchBookings();
-        },
-        onError: (error) => {
-          alert(`Failed to create booking: ${error.message}`);
-        }
-      });
-      
-      createBookingMutation.mutate(bookingData);
-    } catch (error) {
-      alert(`Failed to check for conflicts: ${error instanceof Error ? error.message : 'Unknown error'}`);
-    }
-  };
-
   // Only render content client-side to avoid hydration mismatch
   if (!isMounted || !isLoaded) {
     return (
@@ -483,7 +455,6 @@ export default function BookingCalendar() {
     );
   }
 
-  // SINGLE RETURN STATEMENT - Remove the duplicated structure
   return (
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 mt-16 sm:mt-20">
       <Head>
@@ -499,7 +470,7 @@ export default function BookingCalendar() {
         
         <div className="p-3 sm:p-6">
           <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
-            {/* Sidebar - pada mobile akan ada di atas */}
+            {/* Sidebar */}
             <div className="lg:col-span-1 order-2 lg:order-1">
               <Card className="mb-8 lg:mb-0">
                 <CardHeader className="pb-2 sm:pb-3">
@@ -524,13 +495,13 @@ export default function BookingCalendar() {
                     </div>
                   </div>
                   
-                  {/* Mobile: Collapse this section, Desktop: Show full */}
                   <div className="border-t pt-2 sm:pt-3 hidden sm:block">
                     <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Booking Types:</div>
                     <div className="space-y-1 text-xs text-gray-600">
                       <div>• <span className="font-medium text-orange-600">Full</span>: Entire room/space</div>
                       <div>• <span className="font-medium text-blue-600">Partial</span>: Specific number of seats</div>
                       <div>• Numbers show participants/capacity</div>
+                      <div>• <span className="font-medium text-gray-500">Cancelled events are hidden</span></div>
                     </div>
                   </div>
                 </CardContent>
@@ -550,7 +521,7 @@ export default function BookingCalendar() {
                 ) : (
                   <Calendar
                     localizer={localizer}
-                    events={limitEventsPerDay(events, 1)}
+                    events={limitEventsPerDay(events, 1)} // Use updated function
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: "100%" }}
@@ -565,23 +536,10 @@ export default function BookingCalendar() {
                     timeslots={1}
                     selectable
                     onSelectSlot={handleSelectSlot}
-                    onSelectEvent={(event) => {
-                      console.log('Event selected:', event.title, 'Status:', event.status);
-                      
-                      // Handle "+X more" event clicks
+                    onSelectEvent={(event) => {                      
                       if (event.status === 'overflow') {
-                        const dateKey = event.id.replace('more-', '');                        
-
-                        const allEventsForDate = events.filter(e => {
-                          const eventDateKey = format(e.start, 'yyyy-MM-dd');
-                          return eventDateKey === dateKey;
-                        });
-
-                        setMoreEventsData({
-                          date: new Date(dateKey + 'T12:00:00'),
-                          events: allEventsForDate
-                        });
-                        setShowMoreEventsModal(true);
+                        const dateKey = event.id.replace('more-', '');
+                        handleMoreEventsClick(dateKey);
                       } else {
                         handleSelectEvent(event);
                       }
@@ -600,8 +558,7 @@ export default function BookingCalendar() {
                       setCurrentDate(date);
                     }}
                     date={currentDate}
-                    // Tambahkan konfigurasi untuk memastikan minggu dimulai dari Minggu
-                    culture="en-US" // Menggunakan kultur US yang memulai minggu dari Minggu
+                    culture="en-US"
                   />
                 )}
               </div>
@@ -609,6 +566,190 @@ export default function BookingCalendar() {
           </div>
         </div>
       </div>
+
+      {/* "Show More Events" Modal - events are now sorted by start time */}
+      <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
+        <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b">
+            <DialogTitle className="text-xl font-semibold text-gray-900 flex items-center gap-3">
+              <div 
+                className="w-4 h-4 rounded-sm flex-shrink-0" 
+                style={{ backgroundColor: selectedEvent ? roomColors[selectedEvent.roomId] || '#3174ad' : '#3174ad' }}
+              />
+              {selectedEvent?.title || 'Event Details'}
+            </DialogTitle>
+            <p className="text-sm text-gray-500 mt-1">
+              Event information and booking details
+            </p>
+          </DialogHeader>
+          
+          {selectedEvent && (
+            <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+              <div className="space-y-6 py-4">
+                {/* Event Header Info */}
+                <div className="bg-gray-50 rounded-lg p-4">
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="text-lg font-semibold text-gray-900">
+                      {selectedEvent.title}
+                    </h3>
+                    {selectedEvent.status && selectedEvent.status !== 'overflow' && (
+                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+                        selectedEvent.status.toLowerCase() === 'confirmed' || selectedEvent.status.toLowerCase() === 'accepted' || selectedEvent.status.toLowerCase() === 'approved'
+                          ? 'bg-green-100 text-green-800' 
+                          : selectedEvent.status.toLowerCase() === 'pending'
+                          ? 'bg-yellow-100 text-yellow-800'
+                          : selectedEvent.status.toLowerCase() === 'completed'
+                          ? 'bg-blue-100 text-blue-800'
+                          : 'bg-gray-100 text-gray-800'
+                      }`}>
+                        <div className={`w-2 h-2 rounded-full mr-2 ${
+                          selectedEvent.status.toLowerCase() === 'confirmed' || selectedEvent.status.toLowerCase() === 'accepted' || selectedEvent.status.toLowerCase() === 'approved'
+                            ? 'bg-green-400' 
+                            : selectedEvent.status.toLowerCase() === 'pending'
+                            ? 'bg-yellow-400'
+                            : selectedEvent.status.toLowerCase() === 'completed'
+                            ? 'bg-blue-400'
+                            : 'bg-gray-400'
+                        }`}></div>
+                        {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
+                      </span>
+                    )}
+                  </div>
+                  
+                  {selectedEvent.description && (
+                    <p className="text-gray-700 text-sm mb-3">
+                      {selectedEvent.description}
+                    </p>
+                  )}
+                </div>
+
+                {/* Time & Date Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white border rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-blue-100 rounded-lg">
+                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Date</h4>
+                        <p className="text-sm text-gray-600">
+                          {safeFormat(selectedEvent.start, 'EEEE, MMMM d, yyyy')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-green-100 rounded-lg">
+                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Time</h4>
+                        <p className="text-sm text-gray-600">
+                          {safeFormat(selectedEvent.start, 'HH:mm')} - {safeFormat(selectedEvent.end, 'HH:mm')}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Location & Booking Info */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div className="bg-white border rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-purple-100 rounded-lg">
+                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Laboratory</h4>
+                        <p className="text-sm text-gray-600">{selectedEvent.roomId}</p>
+                        <p className="text-xs text-gray-500">
+                          {rooms.find(r => r.id === selectedEvent.roomId)?.name || 'Room details not found'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="bg-white border rounded-lg p-4">
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="p-2 bg-orange-100 rounded-lg">
+                        <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
+                        </svg>
+                      </div>
+                      <div>
+                        <h4 className="font-medium text-gray-900">Booking Type</h4>
+                        <div className="mt-1">
+                          {selectedEvent.bookingType === 'full' ? (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-1.5"></div>
+                              Full {selectedEvent.roomCapacity === 0 ? 'Space' : 'Room'}
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5"></div>
+                              Partial Booking
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {selectedEvent.participants} participant{selectedEvent.participants !== 1 ? 's' : ''}
+                          {selectedEvent.roomCapacity && selectedEvent.roomCapacity > 0 && (
+                            ` of ${selectedEvent.roomCapacity} capacity`
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Booked By Info */}
+                <div className="bg-white border rounded-lg p-4">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-gray-100 rounded-lg">
+                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div>
+                      <h4 className="font-medium text-gray-900">Booked By</h4>
+                      <p className="text-sm text-gray-600">{selectedEvent.bookedBy}</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          <DialogFooter className="flex-shrink-0 pt-4 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+            <div className="flex items-center justify-between w-full">
+              <div className="text-sm text-gray-500">
+                Event details
+              </div>
+              <div className="flex gap-2">
+                <Button 
+                  variant="outline"
+                  onClick={() => setIsDetailsModalOpen(false)}
+                  className="hover:bg-gray-100 transition-colors"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                  Close
+                </Button>
+              </div>
+            </div>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={showMoreEventsModal} onOpenChange={setShowMoreEventsModal}>
         <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
@@ -625,6 +766,7 @@ export default function BookingCalendar() {
           {moreEventsData && (
             <div className="flex-1 overflow-y-auto pr-2 -mr-2">
               <div className="space-y-3 py-4">
+                {/* Events are already sorted by start time from handleMoreEventsClick */}
                 {moreEventsData.events.map((event, index) => (
                   <Card 
                     key={event.id} 
@@ -633,14 +775,13 @@ export default function BookingCalendar() {
                       e.preventDefault();
                       e.stopPropagation();
                       
-                      
                       setTimeout(() => {
                         setSelectedEvent(event);
                         setIsDetailsModalOpen(true);
                       }, 100);
                     }}
                   >
-                    {/* Colored left border indicator */}
+                    {/* Rest of the card content remains the same */}
                     <div 
                       className="absolute left-0 top-0 bottom-0 w-1"
                       style={{ backgroundColor: roomColors[event.roomId] || '#3174ad' }}
@@ -649,7 +790,6 @@ export default function BookingCalendar() {
                     <div className="p-4 pl-6">
                       <div className="flex items-start justify-between">
                         <div className="flex-1 min-w-0">
-                          {/* Event title and time */}
                           <div className="flex items-center gap-3 mb-2">
                             <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
                               {event.title}
@@ -659,7 +799,6 @@ export default function BookingCalendar() {
                             </span>
                           </div>
                           
-                          {/* Room and booked by info */}
                           <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
                             <div className="flex items-center gap-2">
                               <span 
@@ -674,16 +813,13 @@ export default function BookingCalendar() {
                             </div>
                           </div>
                           
-                          {/* Description */}
                           {event.description && (
                             <p className="text-sm text-gray-500 mb-3 line-clamp-2">
                               {event.description}
                             </p>
                           )}
                           
-                          {/* Booking type and status badges */}
                           <div className="flex items-center gap-2 flex-wrap">
-                            {/* Booking type badge */}
                             {event.bookingType === 'full' ? (
                               <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
                                 <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-1.5"></div>
@@ -697,19 +833,14 @@ export default function BookingCalendar() {
                               </span>
                             )}
                             
-                            {/* Status badge */}
-                            {event.status && (
+                            {event.status && event.status !== 'overflow' && (
                               <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                                event.status.toLowerCase() === 'cancelled' 
-                                ? 'bg-red-100 text-red-800' 
-                                : event.status.toLowerCase() === 'confirmed' 
+                                event.status.toLowerCase() === 'confirmed' 
                                   ? 'bg-green-100 text-green-800' 
                                   : 'bg-yellow-100 text-yellow-800'
                               }`}>
                                 <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                  event.status.toLowerCase() === 'cancelled' 
-                                  ? 'bg-red-400' 
-                                  : event.status.toLowerCase() === 'confirmed' 
+                                  event.status.toLowerCase() === 'confirmed' 
                                     ? 'bg-green-400' 
                                     : 'bg-yellow-400'
                                 }`}></div>
@@ -719,18 +850,15 @@ export default function BookingCalendar() {
                           </div>
                         </div>
                         
-                        {/* Click indicator */}
                         <div className="flex-shrink-0 ml-4">
                           <div className="text-gray-400 group-hover:text-blue-500 transition-colors">
                             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              {/* <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /> */}
                             </svg>
                           </div>
                         </div>
                       </div>
                     </div>
                     
-                    {/* Hover overlay */}
                     <div className="absolute inset-0 opacity-0 transition-opacity duration-200 pointer-events-none" />
                   </Card>
                 ))}
@@ -738,11 +866,9 @@ export default function BookingCalendar() {
             </div>
           )}
           
-          {/* Footer with summary and close button */}
           <DialogFooter className="flex-shrink-0 pt-4 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
             <div className="flex items-center justify-between w-full">
               <div className="text-sm text-gray-500">
-
               </div>
               <Button 
                 variant="outline"
