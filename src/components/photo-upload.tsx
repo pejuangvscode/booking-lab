@@ -1,7 +1,7 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
-import { Upload, Camera, X, Loader2, CheckCircle } from "lucide-react";
+import { Upload, Camera, X, Loader2, CheckCircle, Image } from "lucide-react";
 
 interface PhotoUploadProps {
   onComplete: (photoUrl: string) => void;
@@ -13,6 +13,7 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
   const [file, setFile] = useState<File | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
@@ -34,12 +35,16 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
     }
   };
 
+  const handleButtonClick = () => {
+    fileInputRef.current?.click();
+  };
+
   const handleRemovePhoto = () => {
     setFile(null);
     setPreview(null);
-    // Clear the input
-    const input = document.getElementById('photo-input') as HTMLInputElement;
-    if (input) input.value = '';
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
   };
 
   const handleCompleteWithPhoto = async () => {
@@ -55,6 +60,8 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
       formData.append("file", file);
       formData.append("upload_preset", "CompleteBooking");
 
+      console.log("Uploading to Cloudinary...");
+
       const res = await fetch("https://api.cloudinary.com/v1_1/dqz0crqoj/image/upload", {
         method: "POST",
         body: formData,
@@ -65,8 +72,10 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
       }
 
       const data = await res.json();
+      console.log("Cloudinary response:", data);
       
       if (data.secure_url) {
+        console.log("Calling onComplete with URL:", data.secure_url);
         onComplete(data.secure_url);
       } else {
         throw new Error('No URL returned from upload');
@@ -81,6 +90,17 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
 
   return (
     <div className="space-y-4">
+      {/* Hidden file input */}
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept="image/*,image/heic,image/heif"
+        onChange={handleFileChange}
+        className="hidden"
+        disabled={disabled || uploading || isLoading}
+        capture="environment" // This enables camera on mobile
+      />
+
       {/* Upload Section */}
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-3">
@@ -88,30 +108,33 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
         </label>
         
         {!preview ? (
-          <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center hover:border-gray-400 transition-colors">
-            <input
-              id="photo-input"
-              type="file"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="hidden"
+          <div className="space-y-3">
+            {/* Camera/Gallery Button for Mobile */}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={handleButtonClick}
               disabled={disabled || uploading || isLoading}
-            />
-            <label
-              htmlFor="photo-input"
-              className="cursor-pointer flex flex-col items-center space-y-2"
+              className="w-full h-32 border-2 border-dashed border-gray-300 rounded-lg flex flex-col items-center justify-center space-y-2 hover:border-gray-400 transition-colors"
             >
-              <div className="p-3 bg-gray-100 rounded-full">
-                <Camera className="h-6 w-6 text-gray-600" />
+              <Camera className="h-8 w-8 text-gray-400" />
+              <div className="text-center">
+                <div className="text-sm font-medium text-gray-700">Take Photo or Upload</div>
+                <div className="text-xs text-gray-500">Tap to open camera or gallery</div>
               </div>
-              <div className="text-sm text-gray-600">
-                <span className="font-medium text-blue-600 hover:text-blue-500">
-                  Click to upload
-                </span>
-                {' '}or drag and drop
-              </div>
-              <p className="text-xs text-gray-500">PNG, JPG, GIF up to 5MB</p>
-            </label>
+            </Button>
+
+            {/* Alternative file browser button */}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={handleButtonClick}
+              disabled={disabled || uploading || isLoading}
+              className="w-full"
+            >
+              <Image className="h-4 w-4 mr-2" />
+              Browse Files
+            </Button>
           </div>
         ) : (
           <Card className="relative">
@@ -125,7 +148,7 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
                 <Button
                   size="sm"
                   variant="outline"
-                  className="absolute top-2 right-2 bg-white hover:bg-gray-50 hover:cursor-pointer"
+                  className="absolute top-2 right-2 bg-white hover:bg-gray-50 shadow-md"
                   onClick={handleRemovePhoto}
                   disabled={uploading || isLoading}
                 >
@@ -136,7 +159,7 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
                 <Upload className="h-4 w-4 mr-2" />
                 <span className="truncate">{file?.name}</span>
                 <span className="ml-2 text-gray-400">
-                  ({(file?.size || 0 / 1024 / 1024).toFixed(1)} MB)
+                  ({((file?.size || 0) / 1024 / 1024).toFixed(1)} MB)
                 </span>
               </div>
             </CardContent>
@@ -148,7 +171,7 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
       <Button
         onClick={handleCompleteWithPhoto}
         disabled={!file || uploading || isLoading || disabled}
-        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 h-auto hover:cursor-pointer"
+        className="w-full bg-green-600 hover:bg-green-700 text-white py-3 h-auto"
         size="lg"
       >
         {uploading || isLoading ? (
