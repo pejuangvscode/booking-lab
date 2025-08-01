@@ -10,12 +10,46 @@ import { api } from '~/utils/api';
 import Head from 'next/head';
 import PhotoUpload from '~/components/photo-upload';
 
+// Updated type to match actual API response
 type Booking = {
   id: number;
   createdAt: Date;
   userId: string;
   roomId: string;
-  bookingDate: Date;
+  bookingDate: Date; // Changed from string | undefined to Date
+  startTime: string;
+  endTime: string;
+  participants: number;
+  eventName: string;
+  eventType: string;
+  phone: string;
+  faculty: string;
+  status: string;
+  equipment?: string | null;
+  requesterName: string | null;
+  requesterNIM: string | null;
+  room?: {
+    name: string;
+    type: string;
+    id: string;
+    createdAt: Date;
+    facilityId: string;
+    capacity: number;
+    department: string;
+  };
+  user?: {
+    id: string;
+    createdAt: Date;
+  };
+};
+
+// Type for the general bookings list (might have different structure)
+type ApiBookingResponse = {
+  id: number;
+  createdAt: Date;
+  userId: string;
+  roomId: string;
+  bookingDate: string | Date; // Can be either string or Date
   startTime: string;
   endTime: string;
   participants: number;
@@ -30,6 +64,10 @@ type Booking = {
   room?: {
     name: string;
     facilityId: string;
+  };
+  user?: {
+    id: string;
+    createdAt: Date;
   };
 };
 
@@ -84,8 +122,7 @@ export default function CompleteBooking() {
     }
   );
 
-  // We need to add updateBooking mutation to your router first
-  // For now, let's create a simple mutation that updates the status
+  // Updated mutation to use equipment field
   const updateBookingMutation = api.booking.updateBooking.useMutation({
     onSuccess: () => {
       showMessage({
@@ -124,7 +161,8 @@ export default function CompleteBooking() {
   // Set selected booking when specific booking data is loaded
   useEffect(() => {
     if (specificBookingData) {
-      setSelectedBooking(specificBookingData);
+      // Type assertion to ensure compatibility
+      setSelectedBooking(specificBookingData as Booking);
     }
   }, [specificBookingData]);
 
@@ -146,8 +184,10 @@ export default function CompleteBooking() {
     router.push('/dashboard');
   };
 
-  // Format date function
-  const formatDate = (date: Date | string) => {
+  // Updated format date function to handle both Date and string
+  const formatDate = (date: Date | string | undefined) => {
+    if (!date) return 'No date specified';
+    
     const options: Intl.DateTimeFormatOptions = { 
       year: 'numeric', 
       month: 'long', 
@@ -171,12 +211,12 @@ export default function CompleteBooking() {
     }
   };
 
-  // Helper function to get location info
-  const getLocationInfo = (booking: Booking) => {
+  // Helper function to get location info - updated to handle both types
+  const getLocationInfo = (booking: Booking | ApiBookingResponse) => {
     if (booking.room) {
       return {
         name: booking.room.name || 'Unknown',
-        facilityId: booking.room.facilityId || 'Unknown'
+        facilityId: 'facilityId' in booking.room ? booking.room.facilityId : 'Unknown'
       };
     }
     return { 
@@ -185,9 +225,9 @@ export default function CompleteBooking() {
     };
   };
 
-  // Get current bookings data
-  const currentBookings = allBookingsData || [];
-  const acceptedBookings = currentBookings.filter((booking: Booking) => 
+  // Get current bookings data with proper typing
+  const currentBookings = (allBookingsData || []) as ApiBookingResponse[];
+  const acceptedBookings = currentBookings.filter((booking) => 
     booking.status.toLowerCase() === 'accepted' || booking.status.toLowerCase() === 'approved'
   );
 
@@ -232,7 +272,7 @@ export default function CompleteBooking() {
       );
     }
 
-    const booking = specificBookingData;
+    const booking = specificBookingData as Booking;
     const location = getLocationInfo(booking);
 
     return (
@@ -347,14 +387,14 @@ export default function CompleteBooking() {
                   {(booking.status.toLowerCase() === 'accepted' || booking.status.toLowerCase() === 'approved') ? (
                     <PhotoUpload
                       onComplete={(photoUrl) => {
-                        console.log("Photo uploaded, URL:", photoUrl); // Add logging
+                        console.log("Photo uploaded, URL:", photoUrl);
                         updateBookingMutation.mutate({ 
                           id: booking.id,
                           status: "completed",
-                          equipment: photoUrl // Pastikan menggunakan equipment bukan equipment
+                          equipment: photoUrl // Using equipment field as discussed
                         });
                       }}
-                      isLoading={updateBookingMutation.isLoading}
+                      isLoading={updateBookingMutation.isPending}
                       disabled={false}
                     />
                   ) : booking.status.toLowerCase() === 'completed' ? (
@@ -413,16 +453,16 @@ export default function CompleteBooking() {
               <Button
                 variant="outline"
                 onClick={() => setShowConfirmDialog(false)}
-                disabled={updateBookingMutation.isLoading}
+                disabled={updateBookingMutation.isPending}
               >
                 Cancel
               </Button>
               <Button
                 onClick={confirmComplete}
                 className="bg-green-600 hover:bg-green-700 hover:cursor-pointer"
-                disabled={updateBookingMutation.isLoading}
+                disabled={updateBookingMutation.isPending}
               >
-                {updateBookingMutation.isLoading ? (
+                {updateBookingMutation.isPending ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin mr-2" />
                     Completing...
@@ -506,7 +546,7 @@ export default function CompleteBooking() {
               </div>
             ) : (
               <div className="space-y-4">
-                {acceptedBookings.map((booking: Booking) => {
+                {acceptedBookings.map((booking: ApiBookingResponse) => {
                   const location = getLocationInfo(booking);
                   return (
                     <Card key={booking.id} className="border border-gray-200">
