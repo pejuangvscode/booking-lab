@@ -734,8 +734,7 @@ export default function BookingPage() {
               </RadioGroup>
             </div>
 
-            {/* Participants Count - show for both partial booking AND zero capacity rooms */}
-            {(bookingType === "partial" || labDetail?.capacity === 0) && (
+            {(bookingType === "partial") && (
               <div className="space-y-2">
                 <label htmlFor="participants" className="block text-sm font-medium text-gray-700">
                   Number of Participants {labDetail?.capacity === 0 && <span className="text-red-500">*</span>}
@@ -761,15 +760,7 @@ export default function BookingPage() {
                   <p className="text-red-500 text-xs">{formErrors.participants}</p>
                 )}
                 {/* Conditional warning message - only show when field is empty AND it's a flexible space */}
-                {labDetail?.capacity === 0 && !participants ? (
-                  <p className="text-xs text-orange-600 font-medium">
-                    ⚠️ Required: This flexible space requires you to specify the number of participants
-                  </p>
-                ) : labDetail?.capacity === 0 && participants ? (
-                  <p className="text-xs text-green-600 font-medium">
-                    Participants specified: {participants}
-                  </p>
-                ) : labDetail?.capacity && labDetail.capacity > 0 ? (
+                {labDetail?.capacity && labDetail.capacity > 0 ? (
                   <p className="text-xs text-gray-500">
                     Room capacity: {labDetail.capacity} seats
                   </p>

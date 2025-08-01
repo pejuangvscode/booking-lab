@@ -11,7 +11,7 @@ const carouselItems = [
     title: "Informatics Studio (B338)",
     subTitle: "keterangan keteranganketeranganketeranganketerangan"
   },
-  {
+  { 
     id: 2,
     imageSrc: "/B357.png", 
     title: "Information System Lab (B357)",
@@ -386,22 +386,6 @@ export default function Home() {
                 <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
                   BookLab developed by Cak Gendon
                 </p>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Solo Developer</h3>
-                    <p className="text-gray-600 text-xs sm:text-sm">Full-Stack Development</p>
-                    <p className="text-gray-600 text-xs sm:text-sm">UI/UX Design</p>
-                    <p className="text-gray-600 text-xs sm:text-sm">Database Design & Architecture</p>
-                    <p className="text-gray-600 text-xs sm:text-sm">System Integration</p>
-                  </div>
-                  <div>
-                    <h3 className="font-semibold text-gray-900 mb-3 text-sm sm:text-base">Technologies Used</h3>
-                    <p className="text-gray-600 text-xs sm:text-sm">Next.js, TypeScript, Tailwind CSS</p>
-                    <p className="text-gray-600 text-xs sm:text-sm">Prisma ORM, PostgreSQL</p>
-                    <p className="text-gray-600 text-xs sm:text-sm">Clerk Authentication</p>
-                    <p className="text-gray-600 text-xs sm:text-sm">React Big Calendar, Lucide Icons</p>
-                  </div>
-                </div>
                 
                 <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-blue-50 rounded-lg border border-orange-200">
                   <p className="text-sm text-gray-700 italic">
