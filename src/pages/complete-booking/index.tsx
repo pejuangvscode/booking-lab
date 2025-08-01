@@ -295,13 +295,13 @@ export default function CompleteBooking() {
             </Button>
 
             {/* Booking Details Card */}
-            <Card className="border border-gray-200 shadow-lg">
-              <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white">
-                <CardTitle className="text-2xl flex items-center gap-2">
+            <Card className="border border-gray-200 shadow-lg overflow-hidden p-0">
+              <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white m-0 p-6">
+                <CardTitle className="text-2xl flex items-center gap-2 m-0">
                   <CheckCircle className="h-6 w-6" />
                   Complete Booking
                 </CardTitle>
-                <CardDescription className="text-green-100">
+                <CardDescription className="text-green-100 m-0">
                   Review and complete this booking
                 </CardDescription>
               </CardHeader>
