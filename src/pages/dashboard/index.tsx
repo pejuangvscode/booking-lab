@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
-import { Loader2, Info, XCircle, RefreshCw } from 'lucide-react';
+import { Loader2, Info, XCircle, RefreshCw, Check, CheckCircle } from 'lucide-react';
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
@@ -294,6 +294,18 @@ const formatDate = (date: Date | string) => {
                               <Info className="h-4 w-4 mr-1" />
                               Details
                             </Button>
+                            {booking.status === 'accepted' ? (
+                              <Button 
+                                variant="outline" 
+                                size="sm" 
+                                className="text-green-600 hover:text-green-800 bg-green-100 hover:bg-green-200 border-green-200 hover:cursor-pointer"
+                                onClick={() => router.push(`/complete-booking?bookingId=${booking.id}`)}
+                                disabled={cancelBookingMutation.isPending}
+                              >
+                                <CheckCircle className="h-4 w-4 mr-1" />
+                                Complete Booking
+                              </Button>
+                            ) : (
                             <Button 
                               variant="outline" 
                               size="sm" 
@@ -308,6 +320,7 @@ const formatDate = (date: Date | string) => {
                               )}
                               Cancel
                             </Button>
+                            )}
                           </div>
                         </td>
                       </tr>

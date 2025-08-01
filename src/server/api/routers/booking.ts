@@ -495,5 +495,43 @@ export const bookingRouter = createTRPCRouter({
         throw new Error("Failed to check booking conflicts");
       }
     }),
-  
+    
+    updateBooking: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      status: z.string(),
+      equipment: z.string().optional() // Ubah dari equipment ke equipment
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const updateData: any = { 
+          status: input.status 
+        };
+        
+        // Add equipment if provided
+        if (input.equipment) {
+          updateData.equipment = input.equipment;
+        }
+
+        console.log("Updating booking with data:", updateData); // Add logging
+
+        const updatedBooking = await ctx.db.bookings.update({
+          where: { id: input.id },
+          data: updateData,
+          include: {
+            room: true
+          }
+        });
+
+        console.log("Updated booking result:", updatedBooking); // Add logging
+
+        return updatedBooking;
+      } catch (error) {
+        console.error("Error updating booking:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to update booking",
+        });
+      }
+    }),
 });
