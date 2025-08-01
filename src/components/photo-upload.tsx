@@ -123,18 +123,6 @@ export default function PhotoUpload({ onComplete, isLoading = false, disabled = 
                 <div className="text-xs text-gray-500">Tap to open camera or gallery</div>
               </div>
             </Button>
-
-            {/* Alternative file browser button */}
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={handleButtonClick}
-              disabled={disabled || uploading || isLoading}
-              className="w-full"
-            >
-              <Image className="h-4 w-4 mr-2" />
-              Browse Files
-            </Button>
           </div>
         ) : (
           <Card className="relative">
