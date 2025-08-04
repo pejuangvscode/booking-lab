@@ -65,10 +65,11 @@ export default function BookingPage() {
 
   // Helper function to calculate participants
   const calculateParticipants = () => {
-    if (!labDetail) return 1;
+    if (!labDetail) return 0; // Changed from 1 to 0
     
     if (labDetail.capacity === 0) {
-      return parseInt(participants) || 1;
+      // For flexible space rooms like F205, use 0 as default
+      return parseInt(participants) || 0; // Changed from 1 to 0
     } else if (bookingType === "full") {
       return labDetail.capacity || parseInt(participants) || 1;
     } else {
@@ -76,7 +77,6 @@ export default function BookingPage() {
     }
   };
 
-  // Conflict check query - MUST BE CALLED BEFORE RETURNS
   // Update conflict check query untuk menghindari unnecessary calls
   const conflictCheck = api.booking.checkConflicts.useQuery(
     { 
@@ -117,7 +117,7 @@ export default function BookingPage() {
   useEffect(() => {
     if (labDetail?.capacity === 0) {
       setBookingType("full");
-      setParticipants("");
+      setParticipants("0");
     }
   }, [labDetail]);
 
@@ -309,15 +309,22 @@ export default function BookingPage() {
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
   const eventTypes = ["Class", "Seminar", "Workshop", "Meeting", "Exam", "Other"];
 
-  // Handle booking type change function
   const handleBookingTypeChange = (value: string) => {
     setBookingType(value);
     if (value === "full") {
       const capacity = labDetail?.capacity || 0;
-      setParticipants(capacity > 0 ? capacity.toString() : "1");
+      if (capacity === 0) {
+        // For flexible space (F205), set participants to 0
+        setParticipants("0");
+      } else {
+        // For fixed capacity rooms, set to room capacity
+        setParticipants(capacity.toString());
+      }
     } else if (value === "partial") {
       setParticipants("");
     }
+    
+    // Clear participants validation error when booking type changes
     if (formErrors.participants) {
       const newErrors = { ...formErrors };
       delete newErrors.participants;
@@ -348,13 +355,11 @@ export default function BookingPage() {
       errors.endTime = "End time must be after start time";
     }
 
-    // TAMBAHKAN VALIDASI WAKTU YANG SUDAH LEWAT
+    // Time validation (existing code)
     if (bookingDate && startHour && startMinute) {
       const now = new Date();
       const bookingDateTime = new Date(`${bookingDate}T${startTimeValue}:00`);
-      
-      // Add buffer time (e.g., 1 hour minimum advance booking)
-      const minimumAdvanceTime = new Date(now.getTime() + (60 * 60 * 1000)); // 1 hour from now
+      const minimumAdvanceTime = new Date(now.getTime() + (60 * 60 * 1000));
       
       if (bookingDateTime <= now) {
         errors.startTime = "Cannot book for past time. Please select a future time.";
@@ -363,18 +368,21 @@ export default function BookingPage() {
       }
     }
 
-    // Validate participants based on booking type
+    // Updated participants validation for flexible space rooms (F205)
     if (labDetail?.capacity === 0) {
-      if (!participants) {
+      // For flexible space rooms like F205, participants can be 0 or more
+      if (participants.trim() === "" || isNaN(parseInt(participants))) {
         errors.participants = "Number of participants is required for flexible space rooms";
-      } else if (parseInt(participants) <= 0) {
-        errors.participants = "Number of participants must be greater than 0";
+      } else if (parseInt(participants) < 0) {
+        errors.participants = "Number of participants cannot be negative";
       }
+      // Note: We allow 0 participants for flexible space rooms
     } else if (bookingType === "partial") {
-      if (!participants) {
+      // For fixed capacity rooms with partial booking
+      if (!participants || participants.trim() === "") {
         errors.participants = "Number of participants is required";
-      } else if (parseInt(participants) <= 0) {
-        errors.participants = "Number of participants must be greater than 0";
+      } else if (parseInt(participants) <= 0 || isNaN(parseInt(participants))) {
+        errors.participants = "Number of participants must be a valid number greater than 0";
       } else if (labDetail?.capacity && parseInt(participants) > labDetail.capacity) {
         errors.participants = `Number of participants cannot exceed room capacity (${labDetail.capacity})`;
       }
@@ -386,13 +394,14 @@ export default function BookingPage() {
       return;
     }
     
+    // Updated final participants calculation
     const finalParticipants = labDetail?.capacity === 0 
-      ? parseInt(participants) || 1
+      ? parseInt(participants) || 0  // For flexible space, use entered value or default to 0
       : bookingType === "full" 
-        ? (labDetail?.capacity || parseInt(participants))
-        : parseInt(participants);
+        ? (labDetail?.capacity || parseInt(participants) || 1)  // For full booking, use room capacity
+        : parseInt(participants) || 1;  // For partial booking, use entered value
 
-    // FIXED: Use utils.client to make imperative query call
+    // Rest of the submit logic remains the same...
     setChecking(true);
     try {
       const conflictResult = await utils.client.booking.checkConflicts.query({
@@ -425,7 +434,6 @@ export default function BookingPage() {
             errorMessage = "This room is already booked for the selected time. Please choose a different time or reduce the number of participants.";
         }
         
-        // Ganti setFormErrors dengan custom error dialog
         await error(errorMessage, "Booking Conflict");
         setFormErrors({
           conflict: errorMessage
@@ -433,9 +441,8 @@ export default function BookingPage() {
         return;
       }
       
-      // Show confirmation dialog before proceeding
       const confirmed = await confirm(
-        `Are you sure you want to book ${labDetail?.name} for ${eventName} on ${new Date(bookingDate).toLocaleDateString()} from ${startTimeValue} to ${endTimeValue}?`,
+        `Are you sure you want to book ${labDetail?.name} for ${eventName} on ${new Date(bookingDate).toLocaleDateString()} from ${startTimeValue} to ${endTimeValue}${finalParticipants === 0 ? ' (flexible space)' : ` for ${finalParticipants} participant${finalParticipants !== 1 ? 's' : ''}`}?`,
         "Confirm Booking"
       );
       
@@ -443,7 +450,6 @@ export default function BookingPage() {
         return;
       }
       
-      // No conflicts found, proceed with booking
       const bookingData = {
         labId: labId as string,
         bookingDate: new Date(bookingDate).toISOString(),
@@ -460,13 +466,11 @@ export default function BookingPage() {
         }
       };
       
-      // Execute the mutation
       bookingMutation.mutate(bookingData);
       
     } catch (err) {
       setChecking(false);
       console.error("Error checking conflicts:", err);
-      // Ganti setFormErrors dengan custom error dialog
       await error("Could not check for booking conflicts. Please try again.", "Connection Error");
       setFormErrors({
         conflict: "Could not check for booking conflicts. Please try again."
@@ -644,23 +648,6 @@ export default function BookingPage() {
               <label className="block text-sm font-medium text-gray-700">
                 Booking Type
               </label>
-              
-              {/* Show warning for zero capacity rooms */}
-              {labDetail?.capacity === 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 mb-4">
-                  <div className="flex items-center space-x-2">
-                    <svg className="h-5 w-5 text-amber-600" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                    </svg>
-                    <div>
-                      <div className="font-medium text-amber-800">Flexible Space Room</div>
-                      <div className="text-sm text-amber-700">
-                        This room has no fixed seating. You must book the entire space and specify the number of participants.
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <RadioGroup 
                 value={bookingType} 
@@ -691,7 +678,7 @@ export default function BookingPage() {
                             </div>
                             <div className="text-xs text-gray-500">
                               {labDetail?.capacity === 0 
-                                ? "Flexible space - specify participants below"
+                                ? "Flexible space, no capacity limit"
                                 : labDetail?.capacity && labDetail.capacity > 0 
                                   ? `${labDetail.capacity} seats` 
                                   : "All available seats"

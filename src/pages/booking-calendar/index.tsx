@@ -7,7 +7,7 @@ import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, Filter, X, Check } from "lucide-react";
 import Head from 'next/head';
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -25,6 +25,13 @@ import {
   DialogHeader,
   DialogTitle
 } from "~/components/ui/dialog";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "~/components/ui/popover";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Badge } from "~/components/ui/badge";
 import { api } from "~/utils/api";
 import { startOfWeek, getDay } from 'date-fns';
 
@@ -89,7 +96,11 @@ export default function BookingCalendar() {
     date: Date;
     events: BookingEvent[];
   } | null>(null);
-  
+
+  // NEW: Room filter state
+  const [selectedRoomFilters, setSelectedRoomFilters] = useState<string[]>([]);
+  const [showFilterPopover, setShowFilterPopover] = useState(false);
+
   // Form for booking
   const form = useForm({
     resolver: zodResolver(bookingFormSchema),
@@ -121,22 +132,54 @@ export default function BookingCalendar() {
     refetchOnWindowFocus: false
   });
 
+  const getFilteredEvents = (events: BookingEvent[]) => {
+    if (selectedRoomFilters.length === 0) {
+      return events; // Show all events if no filter selected
+    }
+    return events.filter(event => selectedRoomFilters.includes(event.roomId));
+  };
+
+  // NEW: Handle room filter changes
+  const handleRoomFilterChange = (roomId: string, checked: boolean) => {
+    setSelectedRoomFilters(prev => {
+      if (checked) {
+        return [...prev, roomId];
+      } else {
+        return prev.filter(id => id !== roomId);
+      }
+    });
+  };
+
+  // NEW: Clear all filters
+  const clearAllFilters = () => {
+    setSelectedRoomFilters([]);
+  };
+
+  // NEW: Select all rooms
+  const selectAllRooms = () => {
+    setSelectedRoomFilters(rooms.map(room => room.id));
+  };
+
   // Update the limitEventsPerDay function to sort by start time and filter cancelled events
   const limitEventsPerDay = (events: BookingEvent[], limit: number = 2) => {
-    // First, filter out cancelled events
-    const activeEvents = events.filter(event => 
+    // First, filter by rooms and remove cancelled events
+    const filteredEvents = getFilteredEvents(events).filter(event => 
       event.status?.toLowerCase() !== 'cancelled'
     );
 
     const eventsByDate: Record<string, BookingEvent[]> = {};
     
-    // Group active events by date (yyyy-mm-dd format)
-    activeEvents.forEach(event => {
-      const dateKey = format(event.start, 'yyyy-MM-dd');
-      if (!eventsByDate[dateKey]) {
-        eventsByDate[dateKey] = [];
+    // Group filtered events by date (yyyy-mm-dd format)
+    filteredEvents.forEach(event => {
+      try {
+        const dateKey = format(event.start, 'yyyy-MM-dd');
+        if (!eventsByDate[dateKey]) {
+          eventsByDate[dateKey] = [];
+        }
+        eventsByDate[dateKey].push(event);
+      } catch (error) {
+        console.error('Error formatting date for event:', event.id, error);
       }
-      eventsByDate[dateKey].push(event);
     });
     
     // Create limited events with "+X more" indicators
@@ -145,9 +188,14 @@ export default function BookingCalendar() {
     Object.entries(eventsByDate).forEach(([dateKey, dayEvents]) => {
       // Sort events by start time (ascending order - earliest first)
       const sortedEvents = dayEvents.sort((a, b) => {
-        const timeA = a.start.getTime();
-        const timeB = b.start.getTime();
-        return timeA - timeB;
+        try {
+          const timeA = a.start.getTime();
+          const timeB = b.start.getTime();
+          return timeA - timeB;
+        } catch (error) {
+          console.error('Error comparing event times:', error);
+          return 0;
+        }
       });
       
       // Take only the first 'limit' events (earliest events)
@@ -159,22 +207,26 @@ export default function BookingCalendar() {
         const overflowCount = sortedEvents.length - limit;
         const lastVisibleEvent = visibleEvents[visibleEvents.length - 1];
         
-        if (lastVisibleEvent) {
-          // Create a special "+X more" event positioned after the last visible event
-          const moreEvent: BookingEvent = {
-            id: `more-${dateKey}`,
-            title: `+${overflowCount} more`,
-            start: new Date(lastVisibleEvent.end.getTime()), // Start right after last visible event
-            end: new Date(lastVisibleEvent.end.getTime() + 30 * 60 * 1000), // 30 minutes duration
-            roomId: 'MORE',
-            bookedBy: '',
-            description: `${overflowCount} additional events on this date`,
-            status: 'overflow',
-            bookingType: 'partial',
-            participants: overflowCount,
-            roomCapacity: 0,
-          };
-          limitedEvents.push(moreEvent);
+        if (lastVisibleEvent && lastVisibleEvent.end) {
+          try {
+            // Create a special "+X more" event positioned after the last visible event
+            const moreEvent: BookingEvent = {
+              id: `more-${dateKey}`,
+              title: `+${overflowCount} more`,
+              start: new Date(lastVisibleEvent.end.getTime()), // Start right after last visible event
+              end: new Date(lastVisibleEvent.end.getTime() + 30 * 60 * 1000), // 30 minutes duration
+              roomId: 'MORE',
+              bookedBy: '',
+              description: `${overflowCount} additional events on this date`,
+              status: 'overflow',
+              bookingType: 'partial',
+              participants: overflowCount,
+              roomCapacity: 0,
+            };
+            limitedEvents.push(moreEvent);
+          } catch (error) {
+            console.error('Error creating more event:', error);
+          }
         }
       }
     });
@@ -293,18 +345,35 @@ export default function BookingCalendar() {
   };
 
   const handleMoreEventsClick = (dateKey: string) => {
-    const allEventsForDate = events
-      .filter(e => {
-        const eventDateKey = format(e.start, 'yyyy-MM-dd');
-        return eventDateKey === dateKey;
-      })
-      .sort((a, b) => a.start.getTime() - b.start.getTime()); // Sort by start time
+    try {
+      const allEventsForDate = getFilteredEvents(events)
+        .filter(e => {
+          try {
+            if (!e.start || isNaN(e.start.getTime())) return false;
+            const eventDateKey = format(e.start, 'yyyy-MM-dd');
+            return eventDateKey === dateKey;
+          } catch (error) {
+            console.error('Error filtering event:', e.id, error);
+            return false;
+          }
+        })
+        .sort((a, b) => {
+          try {
+            return a.start.getTime() - b.start.getTime();
+          } catch (error) {
+            console.error('Error sorting events:', error);
+            return 0;
+          }
+        });
 
-    setMoreEventsData({
-      date: new Date(dateKey + 'T12:00:00'),
-      events: allEventsForDate
-    });
-    setShowMoreEventsModal(true);
+      setMoreEventsData({
+        date: new Date(dateKey + 'T12:00:00'),
+        events: allEventsForDate
+      });
+      setShowMoreEventsModal(true);
+    } catch (error) {
+      console.error('Error handling more events click:', error);
+    }
   };
 
   const CustomToolbar = ({ date, onNavigate, label }: any) => {
@@ -464,8 +533,130 @@ export default function BookingCalendar() {
       
       <div className="bg-white rounded-lg shadow-lg overflow-hidden"> 
         <div className="p-3 sm:p-6 bg-gradient-to-r from-orange-600 to-orange-700">
-          <h2 className="text-xl sm:text-3xl font-bold text-white">Laboratory Booking Calendar</h2>
-          <p className="text-orange-100 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h2 className="text-xl sm:text-3xl font-bold text-white">Laboratory Booking Calendar</h2>
+              <p className="text-orange-100 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
+            </div>
+            
+            {/* NEW: Room Filter Button */}
+            <div className="flex items-center gap-3">
+              <Popover open={showFilterPopover} onOpenChange={setShowFilterPopover}>
+                <PopoverTrigger asChild>
+                  <Button 
+                    variant="outline" 
+                    className="bg-white/10 hover:cursor-pointer border-white/20 text-white hover:bg-white/20 hover:text-white relative"
+                  >
+                    <Filter className="h-4 w-4 mr-2" />
+                    Filter Rooms
+                    {selectedRoomFilters.length > 0 && (
+                      <Badge 
+                        variant="secondary" 
+                        className="ml-2 bg-white text-orange-600 text-xs px-1.5 py-0.5"
+                      >
+                        {selectedRoomFilters.length}
+                      </Badge>
+                    )}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-80 p-0" align="end">
+                  <div className="p-4 border-b">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-medium text-gray-900">Filter by Laboratory</h4>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowFilterPopover(false)}
+                        className="h-6 w-6 p-0"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={clearAllFilters}
+                        className="text-xs hover:cursor-pointer"
+                      >
+                        Clear All
+                      </Button>
+                    </div>
+                  </div>
+                  
+                  <div className="p-4 space-y-3">
+                    {rooms.map((room) => (
+                      <div key={room.id} className="flex items-center space-x-3">
+                        <Checkbox
+                          id={`filter-${room.id}`}
+                          checked={selectedRoomFilters.includes(room.id)}
+                          onCheckedChange={(checked) => 
+                            handleRoomFilterChange(room.id, checked as boolean)
+                          }
+                          className="data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600 hover:cursor-pointer"
+                        />
+                        <div className="flex items-center space-x-2 flex-1">
+                          <span 
+                            className="inline-block w-3 h-3 rounded-sm flex-shrink-0" 
+                            style={{ backgroundColor: roomColors[room.id] || '#3174ad' }}
+                          />
+                          <label 
+                            htmlFor={`filter-${room.id}`}
+                            className="text-sm font-medium text-gray-700 cursor-pointer flex-1"
+                          >
+                            {room.name}
+                          </label>
+                          <span className="text-xs text-gray-500">
+                            {room.capacity === 0 ? "Flex" : room.capacity}
+                          </span>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  {selectedRoomFilters.length > 0 && (
+                    <div className="p-4 border-t bg-gray-50">
+                      <div className="text-xs text-gray-600 mb-2">
+                        Showing {selectedRoomFilters.length} of {rooms.length} laboratories:
+                      </div>
+                      <div className="flex flex-wrap gap-1">
+                        {selectedRoomFilters.map(roomId => {
+                          const room = rooms.find(r => r.id === roomId);
+                          return (
+                            <Badge 
+                              key={roomId} 
+                              variant="secondary" 
+                              className="text-xs"
+                              style={{ 
+                                backgroundColor: `${roomColors[roomId] || '#3174ad'}20`,
+                                color: roomColors[roomId] || '#3174ad',
+                                border: `1px solid ${roomColors[roomId] || '#3174ad'}40`
+                              }}
+                            >
+                              {room?.id || roomId}
+                            </Badge>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+                </PopoverContent>
+              </Popover>
+              
+              {/* Show active filter indicator */}
+              {selectedRoomFilters.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={clearAllFilters}
+                  className="text-white hover:bg-white/20 hover:text-white text-xs hover:cursor-pointer"
+                >
+                  <X className="h-3 w-3 mr-1" />
+                  Clear Filter
+                </Button>
+              )}
+            </div>
+          </div>
         </div>
         
         <div className="p-3 sm:p-6">
@@ -481,7 +672,14 @@ export default function BookingCalendar() {
                     <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Room Legend:</div>
                     <div className="grid grid-cols-2 lg:grid-cols-1 gap-1 sm:gap-2">
                       {rooms.map((room) => (
-                        <div key={room.id} className="flex items-center">
+                        <div 
+                          key={room.id} 
+                          className={`flex items-center transition-opacity ${
+                            selectedRoomFilters.length > 0 && !selectedRoomFilters.includes(room.id)
+                              ? 'opacity-40' 
+                              : 'opacity-100'
+                          }`}
+                        >
                           <span 
                             className="inline-block w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 rounded-sm flex-shrink-0" 
                             style={{ backgroundColor: roomColors[room.id] || '#3174ad' }}
@@ -490,6 +688,9 @@ export default function BookingCalendar() {
                             {room.name} 
                             {room.capacity === 0 ? " (Flex)" : ` (${room.capacity})`}
                           </span>
+                          {selectedRoomFilters.includes(room.id) && (
+                            <Check className="h-3 w-3 ml-1 text-green-600" />
+                          )}
                         </div>
                       ))}
                     </div>
@@ -521,7 +722,7 @@ export default function BookingCalendar() {
                 ) : (
                   <Calendar
                     localizer={localizer}
-                    events={limitEventsPerDay(events, 1)} // Use updated function
+                    events={limitEventsPerDay(events, 1)} // Already includes filtering
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: "100%" }}
@@ -738,7 +939,7 @@ export default function BookingCalendar() {
                 <Button 
                   variant="outline"
                   onClick={() => setIsDetailsModalOpen(false)}
-                  className="hover:bg-gray-100 transition-colors"
+                  className="hover:bg-gray-100 transition-colors hover:cursor-pointer"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
