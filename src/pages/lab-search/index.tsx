@@ -1,4 +1,3 @@
-// filepath: d:\Kuliah UPH\Project Kuliah\SMT 4\booking-web\src\pages\Lab-Search\index.tsx
 import { ChevronDown, ChevronUp, Loader2, Search } from "lucide-react";
 import Head from 'next/head';
 import { useRouter } from 'next/router';
@@ -143,7 +142,6 @@ export default function LabSearch() {
         {/* Data Loaded State */}
         {!isLoading && !labsError && (
           <>
-            {/* Table */}
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -252,53 +250,6 @@ export default function LabSearch() {
                 </tbody>
               </table>
             </div>
-            
-            {/* Pagination - Only show if we have data more than one page
-            {sortedData.length > 0 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6">
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing <span className="font-medium">{indexOfFirstItem + 1}</span> to{" "}
-                      <span className="font-medium">
-                        {Math.min(indexOfLastItem, sortedData.length)}
-                      </span>{" "}
-                      of <span className="font-medium">{sortedData.length}</span> results
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
-                      <Button 
-                        variant="outline"
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                      >
-                        Previous
-                      </Button>
-                      {Array.from({ length: totalPages }, (_, i) => (
-                        <Button
-                          key={i}
-                          variant={currentPage === i + 1 ? "default" : "outline"}
-                          className="relative inline-flex items-center px-4 py-2 border border-gray-300 bg-white text-sm font-medium hover:bg-gray-50"
-                          onClick={() => setCurrentPage(i + 1)}
-                        >
-                          {i + 1}
-                        </Button>
-                      ))}
-                      <Button
-                        variant="outline"
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50"
-                        onClick={() => setCurrentPage(Math.min(totalPages, currentPage + 1))}
-                        disabled={currentPage === totalPages}
-                      >
-                        Next
-                      </Button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            )} */}
           </>
         )}
       </div>

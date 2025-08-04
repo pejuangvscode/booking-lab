@@ -20,11 +20,6 @@ export default function BookingDetailPage() {
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
 
-  // Debug logging
-  console.log("Detail page - bookingId:", bookingId);
-  console.log("Detail page - isSignedIn:", isSignedIn);
-
-  // Fetch booking details with corrected options
   const {
     data: booking,
     isLoading: isBookingLoading,
@@ -32,38 +27,27 @@ export default function BookingDetailPage() {
     refetch
   } = api.booking.getById.useQuery(
     { 
-      id: bookingId ? parseInt(bookingId as string, 10) : 0 // Convert string to number
+      id: bookingId ? parseInt(bookingId as string, 10) : 0
     },
     { 
       enabled: !!bookingId && !isNaN(parseInt(bookingId as string, 10)) && isSignedIn && isLoaded,
       retry: (failureCount, error) => {
-        console.error("Booking fetch error:", error);
         return failureCount < 2;
       },
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
-      // Remove onError - handle errors in useEffect instead
     }
   );
-
-  // Handle errors using useEffect
-  useEffect(() => {
-    if (bookingError) {
-      console.error("Failed to fetch booking details:", bookingError);
-    }
-  }, [bookingError]);
 
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
       success("Booking cancelled successfully!");
       void refetch();
     },
-    onError: (mutationError) => { // Changed parameter name from 'error' to 'mutationError'
-      console.error("Cancel booking error:", mutationError);
-      error(`Error cancelling booking: ${mutationError.message}`); // Now 'error' refers to the dialog function
+    onError: (mutationError) => { 
+      error(`Error cancelling booking: ${mutationError.message}`);
     }
   });
 
-  // Loading state
   if (!isLoaded) {
     return (
       <div className="container mx-auto px-4 py-8 mt-20">
@@ -83,7 +67,6 @@ export default function BookingDetailPage() {
     );
   }
 
-  // Authentication check
   if (!isSignedIn) {
     return (
       <div className="container mx-auto px-4 py-8 mt-20">
@@ -102,7 +85,6 @@ export default function BookingDetailPage() {
     );
   }
 
-  // Show loading while fetching booking
   if (isBookingLoading) {
     return (
       <div className="container mx-auto px-4 py-8 mt-20">
@@ -143,10 +125,8 @@ export default function BookingDetailPage() {
     );
   }
   
-  // Error state with detailed error information
+  // Error state
   if (bookingError || !booking) {
-    console.error("Booking error details:", bookingError);
-    
     return (
       <div className="container mx-auto px-4 py-8 mt-20">
         <div className="max-w-4xl mx-auto">
@@ -157,7 +137,6 @@ export default function BookingDetailPage() {
             </AlertDescription>
           </Alert>
           
-          {/* Debug information in development */}
           {process.env.NODE_ENV === 'development' && bookingError && (
             <div className="mt-4 p-4 bg-gray-100 rounded text-xs text-gray-700">
               <strong>Debug Info:</strong>
@@ -169,7 +148,7 @@ export default function BookingDetailPage() {
           
           <div className="mt-4 flex gap-2">
             <Button 
-              onClick={() => void refetch()} // Add void to suppress promise warning
+              onClick={() => void refetch()}
               variant="outline"
               disabled={isBookingLoading}
             >
@@ -184,7 +163,6 @@ export default function BookingDetailPage() {
     );
   }
 
-  // Format date and time with better error handling
   const formatDate = (dateString: string | Date) => {
     try {
       const date = typeof dateString === 'string' ? new Date(dateString) : dateString;
@@ -193,7 +171,6 @@ export default function BookingDetailPage() {
       }
       return format(date, "EEEE, MMMM d, yyyy");
     } catch (error) {
-      console.error("Date formatting error:", error);
       return String(dateString);
     }
   };
@@ -213,12 +190,10 @@ export default function BookingDetailPage() {
       date.setHours(parseInt(hours, 10), parseInt(minutes, 10));
       return format(date, "h:mm a");
     } catch (error) {
-      console.error("Time formatting error:", error);
       return String(timeString);
     }
   };
 
-  // Get status badge color and icon
   const getStatusDisplay = (status: string) => {
     const statusLower = (status || '').toLowerCase();
     switch (statusLower) {
@@ -492,7 +467,6 @@ export default function BookingDetailPage() {
                         const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
                         return `${diffHours}h ${diffMinutes}m`;
                       } catch (error) {
-                        console.error("Duration calculation error:", error);
                         return "N/A";
                       }
                     })()}

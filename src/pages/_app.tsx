@@ -27,7 +27,6 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
   
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      console.log("User is signed in, syncing with database");
       syncUser.mutate();
     }
   }, [isLoaded, isSignedIn]);

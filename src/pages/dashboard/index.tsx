@@ -10,13 +10,12 @@ import Head from 'next/head';
 import { CustomDialog } from "~/components/ui/custom-dialog";
 import { useCustomDialog } from "~/hooks/useCustomDialog";
 
-// Define booking type with optional structure to handle both room and lab properties
 type Booking = {
-  id: number;  // Change from number | string to number to match API
+  id: number;
   createdAt: Date;
   userId: string;
   roomId: string;
-  bookingDate: Date;  // Change from string to Date
+  bookingDate: Date;
   startTime: string;
   endTime: string;
   participants: number;
@@ -53,7 +52,6 @@ export default function Dashboard() {
   const [completedSearchTerm, setCompletedSearchTerm] = useState("");
   const [completedPage, setCompletedPage] = useState(1);
 
-  // Fetch current bookings using tRPC
   const {
     data: currentBookingsData,
     isLoading: isLoadingCurrentBookings,
@@ -71,7 +69,6 @@ export default function Dashboard() {
     }
   );
 
-  // Fetch completed bookings using tRPC
   const {
     data: completedBookingsData,
     isLoading: isLoadingCompletedBookings,
@@ -89,15 +86,13 @@ export default function Dashboard() {
     }
   );
 
-  // Set isMounted to true when component mounts on client
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Redirect if not signed in
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      router.push('/');
+      void router.push('/');
     }
   }, [isLoaded, isSignedIn, router]);
 
@@ -119,24 +114,21 @@ export default function Dashboard() {
       void refetchCompletedBookings();
     },
     onError: (err) => {
-      console.error("Cancel booking error:", err);
       error(`Error cancelling booking: ${err.message}`);
     }
   });
 
   // Format date function
-  // Update the formatDate function to handle Date objects
-const formatDate = (date: Date | string) => {
-  const options: Intl.DateTimeFormatOptions = { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric' 
+  const formatDate = (date: Date | string) => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric' 
+    };
+    
+    const dateObj = typeof date === 'string' ? new Date(date) : date;
+    return dateObj.toLocaleDateString('en-US', options);
   };
-  
-  // Handle both Date objects and date strings
-  const dateObj = typeof date === 'string' ? new Date(date) : date;
-  return dateObj.toLocaleDateString('en-US', options);
-};
 
   // Get status badge color
   const getStatusBadge = (status: string) => {
@@ -158,7 +150,6 @@ const formatDate = (date: Date | string) => {
 
   // Helper function to get location name safely
   const getLocationInfo = (booking: Booking) => {
-    // Try lab first, then room if lab doesn't exist
     const locationObj = booking.lab || booking.room;
     
     if (!locationObj) {
@@ -171,7 +162,6 @@ const formatDate = (date: Date | string) => {
     };
   };
 
-  // Only render content client-side to avoid hydration mismatch
   if (!isMounted || !isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -180,7 +170,6 @@ const formatDate = (date: Date | string) => {
     );
   }
 
-  // If not authenticated, show nothing (will redirect)
   if (!isSignedIn) {
     return null;
   }
@@ -311,9 +300,9 @@ const formatDate = (date: Date | string) => {
                               size="sm" 
                               className="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 border-red-200 hover:cursor-pointer"
                               onClick={() => handleCancelBooking(booking.id)}
-                              disabled={cancelBookingMutation.isPending} // Changed from isLoading to isPending
+                              disabled={cancelBookingMutation.isPending}
                             >
-                              {cancelBookingMutation.isPending ? ( // Changed from isLoading to isPending
+                              {cancelBookingMutation.isPending ? ( 
                                 <Loader2 className="h-4 w-4 mr-1 animate-spin" />
                               ) : (
                                 <XCircle className="h-4 w-4 mr-1" />
@@ -383,8 +372,6 @@ const formatDate = (date: Date | string) => {
         </div>
         
         <div className="p-6">
-          {/* Similar changes for the completed bookings section */}
-          {/* ... */}
           <div className="overflow-x-auto">
             <table className="min-w-full divide-y divide-gray-200">
               <thead className="bg-gray-50">

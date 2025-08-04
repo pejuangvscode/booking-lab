@@ -10,13 +10,12 @@ import { api } from '~/utils/api';
 import Head from 'next/head';
 import PhotoUpload from '~/components/photo-upload';
 
-// Updated type to match actual API response
 type Booking = {
   id: number;
   createdAt: Date;
   userId: string;
   roomId: string;
-  bookingDate: Date; // Changed from string | undefined to Date
+  bookingDate: Date;
   startTime: string;
   endTime: string;
   participants: number;
@@ -43,13 +42,12 @@ type Booking = {
   };
 };
 
-// Type for the general bookings list (might have different structure)
 type ApiBookingResponse = {
   id: number;
   createdAt: Date;
   userId: string;
   roomId: string;
-  bookingDate: string | Date; // Can be either string or Date
+  bookingDate: string | Date;
   startTime: string;
   endTime: string;
   participants: number;
@@ -94,7 +92,7 @@ export default function CompleteBooking() {
     setShowMessageDialog(true);
   };
 
-  // Use getAllBookings without parameters (as defined in your router)
+  // Use getAllBookings without parameters
   const {
     data: allBookingsData,
     isLoading: isLoadingBookings,
@@ -122,7 +120,7 @@ export default function CompleteBooking() {
     }
   );
 
-  // Updated mutation to use equipment field
+  // mutation to use equipment field
   const updateBookingMutation = api.booking.updateBooking.useMutation({
     onSuccess: () => {
       showMessage({
@@ -136,7 +134,6 @@ export default function CompleteBooking() {
       setSelectedBooking(null);
     },
     onError: (err) => {
-      console.error("Complete booking error:", err);
       showMessage({
         title: "Error",
         message: `Error completing booking: ${err.message}`,
@@ -151,17 +148,14 @@ export default function CompleteBooking() {
     setIsMounted(true);
   }, []);
 
-  // Redirect if not signed in
   useEffect(() => {
     if (isLoaded && !isSignedIn) {
-      router.push('/');
+      void router.push('/');
     }
   }, [isLoaded, isSignedIn, router]);
 
-  // Set selected booking when specific booking data is loaded
   useEffect(() => {
     if (specificBookingData) {
-      // Type assertion to ensure compatibility
       setSelectedBooking(specificBookingData as Booking);
     }
   }, [specificBookingData]);
@@ -184,7 +178,7 @@ export default function CompleteBooking() {
     router.push('/dashboard');
   };
 
-  // Updated format date function to handle both Date and string
+  // format date function to handle both Date and string
   const formatDate = (date: Date | string | undefined) => {
     if (!date) return 'No date specified';
     
@@ -198,7 +192,6 @@ export default function CompleteBooking() {
     return dateObj.toLocaleDateString('en-US', options);
   };
 
-  // Get status badge color
   const getStatusBadge = (status: string) => {
     switch(status.toLowerCase()) {
       case 'accepted':
@@ -211,7 +204,6 @@ export default function CompleteBooking() {
     }
   };
 
-  // Helper function to get location info - updated to handle both types
   const getLocationInfo = (booking: Booking | ApiBookingResponse) => {
     if (booking.room) {
       return {
@@ -225,7 +217,6 @@ export default function CompleteBooking() {
     };
   };
 
-  // Get current bookings data with proper typing
   const currentBookings = (allBookingsData || []) as ApiBookingResponse[];
   const acceptedBookings = currentBookings.filter((booking) => 
     booking.status.toLowerCase() === 'accepted' || booking.status.toLowerCase() === 'approved'
@@ -246,9 +237,7 @@ export default function CompleteBooking() {
     return null;
   }
 
-  // Handle specific booking view
   if (bookingId) {
-    // Loading state
     if (isLoadingSpecificBooking) {
       return (
         <div className="flex items-center justify-center min-h-screen">
@@ -257,7 +246,6 @@ export default function CompleteBooking() {
       );
     }
 
-    // Error state or booking not found
     if (isErrorSpecificBooking || !specificBookingData) {
       return (
         <div className="container mx-auto px-4 py-8 mt-20">
@@ -284,7 +272,7 @@ export default function CompleteBooking() {
 
         <div className="container mx-auto px-4 py-8 mt-20">
           <div className="max-w-2xl mx-auto">
-            {/* Back Button */}
+
             <Button
               onClick={handleBackToDashboard}
               variant="outline"
@@ -294,7 +282,6 @@ export default function CompleteBooking() {
               Back to Dashboard
             </Button>
 
-            {/* Booking Details Card */}
             <Card className="border border-gray-200 shadow-lg overflow-hidden p-0">
               <CardHeader className="bg-gradient-to-r from-green-600 to-green-700 text-white m-0 p-6">
                 <CardTitle className="text-2xl flex items-center gap-2 m-0">
@@ -307,7 +294,6 @@ export default function CompleteBooking() {
               </CardHeader>
               
               <CardContent className="p-6 space-y-6">
-                {/* Booking Status */}
                 <div className="flex items-center justify-between">
                   <span className="text-sm font-medium text-gray-600">Current Status:</span>
                   <Badge className={getStatusBadge(booking.status)}>
@@ -315,7 +301,6 @@ export default function CompleteBooking() {
                   </Badge>
                 </div>
 
-                {/* Event Details */}
                 <div className="space-y-4">
                   <div>
                     <h3 className="text-lg font-semibold text-gray-900 mb-4">Event Details</h3>
@@ -331,7 +316,6 @@ export default function CompleteBooking() {
                     </div>
                   </div>
 
-                  {/* Location & Time */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="flex items-start space-x-3">
                       <MapPin className="h-5 w-5 text-gray-400 mt-0.5" />
@@ -369,7 +353,6 @@ export default function CompleteBooking() {
                     </div>
                   </div>
 
-                  {/* Requester Info */}
                   <div className="flex items-start space-x-3">
                     <User className="h-5 w-5 text-gray-400 mt-0.5" />
                     <div>
@@ -382,16 +365,14 @@ export default function CompleteBooking() {
                   </div>
                 </div>
 
-                {/* Action Buttons */}
                 <div className="pt-6 border-t border-gray-200">
                   {(booking.status.toLowerCase() === 'accepted' || booking.status.toLowerCase() === 'approved') ? (
                     <PhotoUpload
                       onComplete={(photoUrl) => {
-                        console.log("Photo uploaded, URL:", photoUrl);
                         updateBookingMutation.mutate({ 
                           id: booking.id,
                           status: "completed",
-                          equipment: photoUrl // Using equipment field as discussed
+                          equipment: photoUrl
                         });
                       }}
                       isLoading={updateBookingMutation.isPending}
@@ -426,7 +407,6 @@ export default function CompleteBooking() {
           </div>
         </div>
 
-        {/* Confirmation Dialog */}
         <Dialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -475,7 +455,6 @@ export default function CompleteBooking() {
           </DialogContent>
         </Dialog>
 
-        {/* Message Dialog */}
         <Dialog open={showMessageDialog} onOpenChange={setShowMessageDialog}>
           <DialogContent className="sm:max-w-md">
             <DialogHeader>
@@ -509,7 +488,6 @@ export default function CompleteBooking() {
     );
   }
 
-  // Handle general complete booking page (list view)
   return (
     <>
       <Head>

@@ -9,25 +9,25 @@ const carouselItems = [
     id: 1,
     imageSrc: "/B338.png",
     title: "Informatics Studio (B338)",
-    subTitle: "keterangan keteranganketeranganketeranganketerangan"
+    subTitle: "keterangan keterangan keteranganketeranganketerangan"
   },
   { 
     id: 2,
     imageSrc: "/B357.png", 
     title: "Information System Lab (B357)",
-    subTitle: "keteranganketeranganketeranganketeranganketerangan"
+    subTitle: "keteranganketerangan keteranganketeranganketerangan"
   },
   {
     id: 3,
     imageSrc: "/F205.png",
     title: "FIT Showcase Lab (F205)",
-    subTitle: "keteranganketeranganketeranganketeranganketerangan"
+    subTitle: "keteranganketerangan keteranganketeranganketerangan"
   },  
   {
     id: 4,
     imageSrc: "/F209.png",
     title: "Lab F209",
-    subTitle: "keteranganketeranganketeranganketeranganketerangan"
+    subTitle: "keteranganketerangan keteranganketeranganketerangan"
   }
 ];
 
@@ -84,7 +84,7 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Navigation Arrows - Fixed positioning and z-index */}
+        {/* Navigation Arrows */}
         <button
           onClick={prevSlide}
           className="hover:cursor-pointer absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
@@ -123,7 +123,7 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Slide Indicators - Improved mobile positioning */}
+        {/* Slide Indicators */}
         <div className="absolute bottom-2 sm:bottom-4 left-0 right-0 z-10">
           <div className="flex justify-center space-x-2">
             {carouselItems.map((_, index) => (
@@ -141,7 +141,7 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Information Sections - Improved mobile spacing */}
+      {/* Information Sections */}
       <div className="bg-gray-50">
         {/* About BookLab Section */}
         <section className="py-8 sm:py-12 lg:py-16 bg-white">
@@ -185,7 +185,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* Lab Rules Section - Improved mobile layout */}
+        {/* Lab Rules Section */}
         <section className="py-8 sm:py-12 lg:py-16 bg-gray-50">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
@@ -296,7 +296,7 @@ export default function Home() {
           </div>
         </section>
 
-        {/* How to Use BookLab Section - Mobile optimized */}
+        {/* How to Use BookLab Section */}
         <section className="py-8 sm:py-12 lg:py-16 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
@@ -384,7 +384,7 @@ export default function Home() {
               <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-6 sm:mb-8">Credits</h2>
               <div className="bg-white p-6 sm:p-8 rounded-xl shadow-md">
                 <p className="text-base sm:text-lg text-gray-600 mb-4 sm:mb-6">
-                  BookLab developed by Cak Gendon
+                  Developed by Teofilus Insani
                 </p>
                 
                 <div className="mt-6 p-4 bg-gradient-to-r from-orange-50 to-blue-50 rounded-lg border border-orange-200">

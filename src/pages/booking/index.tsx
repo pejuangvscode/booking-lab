@@ -1,11 +1,16 @@
-import { AlertTriangle, Loader2, Users, Building } from "lucide-react";
+import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
+import { AlertTriangle, Building, Loader2, Users } from "lucide-react";
 import Head from "next/head";
+import Link from "next/link";
 import { useRouter } from "next/router";
-import { useState, useEffect } from "react";
-import { useAuth, useUser, SignInButton } from '@clerk/nextjs'; // Add SignInButton import
+import { useEffect, useState } from "react";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
+import { Card, CardContent } from "~/components/ui/card";
+import { CustomDialog } from "~/components/ui/custom-dialog";
 import { Input } from "~/components/ui/input";
+import { Label } from "~/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -13,25 +18,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "~/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
-import { Label } from "~/components/ui/label";
-import { Card, CardContent } from "~/components/ui/card";
-import { api } from "~/utils/api";
-import Link from "next/link";
-import { CustomDialog } from "~/components/ui/custom-dialog";
 import { useCustomDialog } from "~/hooks/useCustomDialog";
+import { api } from "~/utils/api";
 
 export default function BookingPage() {
   const router = useRouter();
   const { labId } = router.query;
   
-  // ALL HOOKS MUST BE CALLED FIRST - BEFORE ANY CONDITIONAL RETURNS
-  // Authentication hooks
   const { isLoaded, isSignedIn } = useAuth();
   const { user } = useUser();
   const { dialogState, closeDialog, confirm, success, error, alert } = useCustomDialog();
 
-  // Form state (all hooks must be called unconditionally, before any return)
   const utils = api.useUtils();
   const [bookingDate, setBookingDate] = useState("");
   const [startHour, setStartHour] = useState("");
@@ -50,7 +47,6 @@ export default function BookingPage() {
   const [checking, setChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Fetch lab details using tRPC query - MUST BE CALLED BEFORE RETURNS
   const {
     data: labDetail,
     isLoading: isLabLoading,
@@ -63,13 +59,11 @@ export default function BookingPage() {
     }
   );
 
-  // Helper function to calculate participants
   const calculateParticipants = () => {
-    if (!labDetail) return 0; // Changed from 1 to 0
+    if (!labDetail) return 0;
     
     if (labDetail.capacity === 0) {
-      // For flexible space rooms like F205, use 0 as default
-      return parseInt(participants) || 0; // Changed from 1 to 0
+      return parseInt(participants) || 0;
     } else if (bookingType === "full") {
       return labDetail.capacity || parseInt(participants) || 1;
     } else {
@@ -77,7 +71,6 @@ export default function BookingPage() {
     }
   };
 
-  // Update conflict check query untuk menghindari unnecessary calls
   const conflictCheck = api.booking.checkConflicts.useQuery(
     { 
       labId: labId as string,
@@ -88,15 +81,14 @@ export default function BookingPage() {
       bookingType: bookingType as "full" | "partial"
     },
     { 
-      enabled: false, // Keep this disabled - we'll use manual calls only
+      enabled: false,
       retry: false,
-      refetchOnWindowFocus: false, // Add this
-      refetchOnMount: false, // Add this
-      staleTime: 30000, // Cache results for 30 seconds
+      refetchOnWindowFocus: false,
+      refetchOnMount: false,
+      staleTime: 30000,
     }
   );
 
-  // Booking mutation - MUST BE CALLED BEFORE RETURNS
   const bookingMutation = api.booking.create.useMutation({
     onMutate: () => {
       setIsSubmitting(true);
@@ -112,8 +104,6 @@ export default function BookingPage() {
     }
   });
 
-  // ALL useEffect HOOKS MUST ALSO BE CALLED BEFORE RETURNS
-  // Handle booking type change for zero capacity rooms
   useEffect(() => {
     if (labDetail?.capacity === 0) {
       setBookingType("full");
@@ -121,20 +111,15 @@ export default function BookingPage() {
     }
   }, [labDetail]);
 
-  // Conflict check effect
-  // Conflict check effect - tambahkan validasi waktu di sini juga
-  // Update useEffect untuk conflict check (hapus conflictCheck dari dependencies)
   useEffect(() => { 
     const checkAvailabilityDebounced = async () => {
       if (bookingDate && startHour && startMinute && endHour && endMinute && labDetail) {
         
-        // TAMBAHKAN VALIDASI WAKTU YANG SUDAH LEWAT
         const now = new Date();
         const startTimeValue = `${startHour}:${startMinute}`;
         const bookingDateTime = new Date(`${bookingDate}T${startTimeValue}:00`);
-        const minimumAdvanceTime = new Date(now.getTime() + (60 * 60 * 1000)); // 1 hour from now
+        const minimumAdvanceTime = new Date(now.getTime() + (60 * 60 * 1000));
         
-        // Clear previous time-related errors first
         setFormErrors(prev => {
           const newErrors = { ...prev };
           delete newErrors.conflict;
@@ -142,7 +127,6 @@ export default function BookingPage() {
           return newErrors;
         });
         
-        // Check if booking time is in the past
         if (bookingDateTime <= now) {
           setFormErrors(prev => ({
             ...prev,
@@ -151,7 +135,6 @@ export default function BookingPage() {
           return;
         }
         
-        // Check minimum advance booking time
         if (bookingDateTime < minimumAdvanceTime) {
           setFormErrors(prev => ({
             ...prev,
@@ -160,9 +143,7 @@ export default function BookingPage() {
           return;
         }
         
-        // If time validation passes, then check for conflicts
         try {
-          // Use utils.client instead of conflictCheck.refetch to avoid dependency issues
           const finalParticipants = labDetail?.capacity === 0 
             ? parseInt(participants) || 1
             : bookingType === "full" 
@@ -191,7 +172,6 @@ export default function BookingPage() {
             });
           }
         } catch (error) {
-          // Handle error silently or show a non-intrusive message
           console.error("Availability check failed:", error);
         }
       }
@@ -207,16 +187,13 @@ export default function BookingPage() {
     endMinute, 
     participants, 
     bookingType, 
-    labDetail?.capacity, // Use specific property instead of entire object
-    labDetail?.id, // Add lab ID to detect lab changes
-    labId, // Add labId
-    utils.client // This is stable
-    // REMOVED: conflictCheck - this was causing the infinite loop
+    labDetail?.capacity,
+    labDetail?.id,
+    labId,
+    utils.client
   ]);
 
-  // NOW YOU CAN HAVE CONDITIONAL RETURNS AFTER ALL HOOKS ARE CALLED
   
-  // Show loading state while auth is loading
   if (!isLoaded) {
     return (
       <div className="container mx-auto px-4 py-8 mt-20">
@@ -239,7 +216,6 @@ export default function BookingPage() {
     );
   }
 
-  // Show sign-in prompt if user is not authenticated
   if (!isSignedIn) {
     return (
       <div className="container mx-auto px-4 py-8 mt-20">
@@ -304,7 +280,6 @@ export default function BookingPage() {
     );
   }
 
-  // Generate hour/minute options - these can be after conditional returns since they're not hooks
   const hourOptions = Array.from({ length: 13 }, (_, i) => (i + 7).toString().padStart(2, '0'));
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
   const eventTypes = ["Class", "Seminar", "Workshop", "Meeting", "Exam", "Other"];
@@ -314,17 +289,14 @@ export default function BookingPage() {
     if (value === "full") {
       const capacity = labDetail?.capacity || 0;
       if (capacity === 0) {
-        // For flexible space (F205), set participants to 0
         setParticipants("0");
       } else {
-        // For fixed capacity rooms, set to room capacity
         setParticipants(capacity.toString());
       }
     } else if (value === "partial") {
       setParticipants("");
     }
     
-    // Clear participants validation error when booking type changes
     if (formErrors.participants) {
       const newErrors = { ...formErrors };
       delete newErrors.participants;
@@ -335,7 +307,6 @@ export default function BookingPage() {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    // Validate form
     const errors: { [key: string]: string } = {};
     if (!bookingDate) errors.bookingDate = "Booking date is required";
     if (!startHour || !startMinute) errors.startTime = "Start time is required";
@@ -347,7 +318,6 @@ export default function BookingPage() {
     if (!requestorNIM) errors.requestorNIM = "Requestor NIM is required";
     if (!faculty) errors.faculty = "Faculty is required";
 
-    // Check time validity
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
     
@@ -355,7 +325,6 @@ export default function BookingPage() {
       errors.endTime = "End time must be after start time";
     }
 
-    // Time validation (existing code)
     if (bookingDate && startHour && startMinute) {
       const now = new Date();
       const bookingDateTime = new Date(`${bookingDate}T${startTimeValue}:00`);
@@ -368,17 +337,13 @@ export default function BookingPage() {
       }
     }
 
-    // Updated participants validation for flexible space rooms (F205)
     if (labDetail?.capacity === 0) {
-      // For flexible space rooms like F205, participants can be 0 or more
       if (participants.trim() === "" || isNaN(parseInt(participants))) {
         errors.participants = "Number of participants is required for flexible space rooms";
       } else if (parseInt(participants) < 0) {
         errors.participants = "Number of participants cannot be negative";
       }
-      // Note: We allow 0 participants for flexible space rooms
     } else if (bookingType === "partial") {
-      // For fixed capacity rooms with partial booking
       if (!participants || participants.trim() === "") {
         errors.participants = "Number of participants is required";
       } else if (parseInt(participants) <= 0 || isNaN(parseInt(participants))) {
@@ -394,14 +359,12 @@ export default function BookingPage() {
       return;
     }
     
-    // Updated final participants calculation
     const finalParticipants = labDetail?.capacity === 0 
-      ? parseInt(participants) || 0  // For flexible space, use entered value or default to 0
+      ? parseInt(participants) || 0
       : bookingType === "full" 
-        ? (labDetail?.capacity || parseInt(participants) || 1)  // For full booking, use room capacity
-        : parseInt(participants) || 1;  // For partial booking, use entered value
+        ? (labDetail?.capacity || parseInt(participants) || 1)
+        : parseInt(participants) || 1;
 
-    // Rest of the submit logic remains the same...
     setChecking(true);
     try {
       const conflictResult = await utils.client.booking.checkConflicts.query({
@@ -643,7 +606,7 @@ export default function BookingPage() {
               </div>
             </div>
 
-            {/* Booking Type Selection - conditional rendering */}
+            {/* Booking Type Selection */}
             <div className="space-y-4">
               <label className="block text-sm font-medium text-gray-700">
                 Booking Type
@@ -654,12 +617,11 @@ export default function BookingPage() {
                 onValueChange={handleBookingTypeChange}
                 className={`grid gap-4 ${labDetail?.capacity === 0 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
               >
-                {/* Full Room Option - always show */}
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem 
                     value="full" 
                     id="full" 
-                    disabled={labDetail?.capacity === 0} // Disabled visual but still selected
+                    disabled={labDetail?.capacity === 0}
                   />
                   <Label htmlFor="full" className="flex-1 cursor-pointer">
                     <Card className={`p-4 border-2 transition-all duration-200 ${
@@ -691,7 +653,7 @@ export default function BookingPage() {
                   </Label>
                 </div>
 
-                {/* Partial Room Option - only show if capacity > 0 */}
+                {/* Partial Room Option */}
                 {labDetail?.capacity !== 0 && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="partial" id="partial" />
@@ -746,7 +708,6 @@ export default function BookingPage() {
                 {formErrors.participants && (
                   <p className="text-red-500 text-xs">{formErrors.participants}</p>
                 )}
-                {/* Conditional warning message - only show when field is empty AND it's a flexible space */}
                 {labDetail?.capacity && labDetail.capacity > 0 ? (
                   <p className="text-xs text-gray-500">
                     Room capacity: {labDetail.capacity} seats

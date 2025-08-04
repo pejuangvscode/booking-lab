@@ -44,12 +44,11 @@ const locales = {
 const localizer = dateFnsLocalizer({
   format,
   parse,
-  startOfWeek: (date: Date) => startOfWeek(date, { weekStartsOn: 0 }), // 0 = Sunday
-  getDay, // Import getDay from date-fns directly
+  startOfWeek: (date: Date) => startOfWeek(date, { weekStartsOn: 0 }),
+  getDay,
   locales,
 });
 
-// Booking form schema
 const bookingFormSchema = z.object({
   roomId: z.string().min(1, { message: "Please select a room" }),
   title: z.string().min(3, { message: "Event title must be at least 3 characters" }),
@@ -58,16 +57,14 @@ const bookingFormSchema = z.object({
   end: z.date(),
 });
 
-// Event colors by lab room
-// Event colors by lab room to match image style
+
 const roomColors: Record<string, string> = {
-  "F205": "#4285F4", // Blue
-  "B338": "#3C7A0C", // Green
-  "B357": "#5E35B1", // Purple
-  "F209": "#F25022", // Red
+  "F205": "#4285F4",
+  "B338": "#3C7A0C",
+  "B357": "#5E35B1",
+  "F209": "#F25022", 
 };
 
-// Update your BookingEvent type to accept both string and number
 type BookingEvent = {
   id: string;
   title: string;
@@ -77,9 +74,9 @@ type BookingEvent = {
   bookedBy: string;
   description?: string;
   status?: string;
-  bookingType?: 'full' | 'partial'; // Tambahkan ini
-  participants?: number; // Tambahkan ini
-  roomCapacity?: number; // Tambahkan ini untuk context
+  bookingType?: 'full' | 'partial';
+  participants?: number; 
+  roomCapacity?: number;
 };
 
 export default function BookingCalendar() {
@@ -97,11 +94,9 @@ export default function BookingCalendar() {
     events: BookingEvent[];
   } | null>(null);
 
-  // NEW: Room filter state
   const [selectedRoomFilters, setSelectedRoomFilters] = useState<string[]>([]);
   const [showFilterPopover, setShowFilterPopover] = useState(false);
 
-  // Form for booking
   const form = useForm({
     resolver: zodResolver(bookingFormSchema),
     defaultValues: {
@@ -113,7 +108,6 @@ export default function BookingCalendar() {
     }
   });
   
-  // Available laboratory rooms
   const [rooms] = useState([
     { id: "F205", name: "FIT Showcase Lab", capacity: 0 },
     { id: "B338", name: "Informatics Studio", capacity: 20 },
@@ -121,7 +115,6 @@ export default function BookingCalendar() {
     { id: "F209", name: "Lab F209", capacity: 30 },
   ]);
 
-  // Fetch events using tRPC
   const { 
     data: bookingsData, 
     isLoading: isLoadingBookings,
@@ -134,12 +127,11 @@ export default function BookingCalendar() {
 
   const getFilteredEvents = (events: BookingEvent[]) => {
     if (selectedRoomFilters.length === 0) {
-      return events; // Show all events if no filter selected
+      return events;
     }
     return events.filter(event => selectedRoomFilters.includes(event.roomId));
   };
 
-  // NEW: Handle room filter changes
   const handleRoomFilterChange = (roomId: string, checked: boolean) => {
     setSelectedRoomFilters(prev => {
       if (checked) {
@@ -150,26 +142,21 @@ export default function BookingCalendar() {
     });
   };
 
-  // NEW: Clear all filters
   const clearAllFilters = () => {
     setSelectedRoomFilters([]);
   };
 
-  // NEW: Select all rooms
   const selectAllRooms = () => {
     setSelectedRoomFilters(rooms.map(room => room.id));
   };
 
-  // Update the limitEventsPerDay function to sort by start time and filter cancelled events
   const limitEventsPerDay = (events: BookingEvent[], limit: number = 2) => {
-    // First, filter by rooms and remove cancelled events
     const filteredEvents = getFilteredEvents(events).filter(event => 
       event.status?.toLowerCase() !== 'cancelled'
     );
 
     const eventsByDate: Record<string, BookingEvent[]> = {};
     
-    // Group filtered events by date (yyyy-mm-dd format)
     filteredEvents.forEach(event => {
       try {
         const dateKey = format(event.start, 'yyyy-MM-dd');
@@ -182,11 +169,9 @@ export default function BookingCalendar() {
       }
     });
     
-    // Create limited events with "+X more" indicators
     const limitedEvents: BookingEvent[] = [];
     
     Object.entries(eventsByDate).forEach(([dateKey, dayEvents]) => {
-      // Sort events by start time (ascending order - earliest first)
       const sortedEvents = dayEvents.sort((a, b) => {
         try {
           const timeA = a.start.getTime();
@@ -198,23 +183,20 @@ export default function BookingCalendar() {
         }
       });
       
-      // Take only the first 'limit' events (earliest events)
       const visibleEvents = sortedEvents.slice(0, limit);
       limitedEvents.push(...visibleEvents);
       
-      // If there are more events, create a "+X more" event
       if (sortedEvents.length > limit) {
         const overflowCount = sortedEvents.length - limit;
         const lastVisibleEvent = visibleEvents[visibleEvents.length - 1];
         
         if (lastVisibleEvent && lastVisibleEvent.end) {
           try {
-            // Create a special "+X more" event positioned after the last visible event
             const moreEvent: BookingEvent = {
               id: `more-${dateKey}`,
               title: `+${overflowCount} more`,
-              start: new Date(lastVisibleEvent.end.getTime()), // Start right after last visible event
-              end: new Date(lastVisibleEvent.end.getTime() + 30 * 60 * 1000), // 30 minutes duration
+              start: new Date(lastVisibleEvent.end.getTime()),
+              end: new Date(lastVisibleEvent.end.getTime() + 30 * 60 * 1000),
               roomId: 'MORE',
               bookedBy: '',
               description: `${overflowCount} additional events on this date`,
@@ -234,7 +216,6 @@ export default function BookingCalendar() {
     return limitedEvents;
   };
 
-  // Transform API bookings to calendar events
   const [events, setEvents] = useState<BookingEvent[]>([]);
   const checkConflictsQuery = api.booking.checkConflicts.useQuery(
     {
@@ -246,16 +227,14 @@ export default function BookingCalendar() {
       bookingType: "full"
     },
     {
-      enabled: false, // Don't run until explicitly asked to
+      enabled: false,
     }
   );
   
-  // Update your useEffect for transforming events
   useEffect(() => {
     if (bookingsData && rooms.length > 0) {      
       const transformedEvents = bookingsData
         .filter(booking => 
-          // Filter out cancelled bookings at the source
           booking.status?.toLowerCase() !== 'cancelled'
         )
         .map(booking => {
@@ -286,10 +265,9 @@ export default function BookingCalendar() {
 
           const roomCapacity = matchedRoom?.capacity || 0;
 
-          // Determine booking type based on participants vs room capacity
           let bookingType: 'full' | 'partial' = 'partial';
           if (roomCapacity === 0) {
-            bookingType = 'full'; // Flexible space rooms
+            bookingType = 'full'; 
           } else if (booking.participants >= roomCapacity) {
             bookingType = 'full';
           }
@@ -313,18 +291,15 @@ export default function BookingCalendar() {
       setEvents(transformedEvents as BookingEvent[]);
     }
   }, [bookingsData, rooms]);
-  // Set isMounted to true when component mounts on client
   useEffect(() => {
     setIsMounted(true);
   }, []);
 
-  // Event style getter to color events by room
   const eventStyleGetter = (event: BookingEvent) => {
-    // Handle "+X more" events dengan style khusus
     if (event.status === 'overflow') {
       return {
         style: {
-          backgroundColor: '#6b7280', // Gray color
+          backgroundColor: '#6b7280',
           color: 'white',
           borderRadius: '4px',
           border: '1px solid #9ca3af',
@@ -496,16 +471,13 @@ export default function BookingCalendar() {
     }
   };
 
-  // Handle event selection
   const handleSelectEvent = (event: BookingEvent) => {
     setSelectedEvent(event);
     setIsDetailsModalOpen(true);
   };
 
-  // Handle slot selection
   const handleSelectSlot = ({ start, end }: { start: Date; end: Date }) => {
     if (!isSignedIn) {
-      // If not signed in, prompt to sign in
       alert("Please sign in to book a laboratory");
       return;
     }
@@ -515,7 +487,6 @@ export default function BookingCalendar() {
     setIsBookingModalOpen(true);
   };
 
-  // Only render content client-side to avoid hydration mismatch
   if (!isMounted || !isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -539,7 +510,6 @@ export default function BookingCalendar() {
               <p className="text-orange-100 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
             </div>
             
-            {/* NEW: Room Filter Button */}
             <div className="flex items-center gap-3">
               <Popover open={showFilterPopover} onOpenChange={setShowFilterPopover}>
                 <PopoverTrigger asChild>
@@ -643,7 +613,6 @@ export default function BookingCalendar() {
                 </PopoverContent>
               </Popover>
               
-              {/* Show active filter indicator */}
               {selectedRoomFilters.length > 0 && (
                 <Button
                   variant="ghost"
@@ -661,7 +630,6 @@ export default function BookingCalendar() {
         
         <div className="p-3 sm:p-6">
           <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
-            {/* Sidebar */}
             <div className="lg:col-span-1 order-2 lg:order-1">
               <Card className="mb-8 lg:mb-0">
                 <CardHeader className="pb-2 sm:pb-3">
@@ -722,7 +690,7 @@ export default function BookingCalendar() {
                 ) : (
                   <Calendar
                     localizer={localizer}
-                    events={limitEventsPerDay(events, 1)} // Already includes filtering
+                    events={limitEventsPerDay(events, 1)}
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: "100%" }}
@@ -768,7 +736,6 @@ export default function BookingCalendar() {
         </div>
       </div>
 
-      {/* "Show More Events" Modal - events are now sorted by start time */}
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
         <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
           <DialogHeader className="flex-shrink-0 pb-4 border-b">
@@ -787,7 +754,6 @@ export default function BookingCalendar() {
           {selectedEvent && (
             <div className="flex-1 overflow-y-auto pr-2 -mr-2">
               <div className="space-y-6 py-4">
-                {/* Event Header Info */}
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="flex items-center justify-between mb-3">
                     <h3 className="text-lg font-semibold text-gray-900">
@@ -824,7 +790,6 @@ export default function BookingCalendar() {
                   )}
                 </div>
 
-                {/* Time & Date Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-white border rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-2">
@@ -859,7 +824,6 @@ export default function BookingCalendar() {
                   </div>
                 </div>
 
-                {/* Location & Booking Info */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div className="bg-white border rounded-lg p-4">
                     <div className="flex items-center gap-3 mb-2">
@@ -912,7 +876,6 @@ export default function BookingCalendar() {
                   </div>
                 </div>
 
-                {/* Booked By Info */}
                 <div className="bg-white border rounded-lg p-4">
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-gray-100 rounded-lg">
@@ -967,7 +930,6 @@ export default function BookingCalendar() {
           {moreEventsData && (
             <div className="flex-1 overflow-y-auto pr-2 -mr-2">
               <div className="space-y-3 py-4">
-                {/* Events are already sorted by start time from handleMoreEventsClick */}
                 {moreEventsData.events.map((event, index) => (
                   <Card 
                     key={event.id} 
@@ -982,7 +944,6 @@ export default function BookingCalendar() {
                       }, 100);
                     }}
                   >
-                    {/* Rest of the card content remains the same */}
                     <div 
                       className="absolute left-0 top-0 bottom-0 w-1"
                       style={{ backgroundColor: roomColors[event.roomId] || '#3174ad' }}
