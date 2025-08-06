@@ -20,7 +20,7 @@ const carouselItems = [
   {
     id: 3,
     imageSrc: "/F205.png",
-    title: "FIT Showcase Lab (F205)",
+    title: "FIT Showcase Room (F205)",
     subTitle: "keteranganketerangan keteranganketeranganketerangan"
   },  
   {
@@ -555,16 +555,20 @@ export default function Home() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
-                        Nomor Penanggung Jawab (PIC) Lab B338
+                        PIC Lab B338
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
+                        </li>
+                        <li>
                           <a href="mailto:kelvin.wiriyatama@uph.edu" className="text-indigo-600 hover:underline">kelvin.wiriyatama@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
+                        </li>
+                        <li>
                           <a href="tel:085155443290" className="text-indigo-600 hover:underline">0851-5544-3290</a>
                           <span className="text-gray-500 ml-1">(Kelvin Wiriyatama)</span>
                         </li>
@@ -574,17 +578,21 @@ export default function Home() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
-                        Nomor Penanggung Jawab (PIC) Lab B357
+                        PIC Lab B357
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
+                        </li>
+                        <li className="flex items-center">
                           <a href="mailto:kusno.prasetya@uph.edu" className="text-indigo-600 hover:underline">kusno.prasetya@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
-                          <a href="tel:085605502899" className="text-indigo-600 hover:underline">08560-5502-8999</a>
+                        </li>
+                        <li className="flex items-center">
+                          <a href="tel:081234567890" className="text-indigo-600 hover:underline">0812-3456-7890</a>
                           <span className="text-gray-500 ml-1">(Kusno Prasetya)</span>
                         </li>
                       </ul>
@@ -593,16 +601,20 @@ export default function Home() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
-                        Nomor Penanggung Jawab (PIC) Lab Gedung F
+                        PIC Lab Gedung F
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
+                        </li>
+                        <li>
                           <a href="mailto:ricky.purba@uph.edu" className="text-indigo-600 hover:underline">ricky.purba@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
+                        </li>
+                        <li className="flex items-center">
                           <a href="tel:085974556230" className="text-indigo-600 hover:underline">0859-7455-6230</a>
                           <span className="text-gray-500 ml-1">(Ricky Ricardo Purba)</span>
                         </li>
@@ -612,16 +624,20 @@ export default function Home() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">d</span>
-                        Nomor Laboran
+                        Laboran
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan teknis tentang peralatan lab yang tidak bisa ditangani oleh PIC silahkan hubungi Laboran melalui kontak berikut:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
+                        </li>
+                        <li>
                           <a href="mailto:ricky.purba@uph.edu" className="text-indigo-600 hover:underline">ricky.purba@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
+                        </li>
+                        <li>
                           <a href="tel:085974556230" className="text-indigo-600 hover:underline">0859-7455-6230</a>
                           <span className="text-gray-500 ml-1">(Ricky Ricardo Purba)</span>
                         </li>
