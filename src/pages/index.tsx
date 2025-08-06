@@ -186,110 +186,467 @@ export default function Home() {
         </section>
 
         {/* Lab Rules Section */}
-        <section className="py-8 sm:py-12 lg:py-16 bg-gray-50">
+        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-gray-100">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-8 sm:mb-12">
-                <div className="flex justify-center mb-4 sm:mb-6">
-                  <div className="bg-red-100 p-3 sm:p-4 rounded-full">
-                    <Shield className="h-6 w-6 sm:h-8 sm:w-8 text-red-600" />
-                  </div>
-                </div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
-                  Aturan Penggunaan Lab
+              <div className="text-center mb-10 sm:mb-14">
+
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-5">
+                  Tata Tertib Penggunaan Laboratorium FIT
                 </h2>
-                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 px-2">
+                <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
                   Harap patuhi aturan berikut untuk menjaga kelancaran dan keamanan penggunaan laboratorium
                 </p>
               </div>
               
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8">
-                <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md">
-                  <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-3 sm:mb-4">Sebelum Menggunakan Lab</h3>
-                  <ul className="space-y-2 text-sm sm:text-base text-gray-600">
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Pastikan sudah melakukan booking terlebih dahulu</span>
+              {/* Table of Contents */}
+              <div className="bg-white p-5 rounded-xl shadow-md mb-8 sm:mb-10">
+                <h3 className="font-semibold text-gray-900 mb-3 text-lg">Daftar Isi:</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                  <a href="#larangan" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
+                    <span className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-600 rounded-full mr-2 font-medium">1</span>
+                    <span className="text-gray-700 group-hover:text-red-600">Larangan</span>
+                  </a>
+                  <a href="#kewajiban" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
+                    <span className="w-6 h-6 flex items-center justify-center bg-green-100 text-green-600 rounded-full mr-2 font-medium">2</span>
+                    <span className="text-gray-700 group-hover:text-green-600">Kewajiban</span>
+                  </a>
+                  <a href="#prosedur" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
+                    <span className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mr-2 font-medium">3</span>
+                    <span className="text-gray-700 group-hover:text-blue-600">Prosedur Peminjaman</span>
+                  </a>
+                  <a href="#penampilan" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
+                    <span className="w-6 h-6 flex items-center justify-center bg-purple-100 text-purple-600 rounded-full mr-2 font-medium">4</span>
+                    <span className="text-gray-700 group-hover:text-purple-600">Peraturan Berpenampilan</span>
+                  </a>
+                  <a href="#sanksi" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
+                    <span className="w-6 h-6 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full mr-2 font-medium">5</span>
+                    <span className="text-gray-700 group-hover:text-orange-600">Sanksi Pelanggaran</span>
+                  </a>
+                  <a href="#kontak" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
+                    <span className="w-6 h-6 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full mr-2 font-medium">6</span>
+                    <span className="text-gray-700 group-hover:text-indigo-600">Kontak Penanggung Jawab</span>
+                  </a>
+                </div>
+              </div>
+              
+              {/* Rules Content */}
+              <div className="space-y-8 sm:space-y-10">
+                {/* 1. Larangan */}
+                <div id="larangan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-red-500">
+                  <div className="flex items-center mb-5">
+                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-red-600 font-bold">1</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, DILARANG:</h3>
+                  </div>
+                  
+                  <ul className="space-y-3 text-sm sm:text-base text-gray-700 ml-2">
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                      <span>Merokok</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Datang tepat waktu sesuai jadwal booking</span>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                      <span>Membuang sampah sembarangan dan mengotori area Lab</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Bawa kartu mahasiswa/dosen sebagai identitas</span>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                      <span>Membawa makanan ke dalam Laboratorium</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Konfirmasi kehadiran kepada lab assistant</span>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                      <span>Makan atau minum dalam Laboratorium FIT tanpa se-izin Laboran (kecuali pengajar)</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
+                      <span>Membuat keributan</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">f</span>
+                      <span>Melakukan perjudian dalam bentuk apapun</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">g</span>
+                      <span>Merusak dan mengotori fasilitas (meja, kursi, papan tulis, pintu, tembok, komputer dan seluruh peralatan dalam Laboratorium)</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">h</span>
+                      <span>Melakukan kegiatan yang melanggar etika, moral, atau hukum yang berlaku</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
+                      <span>Menciptakan atau menyebarkan virus komputer</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">j</span>
+                      <span>Melakukan cracking atau hacking</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">k</span>
+                      <span>Menginstall atau menyimpan program dalam bentuk apapun ke dalam fasilitas yang ada di Laboratorium</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">l</span>
+                      <span>Mencuri fasilitas, peralatan, atau benda apapun yang merupakan milik Lab</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">m</span>
+                      <span>Memainkan game dalam bentuk apapun dengan menggunakan fasilitas Lab</span>
+                    </li>
+                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">n</span>
+                      <span>Browsing ke situs-situs yang melanggar etika atau "berbau" pornografi atau kekerasan</span>
                     </li>
                   </ul>
                 </div>
                 
-                <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md">
-                  <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-3 sm:mb-4">Selama Menggunakan Lab</h3>
-                  <ul className="space-y-2 text-sm sm:text-base text-gray-600">
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Jaga kebersihan dan kerapihan area kerja</span>
+                {/* 2. Kewajiban */}
+                <div id="kewajiban" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-green-500">
+                  <div className="flex items-center mb-5">
+                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-green-600 font-bold">2</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, WAJIB:</h3>
+                  </div>
+                  
+                  <ul className="space-y-3 text-sm sm:text-base text-gray-700">
+                    <li className="flex p-3 bg-green-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                      <span>Mengenakan pakaian rapi dan sopan sesuai dengan peraturan berpenampilan yang dapat dilihat pada poin 4</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Dilarang makan dan minum di area lab</span>
+                    <li className="flex p-3 bg-green-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                      <span>Melakukan peminjaman melalui website BookLab. Prosedur peminjaman Laboratorium dapat dilihat pada poin 3</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Gunakan komputer sesuai keperluan akademik</span>
+                    <li className="flex p-3 bg-green-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                      <span>Mahasiswa FIT yang berada di area Lab wajib menjaga ketertiban Laboratorium</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Laporkan kerusakan peralatan kepada lab assistant</span>
+                    <li className="flex p-3 bg-green-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                      <span>Mahasiswa harus mengembalikan kembali posisi meja atau kursi jika Lab sudah selesai digunakan. Kondisi sebelum dan sesudah peminjaman harus rapi</span>
                     </li>
-                  </ul>
-                </div>
-                
-                <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md">
-                  <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-3 sm:mb-4">Setelah Menggunakan Lab</h3>
-                  <ul className="space-y-2 text-sm sm:text-base text-gray-600">
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Log out dari semua aplikasi dan akun</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Matikan komputer dengan proper shutdown</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Kembalikan kursi ke posisi semula</span>
-                    </li>
-                    <li className="flex items-start">
-                      <span className="text-orange-500 mr-2 flex-shrink-0">•</span>
-                      <span>Pastikan area kerja bersih sebelum meninggalkan lab</span>
+                    <li className="flex p-3 bg-green-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
+                      <span>Bertanggung jawab atas barang pribadi yang di bawa ke Lab. Kehilangan di luar tanggung jawab pengajar atau petugas Lab</span>
                     </li>
                   </ul>
                 </div>
                 
-                <div className="bg-white p-4 sm:p-6 rounded-xl shadow-md">
-                  <h3 className="font-bold text-base sm:text-lg text-gray-900 mb-3 sm:mb-4">Sanksi Pelanggaran</h3>
-                  <ul className="space-y-2 text-sm sm:text-base text-gray-600">
-                    <li className="flex items-start">
-                      <span className="text-red-500 mr-2 flex-shrink-0">•</span>
-                      <span>Teguran lisan untuk pelanggaran ringan</span>
+                {/* 3. Prosedur Peminjaman */}
+                <div id="prosedur" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-blue-500">
+                  <div className="flex items-center mb-5">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-blue-600 font-bold">3</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Prosedur Peminjaman Laboratorium</h3>
+                  </div>
+                  
+                  <ul className="space-y-3 text-sm sm:text-base text-gray-700">
+                    <li className="flex p-3 bg-blue-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                      <span>Cek jadwal perkuliahan yang ditempel di pintu Lab dan pastikan tidak ada kelas</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-red-500 mr-2 flex-shrink-0">•</span>
-                      <span>Suspend booking untuk pelanggaran berulang</span>
+                    <li className="flex p-3 bg-blue-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                      <span>Masuk ke website BookLab (bit.ly/FITBookLab) atau Scan QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-red-500 mr-2 flex-shrink-0">•</span>
-                      <span>Denda untuk kerusakan peralatan lab</span>
+                    <li className="flex p-3 bg-blue-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                      <span>Mahasiswa hanya dapat menggunakan Lab jika pemesanan melalui website BookLab telah disetujui</span>
                     </li>
-                    <li className="flex items-start">
-                      <span className="text-red-500 mr-2 flex-shrink-0">•</span>
-                      <span>Blacklist dari sistem untuk pelanggaran berat</span>
+                    <li className="flex p-3 bg-blue-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                      <span>Jika pemesanan sudah disetujui silahkan gunakan Lab dengan tertib dan tetap mematuhi semua Tata Tertib Penggunaan Laboratorium</span>
+                    </li>
+                    <li className="flex flex-col p-3 bg-blue-50 rounded-lg">
+                      <div className="flex">
+                        <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
+                        <span>Jika penggunaan Lab berlanjut hingga di luar jam kerja (07:00 – 16:00), ikuti prosedur berikut ini:</span>
+                      </div>
+                      
+                      <ul className="mt-3 ml-7 space-y-3">
+                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
+                          <span>Konfirmasi peminjaman ruang Lab di luar jam kerja dilakukan maksimal Jam 15:00 WIB di hari-H peminjaman kepada Penanggung Jawab Lab</span>
+                        </li>
+                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">ii</span>
+                          <span>Penanggung jawab Lab akan memberikan kunci Lab kepada PIC peminjam Lab. PIC bertanggung jawab penuh atas keamanan dan seluruh fasilitas Lab</span>
+                        </li>
+                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">iii</span>
+                          <span>Matikan lampu, AC, dan semua peralatan elektronik setelah Lab digunakan</span>
+                        </li>
+                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">iv</span>
+                          <span>Kunci kembali pintu Lab</span>
+                        </li>
+                        <li className="flex flex-col p-2 bg-blue-100/70 rounded-lg">
+                          <div className="flex">
+                            <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">v</span>
+                            <span>Pengembalian kunci:</span>
+                          </div>
+                          
+                          <ul className="ml-7 mt-2 space-y-2">
+                            <li className="flex items-start p-2 bg-blue-100 rounded-lg">
+                              <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
+                              <span>Jika Kantor Fakultas masih buka: letakan di meja Admin/OB dan kirimkan bukti foto bahwa kunci telah dikembalikan ke Penanggung Jawab Lab</span>
+                            </li>
+                            <li className="flex items-start p-2 bg-blue-100 rounded-lg">
+                              <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
+                              <span>Jika Kantor Fakultas tutup, titipkan ke Security Lobby Gedung B (Pelita Shop) dan tulis di log book mereka, kemudian kirimkan bukti foto bahwa kunci telah dikembalikan ke Penaggung Jawab Lab</span>
+                            </li>
+                          </ul>
+                        </li>
+                      </ul>
                     </li>
                   </ul>
+                </div>
+                
+                {/* 4. Peraturan Berpenampilan */}
+                <div id="penampilan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-purple-500">
+                  <div className="flex items-center mb-5">
+                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-purple-600 font-bold">4</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Peraturan Berpenampilan di Laboratorium FIT</h3>
+                  </div>
+                  
+                  <div className="grid sm:grid-cols-3 gap-4">
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h4 className="flex items-center mb-3 font-semibold">
+                        <span className="flex-shrink-0 w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
+                        <span className="text-purple-700">Atasan</span>
+                      </h4>
+                      <ul className="space-y-2 ml-7 text-sm sm:text-base text-gray-700">
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span>Menggunakan pakaian bebas dan wajib berlengan</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
+                          <span>Nyaman saat digunakan dan tidak mengganggu aktivitas praktikum</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
+                          <span>Dilarang menggunakan baju vulgar dan terbuka</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h4 className="flex items-center mb-3 font-semibold">
+                        <span className="flex-shrink-0 w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
+                        <span className="text-purple-700">Bawahan</span>
+                      </h4>
+                      <ul className="space-y-2 ml-7 text-sm sm:text-base text-gray-700">
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span>Celana bahan kain panjang (menutup mata kaki) dan tidak ketat</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
+                          <span>Celana berbahan jeans panjang (menutup mata kaki) tidak ketat dan tidak sobek-sobek</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
+                          <span>Rok panjang (menutup lutut)</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-purple-50 p-4 rounded-lg">
+                      <h4 className="flex items-center mb-3 font-semibold">
+                        <span className="flex-shrink-0 w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
+                        <span className="text-purple-700">Alas Kaki</span>
+                      </h4>
+                      <ul className="space-y-2 ml-7 text-sm sm:text-base text-gray-700">
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span>Wajib mengenakan sepatu yang menutup semua permukaan kaki</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-5 p-3 bg-gray-100 rounded-lg border border-gray-300 italic text-sm text-gray-700">
+                  Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FIT dan juga Laboran yang bertugas.
+                </div>
+                
+                {/* 5. Sanksi Pelanggaran */}
+                <div id="sanksi" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500">
+                  <div className="flex items-center mb-5">
+                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-orange-600 font-bold">5</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Sanksi Pelanggaran Tata Tertib Laboratorium FIT</h3>
+                  </div>
+                  
+                  <ul className="space-y-4 text-sm sm:text-base text-gray-700">
+                    <li className="p-4 bg-orange-50 rounded-lg">
+                      <div className="flex items-start mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                        <span className="font-medium">Mahasiswa yang terbukti:</span>
+                      </div>
+                      
+                      <ul className="ml-7 mb-3 space-y-2">
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span>Merokok</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
+                          <span>Memakai sandal</span>
+                        </li>
+                        <li className="flex items-start">
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
+                          <span>Melakukan praktek hacking/cracking di Lab</span>
+                        </li>
+                      </ul>
+                      
+                      <p className="ml-7 p-2 bg-orange-100 rounded-lg font-medium">
+                        Akan dikenakan skorsing larangan masuk ke seluruh area Lab selama 1 bulan penuh
+                      </p>
+                    </li>
+                    
+                    <li className="flex items-start p-4 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                      <span>Pelanggran aturan Lab dikenakan skorsing larangan masuk ke seluruh area Lab selama 1 bulan penuh</span>
+                    </li>
+                    
+                    <li className="p-4 bg-orange-50 rounded-lg">
+                      <div className="flex items-start mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                        <span className="font-medium">Mahasiswa yang terbukti melakukan pengrusakan fasilitas atau peraltan di Lab:</span>
+                      </div>
+                      
+                      <ul className="ml-7 space-y-2">
+                        <li className="flex items-start p-2 bg-orange-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span>Secara tidak sengaja : Wajib mengganti fasilitas atau peralatan yang rusak dengan yang baru</span>
+                        </li>
+                        <li className="flex items-start p-2 bg-orange-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
+                          <span>Secara sengaja : Wajib mengganti seharga 2x harga fasilitas atau peralatan yang baru</span>
+                        </li>
+                      </ul>
+                    </li>
+                    
+                    <li className="flex items-start p-4 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                      <span>Pelanggaran lain akan ditindak sesuai kebijakan Kepala Laboratorium FIT</span>
+                    </li>
+                  </ul>
+                </div>
+                
+                {/* 6. Nomor Kontak */}
+                <div id="kontak" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-indigo-500">
+                  <div className="flex items-center mb-5">
+                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-indigo-600 font-bold">6</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">Nomor Kontak Penangung Jawab</h3>
+                  </div>
+                  
+                  <div className="grid sm:grid-cols-2 gap-4">
+                    <div className="bg-indigo-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
+                        Nomor Penanggung Jawab (PIC) Lab B338
+                      </h4>
+                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Email:</span>
+                          <a href="mailto:kelvin.wiriyatama@uph.edu" className="text-indigo-600 hover:underline">kelvin.wiriyatama@uph.edu</a>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Nomor Telepon:</span>
+                          <a href="tel:085155443290" className="text-indigo-600 hover:underline">0851-5544-3290</a>
+                          <span className="text-gray-500 ml-1">(Kelvin Wiriyatama)</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-indigo-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
+                        Nomor Penanggung Jawab (PIC) Lab B357
+                      </h4>
+                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Email:</span>
+                          <a href="mailto:kusno.prasetya@uph.edu" className="text-indigo-600 hover:underline">kusno.prasetya@uph.edu</a>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Nomor Telepon:</span>
+                          <a href="tel:085605502899" className="text-indigo-600 hover:underline">08560-5502-8999</a>
+                          <span className="text-gray-500 ml-1">(Kusno Prasetya)</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-indigo-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
+                        Nomor Penanggung Jawab (PIC) Lab Gedung F
+                      </h4>
+                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Email:</span>
+                          <a href="mailto:ricky.purba@uph.edu" className="text-indigo-600 hover:underline">ricky.purba@uph.edu</a>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Nomor Telepon:</span>
+                          <a href="tel:085974556230" className="text-indigo-600 hover:underline">0859-7455-6230</a>
+                          <span className="text-gray-500 ml-1">(Ricky Ricardo Purba)</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-indigo-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">d</span>
+                        Nomor Laboran
+                      </h4>
+                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan teknis tentang peralatan lab yang tidak bisa ditangani oleh PIC silahkan hubungi Laboran melalui kontak berikut:</p>
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Email:</span>
+                          <a href="mailto:ricky.purba@uph.edu" className="text-indigo-600 hover:underline">ricky.purba@uph.edu</a>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Nomor Telepon:</span>
+                          <a href="tel:085974556230" className="text-indigo-600 hover:underline">0859-7455-6230</a>
+                          <span className="text-gray-500 ml-1">(Ricky Ricardo Purba)</span>
+                        </li>
+                      </ul>
+                    </div>
+                    
+                    <div className="bg-indigo-50 p-4 rounded-lg sm:col-span-2">
+                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">e</span>
+                        Kontak Kepala Lab
+                      </h4>
+                      <p className="text-xs text-gray-600 mb-2">Jika ada masalah yang barikaitan dengan laboratorium dan bertingkat fakultas silahkan hubungi:</p>
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Email:</span>
+                          <a href="mailto:aditya.mitra@uph.edu" className="text-indigo-600 hover:underline">aditya.mitra@uph.edu</a>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Nomor Telepon:</span>
+                          <a href="tel:08174822825" className="text-indigo-600 hover:underline">0817-4822-825</a>
+                          <span className="text-gray-500 ml-1">(Aditya R. Mitra)</span>
+                        </li>
+                      </ul>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -321,7 +678,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Sign In ke Akun Anda</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Klik tombol "Sign In" di pojok kanan atas dan masuk menggunakan akun UPH Anda.</p>
+                    <p className="text-sm sm:text-base text-gray-600">Klik tombol "Sign In" di pojok kanan atas dan masuk menggunakan akun Google Anda.</p>
                   </div>
                 </div>
                 
