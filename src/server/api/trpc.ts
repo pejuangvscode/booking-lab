@@ -1,34 +1,52 @@
 import { initTRPC, TRPCError } from "@trpc/server";
 import { type CreateNextContextOptions } from "@trpc/server/adapters/next";
-import { getAuth } from "@clerk/nextjs/server"; // Changed from auth to getAuth
 import superjson from "superjson";
 import { ZodError } from "zod";
-
+import { getAuth } from "@clerk/nextjs/server";
 import { db } from "~/server/db";
 
-/**
- * 1. CONTEXT
- *
- * This section defines the "contexts" that are available in the backend API.
- */
+interface CreateContextOptions {
+  userId: string | null;
+  sessionId: string | null;
+}
 
-export const createTRPCContext = async (opts: CreateNextContextOptions) => {
-  const { req } = opts;
-  
-  // Get the auth context from Clerk using getAuth for Pages Router
-  const session = getAuth(req);
-  
+const createInnerTRPCContext = (opts: CreateContextOptions) => {
   return {
+    userId: opts.userId,
+    sessionId: opts.sessionId,
     db,
-    auth: session,
   };
 };
 
-/**
- * 2. INITIALIZATION
- *
- * This is where the tRPC API is initialized, connecting the context and transformer.
- */
+export const createTRPCContext = async (opts: CreateNextContextOptions) => {
+  const { req } = opts;
+
+  try {
+    let auth;
+    try {
+      auth = getAuth(req);
+    } catch (authError) {
+      auth = { userId: null, sessionId: null };
+    }
+
+
+    const context = {
+      userId: auth.userId || null,
+      sessionId: auth.sessionId || null,
+      db: db,
+    };
+
+    return context;
+  } catch (error) {
+    
+    return {
+      userId: null,
+      sessionId: null,
+      db: db,
+    };
+  }
+};
+
 const t = initTRPC.context<typeof createTRPCContext>().create({
   transformer: superjson,
   errorFormatter({ shape, error }) {
@@ -43,37 +61,47 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
   },
 });
 
-/**
- * 3. ROUTER & PROCEDURE
- *
- * These are the building blocks of your tRPC API. You should import these a lot in the
- * "/src/server/api/routers" directory.
- */
-
 export const createTRPCRouter = t.router;
 
-/**
- * Public procedure - available to anyone
- */
 export const publicProcedure = t.procedure;
 
-/**
- * Protected procedure - only available to authenticated users
- */
-export const protectedProcedure = t.procedure.use(
-  ({ ctx, next }) => {
-    if (!ctx.auth || !ctx.auth.userId) {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "You must be logged in to access this resource",
-      });
-    }
-    
-    return next({
-      ctx: {
-        ...ctx,
-        auth: ctx.auth,
-      },
+export const protectedProcedure = t.procedure.use(({ ctx, next }) => {
+  if (!ctx.userId) {
+    throw new TRPCError({ 
+      code: "UNAUTHORIZED",
+      message: "Please sign in to access this feature. If you're already signed in, try refreshing the page."
     });
   }
-);
+
+  if (!ctx.db) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR", 
+      message: "Database connection unavailable. Please try again later."
+    });
+  }
+  
+  return next({
+    ctx: {
+      userId: ctx.userId,
+      sessionId: ctx.sessionId,
+      db: ctx.db,
+    },
+  });
+});
+
+export const adminProcedure = t.procedure.use(({ ctx, next }) => {  
+  if (!ctx.userId) {
+    throw new TRPCError({ 
+      code: "UNAUTHORIZED",
+      message: "Authentication required for admin functions."
+    });
+  }
+
+  return next({
+    ctx: {
+      userId: ctx.userId,
+      sessionId: ctx.sessionId,
+      db: ctx.db,
+    },
+  });
+});

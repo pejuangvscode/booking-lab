@@ -14,6 +14,7 @@ datasource db {
 model Users {
     id        String    @id @unique @default(uuid())
     createdAt DateTime  @default(now())
+    role      String   @default("user")
 
     bookings  Bookings[]
 
@@ -52,6 +53,13 @@ model Bookings {
     
     requesterName String?
     requesterNIM  String?
+
+    adminNote       String?
+    rejectionReason String?
+    approvedAt      DateTime?
+    approvedBy      String?
+    rejectedAt      DateTime?
+    rejectedBy      String?
 
     user Users @relation(fields: [userId], references: [id])
     room Lab @relation(fields: [roomId], references: [id])

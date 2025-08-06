@@ -1,14 +1,24 @@
 import Link from "next/link";
 import { useRouter } from "next/router";
-import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
+import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
+import { api } from "~/utils/api";
 
 export function Navbar() {
   const router = useRouter();
+  const { user } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [visible, setVisible] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+
+  const { data: dbUser } = api.user.getCurrentUser.useQuery(
+    undefined,
+    {
+      enabled: !!user,
+      retry: 1,
+    }
+  );
 
   useEffect(() => {
     setIsMounted(true);
@@ -29,12 +39,16 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos, isMounted]);
 
-  // Function to check if route is active
+  const isAdmin = () => {
+    const clerkRole = user?.publicMetadata?.role;
+    const dbRole = dbUser?.role;
+    return clerkRole === 'admin' || dbRole === 'admin';
+  };
+
   const isActive = (path: string) => {
     return router.pathname === path;
   };
 
-  // Function to get link classes for desktop navigation
   const getLinkClasses = (path: string) => {
     const baseClasses = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200";
     
@@ -45,7 +59,6 @@ export function Navbar() {
     return `${baseClasses} border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700`;
   };
 
-  // Function to get link classes for mobile navigation
   const getMobileLinkClasses = (path: string) => {
     const baseClasses = "block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200";
     
@@ -72,29 +85,37 @@ export function Navbar() {
                 BookLab
               </span>
             </Link>
+            
+            {/* Desktop Navigation */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              <Link
-                href="/lab-search"
-                className={getLinkClasses('/lab-search')}
-              >
-                Lab Search
-              </Link>
-              <Link
-                href="/booking-calendar"
-                className={getLinkClasses('/booking-calendar')}
-              >
-                Booking Calendar
-              </Link>
-              <SignedIn>
-                <Link
-                  href="/dashboard"
-                  className={getLinkClasses('/dashboard')}
-                >
-                  Dashboard
-                </Link>
-              </SignedIn>
+              {!isAdmin() && (
+                <>
+                  <Link
+                    href="/lab-search"
+                    className={getLinkClasses('/lab-search')}
+                  >
+                    Lab Search
+                  </Link>
+                  <Link
+                    href="/booking-calendar"
+                    className={getLinkClasses('/booking-calendar')}
+                  >
+                    Booking Calendar
+                  </Link>
+                  <SignedIn>
+                    <Link
+                      href="/dashboard"
+                      className={getLinkClasses('/dashboard')}
+                    >
+                      Dashboard
+                    </Link>
+                  </SignedIn>
+                </>
+              )}
             </div>
           </div>
+          
+          {/* User Actions */}
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <SignedOut>
               <SignInButton mode="modal">
@@ -104,6 +125,12 @@ export function Navbar() {
               </SignInButton>
             </SignedOut>
             <SignedIn>
+              {/* Show role badge for admins */}
+              {isAdmin() && (
+                <div className="mr-3 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                  Admin
+                </div>
+              )}
               <UserButton
                 appearance={{
                   elements: {
@@ -113,6 +140,8 @@ export function Navbar() {
               />
             </SignedIn>
           </div>
+          
+          {/* Mobile menu button */}
           <div className="-mr-2 flex items-center sm:hidden">
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
@@ -158,33 +187,39 @@ export function Navbar() {
         </div>
       </div>
 
-      {/* Mobile menu, show/hide based on menu state */}
+      {/* Mobile menu */}
       <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden`}>
         <div className="pt-2 pb-3 space-y-1">
-          <Link
-            onClick={() => setIsMenuOpen(false)}
-            href="/lab-search"
-            className={getMobileLinkClasses('/lab-search')}
-          >
-            Lab Search
-          </Link>
-          <Link
-            onClick={() => setIsMenuOpen(false)}
-            href="/booking-calendar"
-            className={getMobileLinkClasses('/booking-calendar')}
-          >
-            Booking Calendar
-          </Link>
-          <SignedIn>
-            <Link
-              onClick={() => setIsMenuOpen(false)}
-              href="/dashboard"
-              className={getMobileLinkClasses('/dashboard')}
-            >
-              Dashboard
-            </Link>
-          </SignedIn>
+          {!isAdmin() && (
+            <>
+              <Link
+                onClick={() => setIsMenuOpen(false)}
+                href="/lab-search"
+                className={getMobileLinkClasses('/lab-search')}
+              >
+                Lab Search
+              </Link>
+              <Link
+                onClick={() => setIsMenuOpen(false)}
+                href="/booking-calendar"
+                className={getMobileLinkClasses('/booking-calendar')}
+              >
+                Booking Calendar
+              </Link>
+              <SignedIn>
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/dashboard"
+                  className={getMobileLinkClasses('/dashboard')}
+                >
+                  Dashboard
+                </Link>
+              </SignedIn>
+            </>
+          )}
         </div>
+        
+        {/* Mobile user section */}
         <div className="pt-4 pb-3 border-t border-gray-200">
           <div className="flex items-center px-4">
             <SignedOut>
@@ -195,8 +230,16 @@ export function Navbar() {
               </SignInButton>
             </SignedOut>
             <SignedIn>
-              <div className="flex-shrink-0">
-                <UserButton />
+              <div className="flex items-center space-x-3">
+                {/* Show role badge for admins in mobile */}
+                {isAdmin() && (
+                  <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                    Admin
+                  </div>
+                )}
+                <div className="flex-shrink-0">
+                  <UserButton />
+                </div>
               </div>
             </SignedIn>
           </div>

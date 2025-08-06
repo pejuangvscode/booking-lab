@@ -1,10 +1,11 @@
 import { type AppType } from "next/app";
 import { Geist } from "next/font/google";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import {
   ClerkProvider,
-  useAuth
+  useAuth,
+  useUser
 } from '@clerk/nextjs'
 import { useRouter } from "next/router";
 import NProgress from "nprogress";
@@ -22,14 +23,47 @@ import type { AppProps } from "next/app";
 
 const AppContent = ({ Component, pageProps, router }: AppProps) => {
   const { isSignedIn, isLoaded } = useAuth();
-  const syncUser = api.user.syncUser.useMutation();
+  const { user } = useUser();
   const nextRouter = useRouter();
   
-  useEffect(() => {
-    if (isLoaded && isSignedIn) {
-      syncUser.mutate();
+  const syncUser = api.user.syncUser.useQuery(
+    undefined,
+    {
+      enabled: isLoaded && isSignedIn && !!user,
+      retry: (failureCount, error) => {
+        if (error.data?.code === 'UNAUTHORIZED') {
+          return false;
+        }
+        return failureCount < 3;
+      },
+      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
     }
-  }, [isLoaded, isSignedIn]);
+  );
+
+  useEffect(() => {
+    if (syncUser.error) {
+      console.error("Error syncing user:", syncUser.error);}
+    if (syncUser.data) {
+      console.log("User synced successfully:", syncUser.data);
+    }
+  }, [syncUser.data, syncUser.error]);
+
+  useEffect(() => {
+    if (isLoaded && isSignedIn && user && syncUser.data) {
+      const userRole = user.publicMetadata?.role || syncUser.data?.role;
+      const currentPath = nextRouter.pathname;
+
+      
+      if (userRole === 'admin') {
+        if(currentPath === '/' || currentPath === '/lab-search' || currentPath === '/booking' || currentPath === '/dashboard' || currentPath === '/booking-calendar') {
+          void nextRouter.push('/admin/bookings');
+        }
+      } 
+      else if (currentPath === '/admin/bookings' && userRole !== 'admin') {
+        void nextRouter.push('/');
+      }
+    }
+  }, [isLoaded, isSignedIn, user, syncUser.data, nextRouter.pathname]);
 
   useEffect(() => {
     NProgress.configure({ 
