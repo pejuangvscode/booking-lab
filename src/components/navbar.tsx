@@ -86,7 +86,7 @@ export function Navbar() {
                   alt="BookLab Logo"
                   width={40}
                   height={40}
-                  className="h-10 w-10 mr-2"
+                  className="h-10 w-12 mr-2 border-r-2 pr-2 border-gray-300"
                 />
               </div>
               <div className="flex-shrink-0 flex flex-col items-left">

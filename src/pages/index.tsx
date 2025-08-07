@@ -78,7 +78,6 @@ export default function Home() {
                   style={{ opacity: 0.8 }}
                 />
               </div>
-              
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
             </div>
           ))}
