@@ -9,25 +9,25 @@ const carouselItems = [
     id: 1,
     imageSrc: "/B338.png",
     title: "Informatics Studio (B338)",
-    subTitle: "keterangan keterangan keteranganketeranganketerangan"
+    subTitle: ""
   },
   { 
     id: 2,
     imageSrc: "/B357.png", 
     title: "Information System Lab (B357)",
-    subTitle: "keteranganketerangan keteranganketeranganketerangan"
+    subTitle: ""
   },
   {
     id: 3,
     imageSrc: "/F205.png",
     title: "FIT Showcase Room (F205)",
-    subTitle: "keteranganketerangan keteranganketeranganketerangan"
+    subTitle: ""
   },  
   {
     id: 4,
     imageSrc: "/F209.png",
     title: "Lab F209",
-    subTitle: "keteranganketerangan keteranganketeranganketerangan"
+    subTitle: ""
   }
 ];
 

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from "@clerk/nextjs";
 import { useState, useEffect } from "react";
 import { api } from "~/utils/api";
+import Image from "next/image";
 
 export function Navbar() {
   const router = useRouter();
@@ -78,12 +79,24 @@ export function Navbar() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           <div className="flex items-center">
-            <Link href="/" className="flex-shrink-0 flex items-center">
-              <span className={`text-xl font-bold transition-colors duration-200 ${
-                isActive('/') ? 'text-orange-700' : 'text-orange-600'
-              }`}>
-                BookLab
-              </span>
+            <Link href="/" className="flex items-center">
+              <div>
+                <Image
+                  src="/favicon.ico"
+                  alt="BookLab Logo"
+                  width={40}
+                  height={40}
+                  className="h-10 w-10 mr-2"
+                />
+              </div>
+              <div className="flex-shrink-0 flex flex-col items-left">
+                <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-200 text-orange-500`}>
+                  Book
+                </span>
+                <span className={"text-lg sm:text-xl font-black leading-none transition-colors duration-200 text-orange-500"}>
+                  Lab
+                </span>
+              </div>
             </Link>
             
             {/* Desktop Navigation */}
