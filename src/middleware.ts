@@ -8,7 +8,6 @@ const isProtectedRoute = createRouteMatcher([
   '/profile(.*)',
   '/bookings(.*)',
   '/admin(.*)',
-  '/lab-search(.*)'
 ]);
 
 const isPublicRoute = createRouteMatcher([
