@@ -349,7 +349,7 @@ export default function Home() {
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">g</span>
-                      <span>Merusak dan mengotori fasilitas (meja, kursi, papan tulis, pintu, tembok, komputer dan seluruh peralatan dalam Laboratorium)</span>
+                      <span>Merusak (melakukan vandalisme) dan mengotori fasilitas (meja, kursi, papan tulis, pintu, tembok, komputer dan seluruh peralatan dalam Laboratorium)</span>
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">h</span>
@@ -361,7 +361,7 @@ export default function Home() {
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">j</span>
-                      <span>Melakukan cracking atau hacking</span>
+                      <span>Melakukan <i>cracking</i> atau <i>hacking</i></span>
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">k</span>
@@ -377,7 +377,7 @@ export default function Home() {
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">n</span>
-                      <span>Browsing ke situs-situs yang melanggar etika atau "berbau" pornografi atau kekerasan</span>
+                      <span><i>Browsing</i> ke situs-situs yang melanggar etika atau berkaitan dengan pornografi atau kekerasan	</span>
                     </li>
                   </ul>
                 </div>
@@ -394,11 +394,11 @@ export default function Home() {
                   <ul className="space-y-3 text-sm sm:text-base text-gray-700">
                     <li className="flex p-3 bg-green-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
-                      <span>Mengenakan pakaian rapi dan sopan sesuai dengan peraturan berpenampilan yang dapat dilihat pada poin 4</span>
+                      <span>Mengenakan pakaian rapi dan sopan sesuai dengan peraturan berpenampilan yang dapat dilihat pada <a className="hover:underline font-bold hover:bg-green-200 hover:rounded-sm px-1" href="#penampilan">poin 4</a></span>
                     </li>
                     <li className="flex p-3 bg-green-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
-                      <span>Melakukan peminjaman melalui website BookLab. Prosedur peminjaman Laboratorium dapat dilihat pada poin 3</span>
+                      <span>Melakukan peminjaman melalui website FITBookLab. Prosedur peminjaman Laboratorium dapat dilihat pada <a className="hover:underline font-bold hover:bg-green-200 hover:rounded-sm px-1" href="#prosedur">poin 3</a></span>
                     </li>
                     <li className="flex p-3 bg-green-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
@@ -410,7 +410,7 @@ export default function Home() {
                     </li>
                     <li className="flex p-3 bg-green-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
-                      <span>Bertanggung jawab atas barang pribadi yang di bawa ke Lab. Kehilangan di luar tanggung jawab pengajar atau petugas Lab</span>
+                      <span>Bertanggung jawab atas barang pribadi yang di bawa ke Lab. Kehilangan di luar tanggung jawab pengajar atau PIC Lab/Laboran</span>
                     </li>
                   </ul>
                 </div>
@@ -431,7 +431,7 @@ export default function Home() {
                     </li>
                     <li className="flex p-3 bg-blue-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
-                      <span>Masuk ke website BookLab (bit.ly/FITBookLab) atau Scan QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</span>
+                      <span>Masuk ke website BookLab <a className="hover:underline font-bold hover:bg-blue-200 hover:rounded-sm px-1" href="https://bit.ly/FITBookLab">bit.ly/FITBookLab</a> atau Scan QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</span>
                     </li>
                     <li className="flex p-3 bg-blue-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
@@ -450,11 +450,11 @@ export default function Home() {
                       <ul className="mt-3 ml-7 space-y-3">
                         <li className="flex p-2 bg-blue-100/70 rounded-lg">
                           <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
-                          <span>Konfirmasi peminjaman ruang Lab di luar jam kerja dilakukan maksimal Jam 15:00 WIB di hari-H peminjaman kepada Penanggung Jawab Lab</span>
+                          <span>Konfirmasi peminjaman ruang Lab di luar jam kerja dilakukan maksimal pukul 15:00 WIB di hari-H peminjaman kepada PIC Lab</span>
                         </li>
                         <li className="flex p-2 bg-blue-100/70 rounded-lg">
                           <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">ii</span>
-                          <span>Penanggung jawab Lab akan memberikan kunci Lab kepada PIC peminjam Lab. PIC bertanggung jawab penuh atas keamanan dan seluruh fasilitas Lab</span>
+                          <span>PIC Lab akan memberikan kunci Lab kepada PIC peminjam Lab. PIC bertanggung jawab penuh atas keamanan dan seluruh fasilitas Lab</span>
                         </li>
                         <li className="flex p-2 bg-blue-100/70 rounded-lg">
                           <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">iii</span>
@@ -473,11 +473,11 @@ export default function Home() {
                           <ul className="ml-7 mt-2 space-y-2">
                             <li className="flex items-start p-2 bg-blue-100 rounded-lg">
                               <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
-                              <span>Jika Kantor Fakultas masih buka: letakan di meja Admin/OB dan kirimkan bukti foto bahwa kunci telah dikembalikan ke Penanggung Jawab Lab</span>
+                              <span>Jika Kantor Fakultas masih buka: letakan di meja Admin/OB dan kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
                             </li>
                             <li className="flex items-start p-2 bg-blue-100 rounded-lg">
                               <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
-                              <span>Jika Kantor Fakultas tutup, titipkan ke Security Lobby Gedung B (Pelita Shop) dan tulis di log book mereka, kemudian kirimkan bukti foto bahwa kunci telah dikembalikan ke Penaggung Jawab Lab</span>
+                              <span>Jika Kantor Fakultas tutup, titipkan ke Security Lobby Barat Gedung B (sebelah Pelita Shop) dan tulis di log book mereka, kemudian kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
                             </li>
                           </ul>
                         </li>
@@ -554,7 +554,7 @@ export default function Home() {
                 </div>
 
                 <div className="mt-5 p-3 bg-gray-100 rounded-lg border border-gray-300 italic text-sm text-gray-700">
-                  Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FIT dan juga Laboran yang bertugas.
+                  Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FIT dan juga PIC Lab yang bertugas
                 </div>
                 
                 {/* 5. Sanksi Pelanggaran */}
@@ -584,7 +584,7 @@ export default function Home() {
                         </li>
                         <li className="flex items-start">
                           <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
-                          <span>Melakukan praktek hacking/cracking di Lab</span>
+                          <span>Melakukan praktek <i>hacking/cracking</i> di Lab</span>
                         </li>
                       </ul>
                       
@@ -601,7 +601,7 @@ export default function Home() {
                     <li className="p-4 bg-orange-50 rounded-lg">
                       <div className="flex items-start mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
-                        <span className="font-medium">Mahasiswa yang terbukti melakukan pengrusakan fasilitas atau peraltan di Lab:</span>
+                        <span className="font-medium">Mahasiswa yang terbukti melakukan perusakan fasilitas atau peralatan di Lab:</span>
                       </div>
                       
                       <ul className="ml-7 space-y-2">
