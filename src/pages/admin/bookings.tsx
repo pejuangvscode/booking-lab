@@ -330,7 +330,7 @@ export default function AdminBookings() {
                           <Dialog>
                             <DialogTrigger asChild>
                               <Button 
-                                className="flex-1 bg-green-600 hover:bg-green-700"
+                                className="flex-1 bg-green-600 hover:bg-green-700 hover:cursor-pointer"
                                 onClick={() => setSelectedBooking(booking)}
                               >
                                 <CheckCircle className="w-4 h-4 mr-2" />
@@ -376,7 +376,7 @@ export default function AdminBookings() {
                             <DialogTrigger asChild>
                               <Button 
                                 variant="destructive"
-                                className="flex-1"
+                                className="flex-1 bg-red-600 hover:bg-red-700 hover:cursor-pointer"
                                 onClick={() => setSelectedBooking(booking)}
                               >
                                 <XCircle className="w-4 h-4 mr-2" />

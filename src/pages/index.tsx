@@ -185,8 +185,90 @@ export default function Home() {
           </div>
         </section>
 
+        {/* How to Use BookLab Section */}
+        <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-b from-gray-50 to-gray-100">
+          <div className="container mx-auto px-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="text-center mb-8 sm:mb-12">
+                <div className="flex justify-center mb-4 sm:mb-6">
+                  <div className="bg-green-100 p-3 sm:p-4 rounded-full">
+                    <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
+                  </div>
+                </div>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
+                  Cara Menggunakan BookLab
+                </h2>
+                <p className="text-base sm:text-lg text-gray-600 px-2">
+                  Ikuti langkah-langkah berikut untuk melakukan booking laboratorium
+                </p>
+              </div>
+              
+              <div className="space-y-6 sm:space-y-8">
+                <div className="flex items-start space-x-4 sm:space-x-6">
+                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
+                    1
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Sign In ke Akun Anda</h3>
+                    <p className="text-sm sm:text-base text-gray-600">Klik tombol "Sign In" di pojok kanan atas dan masuk menggunakan akun Google Anda.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4 sm:space-x-6">
+                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
+                    2
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Pilih Lab dan Waktu</h3>
+                    <p className="text-sm sm:text-base text-gray-600">Buka halaman "Lab Search" atau "Booking Calendar" untuk melihat ketersediaan lab dan pilih waktu yang diinginkan.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4 sm:space-x-6">
+                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
+                    3
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Isi Form Booking</h3>
+                    <p className="text-sm sm:text-base text-gray-600">Lengkapi informasi booking seperti nama event, deskripsi, dan jumlah peserta yang akan menggunakan lab.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4 sm:space-x-6">
+                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
+                    4
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Konfirmasi Booking</h3>
+                    <p className="text-sm sm:text-base text-gray-600">Review informasi booking Anda dan klik "Submit" untuk mengirim request. Anda akan menerima konfirmasi via email.</p>
+                  </div>
+                </div>
+                
+                <div className="flex items-start space-x-4 sm:space-x-6">
+                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
+                    5
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Monitor Status Booking</h3>
+                    <p className="text-sm sm:text-base text-gray-600">Cek status booking Anda di halaman "Dashboard" untuk melihat apakah booking sudah dikonfirmasi atau masih pending.</p>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="mt-8 sm:mt-12 text-center">
+                <Button 
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg hover:shadow-xl cursor-pointer font-bold rounded-lg transition-all duration-200 hover:scale-105"
+                  onClick={() => window.location.href = '/lab-search'}
+                >
+                  Start Booking Now
+                </Button>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Lab Rules Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-gradient-to-b from-gray-50 to-gray-100">
+        <section className="py-12 sm:py-16 lg:py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-10 sm:mb-14">
@@ -664,88 +746,6 @@ export default function Home() {
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* How to Use BookLab Section */}
-        <section className="py-8 sm:py-12 lg:py-16 bg-white">
-          <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-8 sm:mb-12">
-                <div className="flex justify-center mb-4 sm:mb-6">
-                  <div className="bg-green-100 p-3 sm:p-4 rounded-full">
-                    <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
-                  </div>
-                </div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
-                  Cara Menggunakan BookLab
-                </h2>
-                <p className="text-base sm:text-lg text-gray-600 px-2">
-                  Ikuti langkah-langkah berikut untuk melakukan booking laboratorium
-                </p>
-              </div>
-              
-              <div className="space-y-6 sm:space-y-8">
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    1
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Sign In ke Akun Anda</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Klik tombol "Sign In" di pojok kanan atas dan masuk menggunakan akun Google Anda.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Pilih Lab dan Waktu</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Buka halaman "Lab Search" atau "Booking Calendar" untuk melihat ketersediaan lab dan pilih waktu yang diinginkan.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Isi Form Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Lengkapi informasi booking seperti nama event, deskripsi, dan jumlah peserta yang akan menggunakan lab.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    4
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Konfirmasi Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Review informasi booking Anda dan klik "Submit" untuk mengirim request. Anda akan menerima konfirmasi via email.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    5
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Monitor Status Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Cek status booking Anda di halaman "Dashboard" untuk melihat apakah booking sudah dikonfirmasi atau masih pending.</p>
-                  </div>
-                </div>
-              </div>
-              
-              <div className="mt-8 sm:mt-12 text-center">
-                <Button 
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg hover:shadow-xl cursor-pointer font-bold rounded-lg transition-all duration-200 hover:scale-105"
-                  onClick={() => window.location.href = '/lab-search'}
-                >
-                  Start Booking Now
-                </Button>
               </div>
             </div>
           </div>
