@@ -156,7 +156,7 @@ export default function AdminBookings() {
             </h1>
           </div>
 
-          {/* Tabs */}
+          {/* Tab */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="mb-6">
             <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm">
               <TabsTrigger value="pending" className="flex items-center gap-2 hover:cursor-pointer">
