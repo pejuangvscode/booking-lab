@@ -259,7 +259,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Complete Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Setelah selesai menggunakan lab, kembali ke "Dashboard" dan klik tombol "Complete" pada booking Anda. Hal ini penting untuk menandai bahwa lab sudah tidak digunakan dan tersedia untuk pengguna lain.</p>
+                    <p className="text-sm sm:text-base text-gray-600">Setelah selesai menggunakan lab, kembali ke "Dashboard" dan klik tombol "Complete Booking" pada booking Anda yang berstatus "accepted". Jangan lupa untuk mengupload bukti bahwa ruangan telah dibersihkan di halaman complete booking.</p>
                   </div>
                 </div>
               </div>
