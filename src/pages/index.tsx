@@ -239,7 +239,7 @@ export default function Home() {
                   </div>
                   <div className="flex-1">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Konfirmasi Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Review informasi booking Anda dan klik "Submit" untuk mengirim request. Anda akan menerima konfirmasi via email.</p>
+                    <p className="text-sm sm:text-base text-gray-600">Review informasi booking Anda dan klik "Submit" untuk mengirim request.</p>
                   </div>
                 </div>
                 
@@ -250,6 +250,16 @@ export default function Home() {
                   <div className="flex-1">
                     <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Monitor Status Booking</h3>
                     <p className="text-sm sm:text-base text-gray-600">Cek status booking Anda di halaman "Dashboard" untuk melihat apakah booking sudah dikonfirmasi atau masih pending.</p>
+                  </div>
+                </div>
+
+                <div className="flex items-start space-x-4 sm:space-x-6">
+                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
+                    6
+                  </div>
+                  <div className="flex-1">
+                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Complete Booking</h3>
+                    <p className="text-sm sm:text-base text-gray-600">Setelah selesai menggunakan lab, kembali ke "Dashboard" dan klik tombol "Complete" pada booking Anda. Hal ini penting untuk menandai bahwa lab sudah tidak digunakan dan tersedia untuk pengguna lain.</p>
                   </div>
                 </div>
               </div>
