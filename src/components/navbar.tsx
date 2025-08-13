@@ -101,7 +101,7 @@ export function Navbar() {
             
             {/* Desktop Navigation */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {!isAdmin() && (
+              {!isAdmin() ? (
                 <>
                   <Link
                     href="/lab-search"
@@ -124,7 +124,22 @@ export function Navbar() {
                     </Link>
                   </SignedIn>
                 </>
-              )}
+                ) : (
+                  <>
+                    <Link
+                      href="/admin/dashboard"
+                      className={getLinkClasses('/admin/dashboard')}
+                    >
+                      Admin Dashboard
+                    </Link>
+                    <Link
+                      href="/admin/booking-calendar"
+                      className={getLinkClasses('/admin/booking-calendar')}
+                    >
+                      Booking Calendar
+                    </Link>
+                  </>
+                )}
             </div>
           </div>
           

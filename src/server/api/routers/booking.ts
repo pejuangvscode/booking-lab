@@ -179,6 +179,58 @@ export const bookingRouter = createTRPCRouter({
         throw new Error("Failed to fetch current bookings");
       }
     }),
+  getRejectionReason: protectedProcedure
+    .input(z.object({ 
+      id: z.number() 
+    }))
+    .query(async ({ ctx, input }) => {
+      try {
+        // Find the booking and verify user ownership
+        const booking = await ctx.db.bookings.findFirst({
+          where: { 
+            id: input.id,
+            userId: ctx.userId // Ensure user can only access their own bookings
+          },
+          select: {
+            id: true,
+            status: true,
+            rejectionReason: true,
+            eventName: true,
+            bookingDate: true,
+            startTime: true,
+            endTime: true
+          }
+        });
+
+        if (!booking) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found or you don't have permission to view it",
+          });
+        }
+
+        // Check if booking is actually rejected
+        if (booking.status.toLowerCase() !== 'rejected') {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "This booking is not in rejected status",
+          });
+        }
+
+        return {
+          rejectionReason: booking.rejectionReason || "No rejection reason provided"
+        };
+      } catch (error) {      
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch rejection reason",
+        });
+      }
+    }),
 
   getCompletedUserBookings: protectedProcedure
     .input(

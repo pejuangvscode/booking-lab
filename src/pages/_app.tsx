@@ -56,10 +56,10 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
       
       if (userRole === 'admin') {
         if(currentPath === '/' || currentPath === '/lab-search' || currentPath === '/booking' || currentPath === '/dashboard' || currentPath === '/booking-calendar') {
-          void nextRouter.push('/admin/bookings');
+          void nextRouter.push('/admin/dashboard');
         }
       } 
-      else if (currentPath === '/admin/bookings' && userRole !== 'admin') {
+      else if (currentPath === '/admin/dashboard' && userRole !== 'admin') {
         void nextRouter.push('/');
       }
     }

@@ -1,17 +1,16 @@
-import { AlertTriangle, Calendar, Clock, MapPin, Users, User, Phone, Building, Info, CheckCircle, XCircle } from "lucide-react";
-import Head from "next/head";
-import { useRouter } from "next/router";
 import { useAuth, useUser } from '@clerk/nextjs';
+import { format } from "date-fns";
+import { AlertTriangle, Building, Calendar, CheckCircle, Clock, Info, MapPin, User, Users, XCircle } from "lucide-react";
+import Head from "next/head";
+import Link from "next/link";
+import { useRouter } from "next/router";
 import { Alert, AlertDescription } from "~/components/ui/alert";
+import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
-import { Badge } from "~/components/ui/badge";
-import { api } from "~/utils/api";
-import Link from "next/link";
-import { format } from "date-fns";
-import { useEffect } from "react";
 import { CustomDialog } from "~/components/ui/custom-dialog";
 import { useCustomDialog } from "~/hooks/useCustomDialog";
+import { api } from "~/utils/api";
 
 export default function BookingDetailPage() {
   const { dialogState, closeDialog, confirm, success, error } = useCustomDialog();
@@ -37,6 +36,25 @@ export default function BookingDetailPage() {
       retryDelay: attemptIndex => Math.min(1000 * 2 ** attemptIndex, 30000),
     }
   );
+
+  const {
+    data: rejectionData,
+    isLoading: isRejectionLoading,
+    error: rejectionError
+  } = api.booking.getRejectionReason.useQuery(
+    { 
+      id: bookingId ? parseInt(bookingId as string, 10) : 0
+    },
+    { 
+      enabled: !!bookingId && 
+              !isNaN(parseInt(bookingId as string, 10)) && 
+              isSignedIn && 
+              isLoaded &&
+              booking?.status?.toLowerCase() === 'rejected', // Hanya jalankan jika status rejected
+      retry: false,
+    }
+  );
+
 
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
@@ -261,17 +279,17 @@ export default function BookingDetailPage() {
                   <p className="text-gray-600">{booking.eventType || 'No event type'}</p>
                 </div>
                 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="">
                   <div className="flex items-center gap-2">
                     <Calendar className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Date:</span>
-                    <span className="font-medium">{formatDate(booking.bookingDate)}</span>
+                    <span className="font-small">{formatDate(booking.bookingDate)}</span>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <Clock className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Time:</span>
-                    <span className="font-medium">
+                    <span className="font-small">
                       {formatTime(booking.startTime)} - {formatTime(booking.endTime)}
                     </span>
                   </div>
@@ -279,13 +297,13 @@ export default function BookingDetailPage() {
                   <div className="flex items-center gap-2">
                     <Users className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Participants:</span>
-                    <span className="font-medium">{booking.participants || 0}</span>
+                    <span className="font-small">{booking.participants || 0}</span>
                   </div>
                   
                   <div className="flex items-center gap-2">
                     <Building className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Faculty:</span>
-                    <span className="font-medium">{booking.faculty || 'Not specified'}</span>
+                    <span className="font-small">{booking.faculty || 'Not specified'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -309,10 +327,10 @@ export default function BookingDetailPage() {
                       <p className="text-gray-600">{booking.room.type || 'Unknown Type'}</p>
                     </div>
                     
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div className="gap-4">
                       <div>
                         <span className="text-sm text-gray-600">Capacity:</span>
-                        <span className="ml-2 font-medium">
+                        <span className="ml-2 font-small">
                           {booking.room.capacity && booking.room.capacity > 0 
                             ? `${booking.room.capacity} seats` 
                             : "Flexible space"
@@ -322,7 +340,7 @@ export default function BookingDetailPage() {
                       
                       <div>
                         <span className="text-sm text-gray-600">Department:</span>
-                        <span className="ml-2 font-medium">
+                        <span className="ml-2 font-small">
                           {booking.room.department || 'Not specified'}
                         </span>
                       </div>
@@ -330,7 +348,7 @@ export default function BookingDetailPage() {
                       {booking.room.facilityId && (
                         <div className="sm:col-span-2">
                           <span className="text-sm text-gray-600">Facility ID:</span>
-                          <span className="ml-2 font-medium">{booking.room.facilityId}</span>
+                          <span className="ml-2 font-small">{booking.room.facilityId}</span>
                         </div>
                       )}
                     </div>
@@ -350,25 +368,24 @@ export default function BookingDetailPage() {
                 </CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="gap-4">
                   <div>
                     <span className="text-sm text-gray-600">Name:</span>
-                    <span className="ml-2 font-medium">
+                    <span className="ml-2 font-small">
                       {booking.requesterName || 'Not specified'}
                     </span>
                   </div>
                   
                   <div>
                     <span className="text-sm text-gray-600">NIM:</span>
-                    <span className="ml-2 font-medium">
+                    <span className="ml-2 font-small">
                       {booking.requesterNIM || 'Not specified'}
                     </span>
                   </div>
                   
                   <div className="flex items-center gap-2 sm:col-span-2">
-                    <Phone className="h-4 w-4 text-gray-500" />
                     <span className="text-sm text-gray-600">Phone:</span>
-                    <span className="font-medium">{booking.phone || 'Not provided'}</span>
+                    <span className="ml-2 font-small">{booking.phone || 'Not provided'}</span>
                   </div>
                 </div>
               </CardContent>
@@ -398,6 +415,39 @@ export default function BookingDetailPage() {
                 </div>
               </CardContent>
             </Card>
+
+            {booking?.status?.toLowerCase() === 'rejected' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-red-600">
+                    Rejection Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isRejectionLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  ) : rejectionError ? (
+                    <p className="text-sm text-red-500">
+                      Failed to load rejection reason
+                    </p>
+                  ) : rejectionData ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">Reason for rejection:</p>
+                      <p className="text-sm bg-red-50 p-3 rounded border border-red-200">
+                        {rejectionData.rejectionReason}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      No rejection reason provided
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
 
             {/* Actions */}
             <Card>
