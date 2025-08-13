@@ -335,15 +335,15 @@ export default function Home() {
                   <ul className="space-y-3 text-sm sm:text-base text-gray-700 ml-2">
                     <li className="flex items-start bg-red-50 p-3 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
-                      <span>Merokok</span>
+                      <span>Merokok atau melakukan <i>vaping</i></span>
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
-                      <span>Membuang sampah sembarangan dan mengotori area Lab</span>
+                      <span>Membuang sampah sembarangan dan mengotori area Laboratorium (Lab)</span>
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
-                      <span>Membawa makanan ke dalam Laboratorium</span>
+                      <span>Membawa makanan dan minuman ke dalam Laboratorium</span>
                     </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
@@ -441,7 +441,7 @@ export default function Home() {
                     </li>
                     <li className="flex p-3 bg-blue-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
-                      <span>Masuk ke website BookLab <a className="hover:underline font-bold hover:bg-blue-200 hover:rounded-sm px-1" href="https://bit.ly/FITBookLab">bit.ly/FITBookLab</a> atau Scan QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</span>
+                      <span>Masuk ke website BookLab <a className="hover:underline font-bold hover:bg-blue-200 hover:rounded-sm px-1" href="https://www.fitbooklab.com">fitbooklab.com</a> atau pindai (scan) QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</span>
                     </li>
                     <li className="flex p-3 bg-blue-50 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
@@ -483,11 +483,11 @@ export default function Home() {
                           <ul className="ml-7 mt-2 space-y-2">
                             <li className="flex items-start p-2 bg-blue-100 rounded-lg">
                               <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
-                              <span>Jika Kantor Fakultas masih buka: letakan di meja Admin/OB dan kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
+                              <span>Jika kantor Fakultas masih buka, letakkan kunci di meja staf administrasi/office boy (OB) dan kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
                             </li>
                             <li className="flex items-start p-2 bg-blue-100 rounded-lg">
                               <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
-                              <span>Jika Kantor Fakultas tutup, titipkan ke Security Lobby Barat Gedung B (sebelah Pelita Shop) dan tulis di log book mereka, kemudian kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
+                              <span>Jika kantor Fakultas sudah tutup, titipkan kunci kepada staf Security Lobby Barat Gedung B (sebelah Pelita Shop) dan tulis di log book mereka, kemudian kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
                             </li>
                           </ul>
                         </li>
@@ -566,7 +566,7 @@ export default function Home() {
                 <div className="mt-5 p-3 bg-gray-100 rounded-lg border border-gray-300 italic text-sm text-gray-700">
                   Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FIT dan juga PIC Lab yang bertugas
                 </div>
-                
+
                 {/* 5. Sanksi Pelanggaran */}
                 <div id="sanksi" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500">
                   <div className="flex items-center mb-5">
@@ -586,7 +586,7 @@ export default function Home() {
                       <ul className="ml-7 mb-3 space-y-2">
                         <li className="flex items-start">
                           <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
-                          <span>Merokok</span>
+                          <span>Merokok atau melakukan <i>vaping</i></span>
                         </li>
                         <li className="flex items-start">
                           <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
@@ -646,9 +646,9 @@ export default function Home() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
-                        PIC Lab B338
+                        Lab B338
                       </h4>
-                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
+                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi melalui kontak berikut:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
@@ -669,22 +669,22 @@ export default function Home() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
-                        PIC Lab B357
+                        Lab B357
                       </h4>
-                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
+                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi melalui kontak berikut:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
                         </li>
                         <li className="flex items-center">
-                          <a href="mailto:kusno.prasetya@uph.edu" className="text-indigo-600 hover:underline">kusno.prasetya@uph.edu</a>
+                          <a href="mailto:hery.fik@uph.edu" className="text-indigo-600 hover:underline">hery.fik@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
                         </li>
                         <li className="flex items-center">
-                          <a href="tel:081234567890" className="text-indigo-600 hover:underline">0812-3456-7890</a>
-                          <span className="text-gray-500 ml-1">(Kusno Prasetya)</span>
+                          <a href="tel:087775737824" className="text-indigo-600 hover:underline">0877-7573-7824</a>
+                          <span className="text-gray-500 ml-1">(Hery)</span>
                         </li>
                       </ul>
                     </div>
@@ -692,7 +692,30 @@ export default function Home() {
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
                         <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
-                        PIC Lab Gedung F
+                        Paddock P208
+                      </h4>
+                      <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Email:</span>
+                        </li>
+                        <li>
+                          <a href="mailto:kusno.prasetya@uph.edu" className="text-indigo-600 hover:underline">kusno.prasetya@uph.edu</a>
+                        </li>
+                        <li className="flex items-center">
+                          <span className="font-medium mr-2">Nomor Telepon:</span>
+                        </li>
+                        <li className="flex items-center">
+                          <a href="tel:0856055028999" className="text-indigo-600 hover:underline">08560-5502-8999</a>
+                          <span className="text-gray-500 ml-1">(Kusno Prasetya)</span>
+                        </li>
+                      </ul>
+                    </div>
+
+                    <div className="bg-indigo-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">d</span>
+                        Lab Gedung F205 dan F209-210
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
@@ -714,7 +737,7 @@ export default function Home() {
                     
                     <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">d</span>
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">e</span>
                         Laboran
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan teknis tentang peralatan lab yang tidak bisa ditangani oleh PIC silahkan hubungi Laboran melalui kontak berikut:</p>
@@ -735,10 +758,10 @@ export default function Home() {
                       </ul>
                     </div>
                     
-                    <div className="bg-indigo-50 p-4 rounded-lg sm:col-span-2">
+                    <div className="bg-indigo-50 p-4 rounded-lg">
                       <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">e</span>
-                        Kontak Kepala Lab
+                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">f</span>
+                        Kepala Lab
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika ada masalah yang barikaitan dengan laboratorium dan bertingkat fakultas silahkan hubungi:</p>
                       <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
@@ -753,7 +776,7 @@ export default function Home() {
                         </li>
                         <li>
                           <a href="tel:08174822825" className="text-indigo-600 hover:underline">0817-4822-825</a>
-                          <span className="text-gray-500 ml-1">(Aditya R. Mitra)</span>
+                          <span className="text-gray-500 ml-1">(Aditya Rama Mitra)</span>
                         </li>
                       </ul>
                     </div>

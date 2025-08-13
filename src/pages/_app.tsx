@@ -55,7 +55,7 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
 
       
       if (userRole === 'admin') {
-        if(currentPath === '/' || currentPath === '/lab-search' || currentPath === '/booking' || currentPath === '/dashboard' || currentPath === '/booking-calendar') {
+        if( currentPath === '/lab-search' || currentPath === '/booking' || currentPath === '/dashboard' || currentPath === '/booking-calendar') {
           void nextRouter.push('/admin/dashboard');
         }
       } 
