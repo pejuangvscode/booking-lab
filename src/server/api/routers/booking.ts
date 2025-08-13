@@ -141,7 +141,7 @@ export const bookingRouter = createTRPCRouter({
           where: {
             userId: ctx.userId,
             status: {
-              notIn: ["completed", "cancelled"],
+              notIn: ["completed", "cancelled", "rejected"],
             },
             ...searchFilter,
           },
@@ -232,6 +232,58 @@ export const bookingRouter = createTRPCRouter({
       }
     }),
 
+  getAcceptedReason: protectedProcedure
+    .input(z.object({ 
+      id: z.number() 
+    }))
+    .query(async ({ ctx, input }) => {
+      try {
+        // Find the booking and verify user ownership
+        const booking = await ctx.db.bookings.findFirst({
+          where: { 
+            id: input.id,
+            userId: ctx.userId
+          },
+          select: {
+            id: true,
+            status: true,
+            adminNote: true,
+            eventName: true,
+            bookingDate: true,
+            startTime: true,
+            endTime: true
+          }
+        });
+
+        if (!booking) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found or you don't have permission to view it",
+          });
+        }
+
+        if (booking.status.toLowerCase() !== 'accepted') {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "This booking is not in accepted status",
+          });
+        }
+
+        return {
+          adminNote: booking.adminNote || "No admin note provided"
+        };
+      } catch (error) {      
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch rejection reason",
+        });
+      }
+    }),
+
   getCompletedUserBookings: protectedProcedure
     .input(
       z.object({
@@ -260,7 +312,7 @@ export const bookingRouter = createTRPCRouter({
           where: {
             userId: ctx.userId,
             status: {
-              in: ["completed", "cancelled"],
+              in: ["completed", "cancelled", "rejected"],
             },
             ...searchFilter,
           },

@@ -55,6 +55,24 @@ export default function BookingDetailPage() {
     }
   );
 
+  const {
+    data: acceptanceData,
+    isLoading: isAcceptanceLoading,
+    error: acceptanceError
+  } = api.booking.getAcceptedReason.useQuery(
+    { 
+      id: bookingId ? parseInt(bookingId as string, 10) : 0
+    },
+    { 
+      enabled: !!bookingId && 
+              !isNaN(parseInt(bookingId as string, 10)) && 
+              isSignedIn && 
+              isLoaded &&
+              booking?.status?.toLowerCase() === 'accepted', // Hanya jalankan jika status accepted
+      retry: false,
+    }
+  );
+
 
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
@@ -215,7 +233,7 @@ export default function BookingDetailPage() {
   const getStatusDisplay = (status: string) => {
     const statusLower = (status || '').toLowerCase();
     switch (statusLower) {
-      case 'confirmed':
+      case 'accepted':
         return { 
           color: 'bg-green-100 text-green-800 border-green-200', 
           icon: <CheckCircle className="h-4 w-4" /> 
@@ -229,6 +247,11 @@ export default function BookingDetailPage() {
         return { 
           color: 'bg-red-100 text-red-800 border-red-200', 
           icon: <XCircle className="h-4 w-4" /> 
+        };
+      case 'completed':
+        return { 
+          color: 'bg-blue-100 text-blue-800 border-blue-200', 
+          icon: <CheckCircle className="h-4 w-4" /> 
         };
       default:
         return { 
@@ -420,6 +443,7 @@ export default function BookingDetailPage() {
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-red-600">
+                    <XCircle className="h-5 w-5" />
                     Rejection Details
                   </CardTitle>
                 </CardHeader>
@@ -443,6 +467,45 @@ export default function BookingDetailPage() {
                   ) : (
                     <p className="text-sm text-gray-500">
                       No rejection reason provided
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {booking?.status?.toLowerCase() === 'accepted' && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center gap-2 text-green-600">
+                    <CheckCircle className="h-5 w-5" />
+                    Acceptance Details
+                  </CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {isAcceptanceLoading ? (
+                    <div className="animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-4 bg-gray-200 rounded w-1/2"></div>
+                    </div>
+                  ) : acceptanceError ? (
+                    <p className="text-sm text-red-500">
+                      Failed to load acceptance details
+                    </p>
+                  ) : acceptanceData ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">Admin note:</p>
+                      <p className="text-sm bg-green-50 p-3 rounded border border-green-200">
+                        {acceptanceData.adminNote || 'Your booking has been approved.'}
+                      </p>
+                      {acceptanceData.acceptedAt && (
+                        <div className="text-xs text-gray-500 mt-2">
+                          Accepted on: {formatDate(acceptanceData.acceptedAt)}
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <p className="text-sm text-gray-500">
+                      Your booking has been accepted.
                     </p>
                   )}
                 </CardContent>

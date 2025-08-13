@@ -42,12 +42,10 @@ export default function Dashboard() {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   
-  // Table state for current bookings
   const [currentEntriesCount, setCurrentEntriesCount] = useState(10);
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   
-  // Table state for completed bookings
   const [completedEntriesCount, setCompletedEntriesCount] = useState(10);
   const [completedSearchTerm, setCompletedSearchTerm] = useState("");
   const [completedPage, setCompletedPage] = useState(1);
@@ -217,7 +215,7 @@ export default function Dashboard() {
                 variant="outline" 
                 size="sm" 
                 onClick={() => refetchCurrentBookings()}
-                className="text-orange-600 text-xs sm:text-sm"
+                className="text-orange-600 text-xs sm:text-sm hover:cursor-pointer"
               >
                 <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                 <span className="hidden sm:inline">Refresh</span>

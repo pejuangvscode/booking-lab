@@ -252,7 +252,7 @@ export default function CompleteBooking() {
           <div className="text-center py-12">
             <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
             <p className="text-red-600 mb-4">Error loading booking details or booking not found</p>
-            <Button onClick={handleBackToDashboard} variant="outline">
+            <Button onClick={handleBackToDashboard} variant="outline" className="hover:cursor-pointer">
               Back to Dashboard
             </Button>
           </div>
@@ -276,7 +276,7 @@ export default function CompleteBooking() {
             <Button
               onClick={handleBackToDashboard}
               variant="outline"
-              className="mb-6 hover:bg-gray-50"
+              className="mb-6 hover:bg-gray-50 hover:cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Back to Dashboard
