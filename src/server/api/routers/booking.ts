@@ -441,154 +441,162 @@ export const bookingRouter = createTRPCRouter({
 
 
   checkConflicts: publicProcedure
-    .input(z.object({
-      labId: z.string(),
-      bookingDate: z.string(),
-      startTime: z.string(),
-      endTime: z.string(),
-      participants: z.number(),
-      bookingType: z.enum(["full", "partial"]),
-      excludeBookingId: z.union([z.string(), z.number()]).optional()
-    }))
-    .query(async ({ ctx, input }) => {
-      try {
-        
-      
-        const inputDate = new Date(input.bookingDate);
-        if (isNaN(inputDate.getTime())) {
-          throw new Error("Invalid booking date provided");
-        }
-        
-      
-        const formattedDate = inputDate.toISOString().split('T')[0];
-        
-      
-        const excludeId = input.excludeBookingId 
-          ? (typeof input.excludeBookingId === 'string' 
-              ? parseInt(input.excludeBookingId) 
-              : input.excludeBookingId)
-          : undefined;
-        
-      
-        const room = await ctx.db.lab.findUnique({
-          where: { facilityId: input.labId }
-        });
-        
-        if (!room) {
-          throw new Error(`Room not found for facilityId: ${input.labId}`);
-        }
-        
-      
-        const allBookingsOnDate = await ctx.db.bookings.findMany({
-          where: {
-          
-            bookingDate: {
-              gte: new Date(formattedDate + 'T00:00:00.000Z'),
-              lt: new Date(formattedDate + 'T23:59:59.999Z')
-            },
-            status: {
-            
-            },
-            id: excludeId ? { not: excludeId } : undefined
-          },
-          orderBy: {
-            startTime: 'asc'
-          }
-        });
-
-
-      
-        const timesOverlap = (start1: string, end1: string, start2: string, end2: string) => {
-          const timeToMinutes = (time: string) => {
-            const [hours, minutes] = time.split(':').map(Number);
-            if (typeof hours !== "number" || isNaN(hours) || typeof minutes !== "number" || isNaN(minutes)) {
-              throw new Error(`Invalid time format: ${time}`);
-            }
-            return hours * 60 + minutes;
-          };
-          
-          const start1Min = timeToMinutes(start1);
-          const end1Min = timeToMinutes(end1);
-          const start2Min = timeToMinutes(start2);
-          const end2Min = timeToMinutes(end2);
-        
-          
-          return start1Min < end2Min && end1Min > start2Min;
-        };
-
-      
-        const overlappingBookings = allBookingsOnDate.filter(booking => {
-          return timesOverlap(
-            input.startTime, 
-            input.endTime, 
-            booking.startTime, 
-            booking.endTime
-          );
-        });
-
-
-      
-        if (overlappingBookings.length > 0) {
-          
-        
-          const newBookingIsFullRoom = input.bookingType === "full" || 
-                                    (room.capacity > 0 && input.participants >= room.capacity);
-          
-          
-          for (const booking of overlappingBookings) {
-            const existingIsFullRoom = room.capacity === 0 || booking.participants >= room.capacity;
-            
-          
-            if (newBookingIsFullRoom || existingIsFullRoom) {
-              return {
-                hasConflicts: true,
-                conflictType: "FULL_ROOM_CONFLICT",
-                conflictingBookings: [booking],
-                message: newBookingIsFullRoom 
-                  ? `Cannot book full room: existing booking "${booking.eventName}" at ${booking.startTime}-${booking.endTime}`
-                  : `Cannot book during this time: room is fully booked by "${booking.eventName}" at ${booking.startTime}-${booking.endTime}`
-              };
-            }
-          }
-
-        
-          if (!newBookingIsFullRoom && room.capacity > 0) {
-            const totalExistingParticipants = overlappingBookings.reduce(
-              (sum, booking) => sum + booking.participants, 0
-            );
-
-            const totalAfterNewBooking = totalExistingParticipants + input.participants;
-
-
-            if (totalAfterNewBooking > room.capacity) {
-              return {
-                hasConflicts: true,
-                conflictType: "CAPACITY_EXCEEDED",
-                conflictingBookings: overlappingBookings,
-                message: `Capacity exceeded! Room: ${room.capacity} seats, currently booked: ${totalExistingParticipants}, requested: ${input.participants}`,
-                capacityInfo: {
-                  roomCapacity: room.capacity,
-                  currentlyBooked: totalExistingParticipants,
-                  requested: input.participants,
-                  available: room.capacity - totalExistingParticipants
-                }
-              };
-            }
-          }
-        }
-
-        
-        return {
-          hasConflicts: false,
-          conflictType: null,
-          conflictingBookings: [],
-          message: "Time slot is available"
-        };
-        
-      } catch (error) {
-        throw new Error("Failed to check booking conflicts");
+  .input(z.object({
+    labId: z.string(),
+    bookingDate: z.string(),
+    startTime: z.string(),
+    endTime: z.string(),
+    participants: z.number(),
+    bookingType: z.enum(["full", "partial"]),
+    excludeBookingId: z.union([z.string(), z.number()]).optional()
+  }))
+  .query(async ({ ctx, input }) => {
+    try {
+      // Parse and validate date
+      const inputDate = new Date(input.bookingDate);
+      if (isNaN(inputDate.getTime())) {
+        throw new Error("Invalid booking date provided");
       }
-    }),
+      
+      // Format date for query
+      const formattedDate = inputDate.toISOString().split('T')[0];
+      
+      // Handle exclude ID conversion
+      const excludeId = input.excludeBookingId 
+        ? (typeof input.excludeBookingId === 'string' 
+            ? parseInt(input.excludeBookingId) 
+            : input.excludeBookingId)
+        : undefined;
+      
+      // Find room details
+      const room = await ctx.db.lab.findUnique({
+        where: { facilityId: input.labId }
+      });
+      
+      if (!room) {
+        throw new Error(`Room not found for facilityId: ${input.labId}`);
+      }
+      
+      // Get all bookings on the same date - EXCLUDING rejected and cancelled bookings
+      const allBookingsOnDate = await ctx.db.bookings.findMany({
+        where: {
+          roomId: input.labId, // Make sure we're checking the same room
+          bookingDate: {
+            gte: new Date(formattedDate + 'T00:00:00.000Z'),
+            lt: new Date(formattedDate + 'T23:59:59.999Z')
+          },
+          // KEY CHANGE: Only consider bookings that are NOT rejected or cancelled
+          status: {
+            notIn: ['rejected', 'cancelled'] // Exclude rejected and cancelled bookings
+          },
+          // Exclude current booking if editing
+          id: excludeId ? { not: excludeId } : undefined
+        },
+        orderBy: {
+          startTime: 'asc'
+        }
+      });
+
+      // Helper function to check if times overlap
+      const timesOverlap = (start1: string, end1: string, start2: string, end2: string) => {
+        const timeToMinutes = (time: string) => {
+          const [hours, minutes] = time.split(':').map(Number);
+          if (typeof hours !== "number" || isNaN(hours) || typeof minutes !== "number" || isNaN(minutes)) {
+            throw new Error(`Invalid time format: ${time}`);
+          }
+          return hours * 60 + minutes;
+        };
+        
+        const start1Min = timeToMinutes(start1);
+        const end1Min = timeToMinutes(end1);
+        const start2Min = timeToMinutes(start2);
+        const end2Min = timeToMinutes(end2);
+      
+        // Check for time overlap
+        return start1Min < end2Min && end1Min > start2Min;
+      };
+
+      // Find overlapping bookings (only active ones - rejected/cancelled already filtered out)
+      const overlappingBookings = allBookingsOnDate.filter(booking => {
+        return timesOverlap(
+          input.startTime, 
+          input.endTime, 
+          booking.startTime, 
+          booking.endTime
+        );
+      });
+
+      // If there are overlapping bookings, check for conflicts
+      if (overlappingBookings.length > 0) {
+        // Determine if new booking wants full room
+        const newBookingIsFullRoom = input.bookingType === "full" || 
+                                  (room.capacity > 0 && input.participants >= room.capacity);
+        
+        // Check each overlapping booking for conflicts
+        for (const booking of overlappingBookings) {
+          const existingIsFullRoom = room.capacity === 0 || booking.participants >= room.capacity;
+          
+          // If either booking is full room, there's a conflict
+          if (newBookingIsFullRoom || existingIsFullRoom) {
+            return {
+              hasConflicts: true,
+              conflictType: "FULL_ROOM_CONFLICT",
+              conflictingBookings: [booking],
+              message: newBookingIsFullRoom 
+                ? `Cannot book full room: existing booking "${booking.eventName}" at ${booking.startTime}-${booking.endTime} (Status: ${booking.status})`
+                : `Cannot book during this time: room is fully booked by "${booking.eventName}" at ${booking.startTime}-${booking.endTime} (Status: ${booking.status})`
+            };
+          }
+        }
+
+        // For partial bookings, check capacity limits
+        if (!newBookingIsFullRoom && room.capacity > 0) {
+          const totalExistingParticipants = overlappingBookings.reduce(
+            (sum, booking) => sum + booking.participants, 0
+          );
+
+          const totalAfterNewBooking = totalExistingParticipants + input.participants;
+
+          // Check if total exceeds room capacity
+          if (totalAfterNewBooking > room.capacity) {
+            return {
+              hasConflicts: true,
+              conflictType: "CAPACITY_EXCEEDED",
+              conflictingBookings: overlappingBookings,
+              message: `Capacity exceeded! Room: ${room.capacity} seats, currently booked: ${totalExistingParticipants}, requested: ${input.participants}`,
+              capacityInfo: {
+                roomCapacity: room.capacity,
+                currentlyBooked: totalExistingParticipants,
+                requested: input.participants,
+                available: room.capacity - totalExistingParticipants
+              }
+            };
+          }
+        }
+      }
+
+      // No conflicts found
+      return {
+        hasConflicts: false,
+        conflictType: null,
+        conflictingBookings: [],
+        message: `Time slot is available. Note: Rejected and cancelled bookings do not block availability.`,
+        roomInfo: {
+          name: room.name || `Room ${input.labId}`,
+          capacity: room.capacity,
+          facilityId: room.facilityId
+        }
+      };
+      
+    } catch (error) {
+      console.error("Error in checkConflicts:", error);
+      if (error instanceof Error) {
+        throw new Error(`Failed to check booking conflicts: ${error.message}`);
+      } else {
+        throw new Error(`Failed to check booking conflicts: Unknown error`);
+      }
+    }
+  }),
     
     updateBooking: protectedProcedure
     .input(z.object({

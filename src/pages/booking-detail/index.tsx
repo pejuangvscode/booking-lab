@@ -245,13 +245,18 @@ export default function BookingDetailPage() {
         };
       case 'cancelled':
         return { 
-          color: 'bg-red-100 text-red-800 border-red-200', 
+          color: 'bg-gray-100 text-gray-800 border-gray-200', 
           icon: <XCircle className="h-4 w-4" /> 
         };
       case 'completed':
         return { 
           color: 'bg-blue-100 text-blue-800 border-blue-200', 
           icon: <CheckCircle className="h-4 w-4" /> 
+        };
+      case 'rejected':
+        return { 
+          color: 'bg-red-100 text-red-800 border-red-200', 
+          icon: <XCircle className="h-4 w-4" /> 
         };
       default:
         return { 
