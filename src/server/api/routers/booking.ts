@@ -251,7 +251,8 @@ export const bookingRouter = createTRPCRouter({
             eventName: true,
             bookingDate: true,
             startTime: true,
-            endTime: true
+            endTime: true,
+            approvedAt: true
           }
         });
 
@@ -270,7 +271,8 @@ export const bookingRouter = createTRPCRouter({
         }
 
         return {
-          adminNote: booking.adminNote || "No admin note provided"
+          adminNote: booking.adminNote || "No admin note provided",
+          approvedAt: booking.approvedAt || "Not approved yet"
         };
       } catch (error) {      
         if (error instanceof TRPCError) {

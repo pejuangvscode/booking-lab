@@ -497,9 +497,9 @@ export default function BookingDetailPage() {
                       <p className="text-sm bg-green-50 p-3 rounded border border-green-200">
                         {acceptanceData.adminNote || 'Your booking has been approved.'}
                       </p>
-                      {acceptanceData.acceptedAt && (
+                      {acceptanceData.approvedAt && (
                         <div className="text-xs text-gray-500 mt-2">
-                          Accepted on: {formatDate(acceptanceData.acceptedAt)}
+                          Accepted on: {formatDate(acceptanceData.approvedAt)}
                         </div>
                       )}
                     </div>
