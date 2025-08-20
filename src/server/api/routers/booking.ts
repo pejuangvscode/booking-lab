@@ -597,8 +597,135 @@ export const bookingRouter = createTRPCRouter({
       }
     }
   }),
+
+  createMultiple: protectedProcedure
+    .input(z.object({
+      labId: z.string(),
+      startDate: z.string(),
+      endDate: z.string(),
+      selectedDays: z.array(z.number()),
+      startTime: z.string(),
+      endTime: z.string(),
+      participants: z.number(),
+      eventName: z.string(),
+      eventType: z.string(),
+      phone: z.string(),
+      faculty: z.string(),
+      userData: z.object({
+        name: z.string(),
+      }),
+      equipment: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const { 
+          labId, startDate, endDate, selectedDays, startTime, endTime,
+          participants, eventName, eventType, phone, faculty, userData, equipment
+        } = input;
+
+        const startDateObj = new Date(startDate);
+        const endDateObj = new Date(endDate);
+        const bookingDates: string[] = [];
+
+        for (let date = new Date(startDateObj); date <= endDateObj; date.setDate(date.getDate() + 1)) {
+          const dayOfWeek = date.getDay();
+          if (selectedDays.includes(dayOfWeek)) {
+            bookingDates.push(date.toISOString().split('T')[0]);
+          }
+        }
+
+        const successful: any[] = [];
+        const failed: Array<{ date: string; error: string }> = [];
+
+        for (const bookingDate of bookingDates) {
+          try {
+            const conflictResult = await ctx.db.bookings.findMany({
+              where: {
+                roomId: labId,
+                bookingDate: {
+                  gte: new Date(bookingDate + 'T00:00:00.000Z'),
+                  lt: new Date(bookingDate + 'T23:59:59.999Z')
+                },
+                status: {
+                  notIn: ['rejected', 'cancelled']
+                },
+                OR: [
+                  {
+                    AND: [
+                      { startTime: { lte: startTime } },
+                      { endTime: { gt: startTime } },
+                    ],
+                  },
+                  {
+                    AND: [
+                      { startTime: { lt: endTime } },
+                      { endTime: { gte: endTime } },
+                    ],
+                  },
+                  {
+                    AND: [
+                      { startTime: { gte: startTime } },
+                      { endTime: { lte: endTime } },
+                    ],
+                  },
+                ],
+              },
+            });
+
+            if (conflictResult.length > 0) {
+              failed.push({
+                date: bookingDate,
+                error: `Time slot already booked (${conflictResult[0]?.eventName})`
+              });
+              continue;
+            }
+
+            const booking = await ctx.db.bookings.create({
+              data: {
+                roomId: labId,
+                bookingDate: new Date(bookingDate),
+                startTime: startTime,
+                endTime: endTime,
+                participants: participants,
+                eventName: eventName,
+                eventType: eventType,
+                requesterName: userData.name,
+                phone: phone,
+                faculty: faculty,
+                userId: ctx.userId,
+                status: "accepted",
+                equipment: equipment,
+              },
+            });
+
+            successful.push(booking);
+          } catch (error) {
+            failed.push({
+              date: bookingDate,
+              error: error instanceof Error ? error.message : 'Unknown error'
+            });
+          }
+        }
+
+        return {
+          successful,
+          failed,
+          summary: {
+            totalRequested: bookingDates.length,
+            successfulCount: successful.length,
+            failedCount: failed.length
+          }
+        };
+
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to create multiple bookings: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        });
+      }
+    }),
     
-    updateBooking: protectedProcedure
+  updateBooking: protectedProcedure
     .input(z.object({
       id: z.number(),
       status: z.string(),
@@ -629,6 +756,112 @@ export const bookingRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to update booking",
+        });
+      }
+    }),
+    
+  getAdminBookings: protectedProcedure
+    .query(async ({ ctx }) => {
+      try {
+        // Only get bookings that have class codes (equipment field not starting with http)
+        const bookings = await ctx.db.bookings.findMany({
+          where: {
+            userId: ctx.userId, // Only admin's bookings
+            equipment: {
+              not: null,
+              // Exclude URLs (assume class codes don't start with http)
+            },
+            OR: [
+              { equipment: { not: { startsWith: 'http' } } },
+              { equipment: { not: { startsWith: 'HTTP' } } }
+            ]
+          },
+          include: {
+            room: {
+              select: {
+                name: true,
+                facilityId: true,
+                capacity: true,
+              },
+            },
+          },
+          orderBy: [
+            { equipment: 'asc' },
+            { bookingDate: 'asc' },
+            { startTime: 'asc' }
+          ],
+        });
+
+        return bookings;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch admin bookings",
+        });
+      }
+    }),
+
+  deleteClassBookings: protectedProcedure
+    .input(z.object({
+      classCode: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Delete all bookings with the specific class code
+        const result = await ctx.db.bookings.deleteMany({
+          where: {
+            userId: ctx.userId, // Only admin's bookings
+            equipment: input.classCode,
+          },
+        });
+
+        return {
+          deletedCount: result.count,
+          classCode: input.classCode,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to delete bookings for class ${input.classCode}`,
+        });
+      }
+    }),
+
+  bulkDeleteClassBookings: protectedProcedure
+    .input(z.object({
+      classCodes: z.array(z.string()),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        let totalDeleted = 0;
+        const results: Array<{ classCode: string; deleted: number }> = [];
+
+        // Delete bookings for each class code
+        for (const classCode of input.classCodes) {
+          const result = await ctx.db.bookings.deleteMany({
+            where: {
+              userId: ctx.userId, // Only admin's bookings
+              equipment: classCode,
+            },
+          });
+          
+          results.push({
+            classCode,
+            deleted: result.count
+          });
+          
+          totalDeleted += result.count;
+        }
+
+        return {
+          totalDeleted,
+          classCount: input.classCodes.length,
+          results,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to bulk delete class bookings",
         });
       }
     }),

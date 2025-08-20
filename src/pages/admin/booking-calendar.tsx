@@ -152,7 +152,8 @@ export default function BookingCalendar() {
 
   const limitEventsPerDay = (events: BookingEvent[], limit: number = 2) => {
     const filteredEvents = getFilteredEvents(events).filter(event => 
-      event.status?.toLowerCase() !== 'cancelled'
+      event.status?.toLowerCase() !== 'cancelled' &&
+      event.status?.toLowerCase() !== 'rejected'
     );
 
     const eventsByDate: Record<string, BookingEvent[]> = {};
@@ -235,7 +236,9 @@ export default function BookingCalendar() {
     if (bookingsData && rooms.length > 0) {      
       const transformedEvents = bookingsData
         .filter(booking => 
-          booking.status?.toLowerCase() !== 'cancelled'
+          // Filter out cancelled AND rejected bookings
+          booking.status?.toLowerCase() !== 'cancelled' && 
+          booking.status?.toLowerCase() !== 'rejected'
         )
         .map(booking => {
           let startDate, endDate;
@@ -291,6 +294,7 @@ export default function BookingCalendar() {
       setEvents(transformedEvents as BookingEvent[]);
     }
   }, [bookingsData, rooms]);
+
   useEffect(() => {
     setIsMounted(true);
   }, []);
@@ -669,8 +673,6 @@ export default function BookingCalendar() {
                     <div className="space-y-1 text-xs text-gray-600">
                       <div>• <span className="font-medium text-orange-600">Full</span>: Entire room/space</div>
                       <div>• <span className="font-medium text-blue-600">Partial</span>: Specific number of seats</div>
-                      <div>• Numbers show participants/capacity</div>
-                      <div>• <span className="font-medium text-gray-500">Cancelled events are hidden</span></div>
                     </div>
                   </div>
                 </CardContent>
@@ -997,13 +999,15 @@ export default function BookingCalendar() {
                             
                             {event.status && event.status !== 'overflow' && (
                               <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                                event.status.toLowerCase() === 'confirmed' 
-                                  ? 'bg-green-100 text-green-800' 
-                                  : 'bg-yellow-100 text-yellow-800'
+                                event.status.toLowerCase() === 'accepted' 
+                                  ? 'bg-green-100 text-green-800'
+                                  : event.status.toLowerCase() === 'completed' 
+                                    ? 'bg-blue-100 text-blue-800'
+                                    : 'bg-yellow-100 text-yellow-800'
                               }`}>
                                 <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                  event.status.toLowerCase() === 'confirmed' 
-                                    ? 'bg-green-400' 
+                                  event.status.toLowerCase() === 'accepted' 
+                                    ? 'bg-green-400'
                                     : 'bg-yellow-400'
                                 }`}></div>
                                 {event.status.charAt(0).toUpperCase() + event.status.slice(1)}

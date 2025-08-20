@@ -133,11 +133,24 @@ export function Navbar() {
                       Admin Dashboard
                     </Link>
                     <Link
+                      href="/admin/lab-search"
+                      className={getLinkClasses('/admin/lab-search')}
+                    >
+                      Book for Admin
+                    </Link>
+                    <Link
+                      href="/admin/manage-booking"
+                      className={getLinkClasses('/admin/manage-booking')}
+                    >
+                      Manage Booking
+                    </Link>
+                    <Link
                       href="/admin/booking-calendar"
                       className={getLinkClasses('/admin/booking-calendar')}
                     >
                       Booking Calendar
                     </Link>
+                    
                   </>
                 )}
             </div>
