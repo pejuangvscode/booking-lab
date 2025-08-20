@@ -142,7 +142,7 @@ export default function BookingPage() {
       const dayOfWeek = date.getDay();
       if (selectedDays.includes(dayOfWeek)) {
         bookings.push({
-          date: date.toISOString().split('T')[0],
+          date: date.toISOString().split('T')[0] || '',
           dayName: daysOfWeek.find(d => d.value === dayOfWeek)?.label || 'Unknown'
         });
       }
@@ -344,6 +344,7 @@ export default function BookingPage() {
           faculty,
           userData: {
             name: requestorName,
+            nim: ""
           },
         };
         

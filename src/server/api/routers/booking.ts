@@ -630,7 +630,7 @@ export const bookingRouter = createTRPCRouter({
         for (let date = new Date(startDateObj); date <= endDateObj; date.setDate(date.getDate() + 1)) {
           const dayOfWeek = date.getDay();
           if (selectedDays.includes(dayOfWeek)) {
-            bookingDates.push(date.toISOString().split('T')[0]);
+            bookingDates.push(date.toISOString().split('T')[0] as string);
           }
         }
 
