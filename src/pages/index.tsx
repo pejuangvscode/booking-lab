@@ -42,12 +42,11 @@ const useIntersectionObserver = (options = {}) => {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry?.isIntersecting) {
         setIsIntersecting(true);
-        // Once animated, stop observing
         observer.unobserve(ref);
       }
     }, {
       threshold: 0.02,
-      rootMargin: '50px 0px -50px 0px',
+      rootMargin: '10px 0px -10px 0px',
       ...options
     });
 
@@ -64,12 +63,11 @@ const AnimatedSection: React.FC<{
   className?: string;
   animation?: 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'fadeIn' | 'scaleIn';
   delay?: number;
-  showByDefault?: boolean; // New prop to control initial visibility
+  showByDefault?: boolean;
 }> = ({ children, className = "", animation = 'fadeInUp', delay = 0, showByDefault = false }) => {
   const [ref, isIntersecting] = useIntersectionObserver();
   const [shouldShow, setShouldShow] = useState(showByDefault);
 
-  // Show content by default if showByDefault is true, otherwise wait for intersection
   useEffect(() => {
     if (showByDefault || isIntersecting) {
       setShouldShow(true);
@@ -115,13 +113,12 @@ const AnimatedSection: React.FC<{
   );
 };
 
-// Updated Staggered animation container
 const StaggeredAnimationContainer: React.FC<{
   children: React.ReactNode;
   staggerDelay?: number;
   animation?: 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'fadeIn' | 'scaleIn';
   className?: string;
-  showByDefault?: boolean; // New prop
+  showByDefault?: boolean;
 }> = ({ children, staggerDelay = 150, animation = 'fadeInUp', className = "", showByDefault = false }) => {
   const childrenArray = React.Children.toArray(children);
   
@@ -152,7 +149,6 @@ export default function Home() {
     return () => clearInterval(interval);
   }, []);
 
-  // Enhanced scroll handler for carousel fade
   useEffect(() => {
     const handleScroll = () => {
       const scrollPosition = window.scrollY;
@@ -189,10 +185,8 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
   };
 
-
-
   return (
-    <>
+    <div className="">
       <Head>
         <title>BookLab | FIT Lab Booking</title>
         <meta name="description" content="UPH Lab Room Booking Portal" />
@@ -202,7 +196,7 @@ export default function Home() {
       
       <div 
         id="hero-carousel"
-        className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] w-full overflow-hidden mt-16 transition-opacity duration-300 ease-out [-webkit-mask-image:linear-gradient(to_bottom,rgba(0,0,0,1)_60%,transparent_100%)] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,1)_0%,transparent_100%)] [mask-repeat:no-repeat] [-webkit-mask-repeat:no-repeat]"
+        className="relative h-screen sm:h-[60vh] lg:h-[85vh] w-full overflow-hidden transition-opacity duration-300 ease-out"
         style={{ willChange: 'opacity' }}
       >
         <div className="h-full w-full">
@@ -222,7 +216,7 @@ export default function Home() {
                   layout="fill" 
                   objectFit="cover" 
                   className="object-cover transition-transform duration-1500 ease-out" 
-                  style={{ opacity: 0.8, willChange: 'transform' }}
+                  style={{ opacity: 0.7, willChange: 'transform' }}
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
@@ -252,7 +246,7 @@ export default function Home() {
         
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center text-white">
+            <div className="max-w-5xl mx-auto text-center text-white">
               <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-shadow-lg transition-all duration-1000 ease-out animate-fadeInUp`}>
                 {carouselItems[currentSlide]?.title}
               </h1>
@@ -289,23 +283,13 @@ export default function Home() {
         </div>
       </div>
 
-      
       <div className="bg-gray-50">
-        
         <section className="py-8 sm:py-12 lg:py-16 bg-white overflow-hidden">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto text-center">
-              <AnimatedSection animation="fadeInDown">
-                <div className="flex justify-center mb-4 sm:mb-6">
-                  <div className="bg-orange-100 p-3 sm:p-4 rounded-full">
-                    <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
-                  </div>
-                </div>
-              </AnimatedSection>
-              
+            <div className="max-w-5xl mx-auto text-center">
               <AnimatedSection animation="fadeInUp" delay={200}>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
-                  About BookLab
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6 text-shadow-lg">
+                  About FIT BookLab
                 </h2>
               </AnimatedSection>
               
@@ -354,15 +338,11 @@ export default function Home() {
         </section>
 
         
-        <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
+        <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-r from-gray-100 to-gray-200 overflow-hidden ">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <AnimatedSection animation="fadeInUp" className="text-center mb-8 sm:mb-12">
-                <div className="flex justify-center mb-4 sm:mb-6">
-                  <div className="bg-green-100 p-3 sm:p-4 rounded-full">
-                    <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
-                  </div>
-                </div>
+                
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
                   Cara Menggunakan BookLab
                 </h2>
@@ -435,12 +415,12 @@ export default function Home() {
         
         <AnimatedSection animation="fadeInUp" className="py-12 sm:py-16 lg:py-20 bg-white">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
+            <div className="max-w-5xl mx-auto">
               <div className="text-center mb-10 sm:mb-14">
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-5">
                   Tata Tertib Penggunaan Laboratorium FIT
                 </h2>
-                <p className="text-base sm:text-lg text-gray-600 max-w-3xl mx-auto">
+                <p className="text-base sm:text-lg text-gray-600 max-w-5xl mx-auto">
                   Harap patuhi aturan berikut untuk menjaga kelancaran dan keamanan penggunaan laboratorium
                 </p>
               </div>
@@ -945,8 +925,8 @@ export default function Home() {
 
         <AnimatedSection animation="fadeInUp" className="py-8 sm:py-12 lg:py-16 bg-gray-100">
           <div className="container mx-auto px-4">
-            <div className="max-w-4xl mx-auto">
-              <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg overflow-hidden">
+            <div className="max-w-5xl mx-auto">
+              <div className="bg-transparent p-6 sm:p-8 rounded-x overflow-hidden">
                 <div className="flex flex-col items-center justify-center mb-6">
                   <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-full bg-gradient-to-r from-orange-100 to-blue-100 border-2 border-orange-200 flex items-center justify-center overflow-hidden mb-4">
                     <img src="/favicon.ico" alt="FIT Logo" className="w-14 h-14 sm:w-16 sm:h-16" />
@@ -1038,6 +1018,6 @@ export default function Home() {
           will-change: transform, opacity;
         }
       `}</style>
-    </>
+    </div>
   );
 }

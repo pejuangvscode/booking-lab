@@ -12,6 +12,7 @@ export function Navbar() {
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [visible, setVisible] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
+  const [isAtTop, setIsAtTop] = useState(true);
 
   const { data: dbUser } = api.user.getCurrentUser.useQuery(
     undefined,
@@ -31,14 +32,26 @@ export function Navbar() {
     const handleScroll = () => {
       const currentScrollPos = window.scrollY;
       const isVisible = prevScrollPos > currentScrollPos || currentScrollPos < 10;
-      
+      const atTop = currentScrollPos < 50 && router.pathname === "/";
+
       setPrevScrollPos(currentScrollPos);
       setVisible(isVisible);
+      setIsAtTop(currentScrollPos < 50 && router.pathname === '/');
     };
+
+    const currentScrollPos = window.scrollY;
+    setIsAtTop(currentScrollPos < 50 && router.pathname === '/');
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, [prevScrollPos, isMounted]);
+
+  useEffect(() => {
+    // Immediately update isAtTop when route changes
+    const currentScrollPos = window.scrollY;
+    setIsAtTop(currentScrollPos < 50 && router.pathname === '/');
+  }, [router.pathname]); // This will run whenever the route changes
+
 
   const isAdmin = () => {
     const clerkRole = user?.publicMetadata?.role;
@@ -51,13 +64,13 @@ export function Navbar() {
   };
 
   const getLinkClasses = (path: string) => {
-    const baseClasses = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-200";
+    const baseClasses = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-300";
     
     if (isActive(path)) {
-      return `${baseClasses} border-orange-500 text-orange-600 font-semibold`;
+      return `${baseClasses} border-orange-500 ${isAtTop && router.pathname === '/' ? 'text-white' : 'text-orange-600'} font-semibold`;
     }
     
-    return `${baseClasses} border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700`;
+    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-gray-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`;
   };
 
   const getMobileLinkClasses = (path: string) => {
@@ -66,15 +79,18 @@ export function Navbar() {
     if (isActive(path)) {
       return `${baseClasses} border-orange-500 text-orange-600 bg-orange-50 font-semibold`;
     }
-    
+
     return `${baseClasses} border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700`;
   };
 
   return (
     <nav 
-      className={`fixed top-0 left-0 right-0 z-50 bg-white shadow-sm transition-transform duration-300 ${
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isMounted && !visible ? '-translate-y-full' : 'transform-none'
-      }`}
+      } ${isAtTop && router.pathname === '/' 
+          ? 'bg-transparent' 
+          : 'bg-white shadow-sm'
+      } ${isMenuOpen && 'bg-white'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -86,14 +102,21 @@ export function Navbar() {
                   alt="BookLab Logo"
                   width={40}
                   height={40}
-                  className="h-10 w-12 mr-2 border-r-2 pr-2 border-gray-300"
+                  className={`h-10 w-12 mr-2 border-r-2 pr-2 transition-colors duration-300 ${
+                    isAtTop && router.pathname === '/' ? 'text-white drop-shadow-lg' : 'text-orange-500'
+                  }`}
                 />
               </div>
               <div className="flex-shrink-0 flex flex-col items-left">
-                <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-200 text-orange-500`}>
+                <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
+                  isMenuOpen ? 'text-orange-500' :
+                  isAtTop && router.pathname === '/' ? 'text-white drop-shadow-lg' : 'text-orange-500'
+                }`}>
                   Book
                 </span>
-                <span className={"text-lg sm:text-xl font-black leading-none transition-colors duration-200 text-orange-500"}>
+                <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
+                  isMenuOpen ? 'text-orange-500' : isAtTop && router.pathname === '/' ? 'text-white drop-shadow-lg' : 'text-orange-500'
+                }`}>
                   Lab
                 </span>
               </div>
@@ -160,7 +183,11 @@ export function Navbar() {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                <button className={`hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                  isAtTop && router.pathname === '/'
+                    ? 'text-white bg-transparent outline-white outline-2 hover:bg-orange-700 hover:outline-orange-700' 
+                    : 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
+                }`}>
                   Sign in
                 </button>
               </SignInButton>
@@ -168,14 +195,18 @@ export function Navbar() {
             <SignedIn>
               {/* Show role badge for admins */}
               {isAdmin() && (
-                <div className="mr-3 px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
+                <div className={`mr-3 px-2 py-1 text-xs font-medium rounded-full transition-colors duration-300 ${
+                  isAtTop && router.pathname === '/'
+                    ? 'bg-yellow-500/20 text-yellow-100 border border-yellow-400/30' 
+                    : 'bg-yellow-100 text-yellow-800'
+                }`}>
                   Admin
                 </div>
               )}
               <UserButton
                 appearance={{
                   elements: {
-                    userButtonAvatarBox: "w-10 h-10",
+                    userButtonAvatarBox: "w-10 h-10 rounded-full border border-gray-200",
                   },
                 }}
               />
@@ -183,16 +214,22 @@ export function Navbar() {
           </div>
           
           {/* Mobile menu button */}
-          <div className="-mr-2 flex items-center sm:hidden">
+          <div className={`-mr-2 flex items-center sm:hidden`}>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500 transition-colors duration-200"
+              className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-inset ${
+                isAtTop && router.pathname === '/'
+                  ? 'text-white hover:text-gray-200 hover:bg-white/10 focus:ring-white/50' 
+                  : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:ring-blue-500'
+              }`}
               aria-expanded={isMenuOpen}
             >
               <span className="sr-only">Open main menu</span>
               {isMenuOpen ? (
                 <svg
-                  className="block h-6 w-6"
+                  className={`block h-6 w-6 ${
+                    isAtTop && router.pathname === '/' ? 'text-gray-400' : ''
+                  }`}
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
@@ -229,9 +266,9 @@ export function Navbar() {
       </div>
 
       {/* Mobile menu */}
-      <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden`}>
+      <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white border-t border-gray-200`}>
         <div className="pt-2 pb-3 space-y-1">
-          {!isAdmin() && (
+          {!isAdmin() ? (
             <>
               <Link
                 onClick={() => setIsMenuOpen(false)}
@@ -257,6 +294,37 @@ export function Navbar() {
                 </Link>
               </SignedIn>
             </>
+          ) : (
+            <>
+              <Link
+                onClick={() => setIsMenuOpen(false)}
+                href="/admin/dashboard"
+                className={getMobileLinkClasses('/admin/dashboard')}
+              >
+                Admin Dashboard
+              </Link>
+              <Link
+                onClick={() => setIsMenuOpen(false)}
+                href="/admin/lab-search"
+                className={getMobileLinkClasses('/admin/lab-search')}
+              >
+                Book for Admin
+              </Link>
+              <Link
+                onClick={() => setIsMenuOpen(false)}
+                href="/admin/manage-booking"
+                className={getMobileLinkClasses('/admin/manage-booking')}
+              >
+                Manage Booking
+              </Link>
+              <Link
+                onClick={() => setIsMenuOpen(false)}
+                href="/admin/booking-calendar"
+                className={getMobileLinkClasses('/admin/booking-calendar')}
+              >
+                Booking Calendar
+              </Link>
+            </>
           )}
         </div>
         
@@ -265,7 +333,7 @@ export function Navbar() {
           <div className="flex items-center px-4">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                   Sign in
                 </button>
               </SignInButton>
