@@ -70,7 +70,7 @@ export function Navbar() {
       return `${baseClasses} border-orange-500 ${isAtTop && router.pathname === '/' ? 'text-white' : 'text-orange-600'} font-semibold`;
     }
     
-    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-gray-200 hover:text-white' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`;
+    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-white hover:text-white' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`;
   };
 
   const getMobileLinkClasses = (path: string) => {
@@ -193,16 +193,6 @@ export function Navbar() {
               </SignInButton>
             </SignedOut>
             <SignedIn>
-              {/* Show role badge for admins */}
-              {isAdmin() && (
-                <div className={`mr-3 px-2 py-1 text-xs font-medium rounded-full transition-colors duration-300 ${
-                  isAtTop && router.pathname === '/'
-                    ? 'bg-yellow-500/20 text-yellow-100 border border-yellow-400/30' 
-                    : 'bg-yellow-100 text-yellow-800'
-                }`}>
-                  Admin
-                </div>
-              )}
               <UserButton
                 appearance={{
                   elements: {
@@ -340,12 +330,6 @@ export function Navbar() {
             </SignedOut>
             <SignedIn>
               <div className="flex items-center space-x-3">
-                {/* Show role badge for admins in mobile */}
-                {isAdmin() && (
-                  <div className="px-2 py-1 bg-yellow-100 text-yellow-800 text-xs font-medium rounded-full">
-                    Admin
-                  </div>
-                )}
                 <div className="flex-shrink-0">
                   <UserButton />
                 </div>

@@ -9,20 +9,20 @@ const carouselItems = [
   {
     id: 1,
     imageSrc: "/B338.png",
-    title: "Informatics Studio (B338)",
-    subTitle: ""
+    title: "Informatics Studio",
+    subTitle: "B338"
   },
   { 
     id: 2,
     imageSrc: "/B357.png", 
-    title: "Information System Lab (B357)",
-    subTitle: ""
+    title: "Information System Lab",
+    subTitle: "B357"
   },
   {
     id: 3,
     imageSrc: "/F205.png",
-    title: "FIT Showcase Room (F205)",
-    subTitle: ""
+    title: "FIT Showcase Room",
+    subTitle: "F205"
   },  
   {
     id: 4,
@@ -46,7 +46,7 @@ const useIntersectionObserver = (options = {}) => {
       }
     }, {
       threshold: 0.02,
-      rootMargin: '10px 0px -10px 0px',
+      rootMargin: '18px 0px -18px 0px',
       ...options
     });
 
@@ -142,12 +142,12 @@ export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   
   useEffect(() => {
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-    }, 8000);
-    
-    return () => clearInterval(interval);
-  }, []);
+  const interval = setInterval(() => {
+    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+  }, 8000);
+  
+  return () => clearInterval(interval);
+}, [currentSlide]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -169,7 +169,7 @@ export default function Home() {
         }
         
         carousel.style.opacity = opacity.toString();
-        carousel.style.transform = `translateY(${scrollPosition * 0.3}px)`;
+        carousel.style.transform = `translateY(${scrollPosition * 0.05}px)`;
       }
     };
 
@@ -216,7 +216,7 @@ export default function Home() {
                   layout="fill" 
                   objectFit="cover" 
                   className="object-cover transition-transform duration-1500 ease-out" 
-                  style={{ opacity: 0.7, willChange: 'transform' }}
+                  style={{ opacity: 0.6, willChange: 'transform' }}
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
@@ -227,7 +227,7 @@ export default function Home() {
         
         <button
           onClick={prevSlide}
-          className="hover:cursor-pointer absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+          className="hover:cursor-pointer absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 text-white p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none"
           aria-label="Previous slide"
           type="button"
         >
@@ -236,7 +236,7 @@ export default function Home() {
         
         <button
           onClick={nextSlide}
-          className="hover:cursor-pointer absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+          className="hover:cursor-pointer absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 text-white p-2 sm:p-3 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none"
           aria-label="Next slide"
           type="button"
         >
@@ -247,12 +247,12 @@ export default function Home() {
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto text-center text-white">
-              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-shadow-lg transition-all duration-1000 ease-out animate-fadeInUp`}>
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 transition-all duration-1000 ease-out animate-fadeInUp`}>
                 {carouselItems[currentSlide]?.title}
               </h1>
-              <p className={`text-sm sm:text-lg md:text-xl mb-6 text-shadow-lg px-4 transition-all duration-1000 ease-out delay-300 animate-fadeInUp`}>
+              <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 transition-all duration-1000 ease-out animate-fadeInUp">
                 {carouselItems[currentSlide]?.subTitle}
-              </p>
+              </h2>
               <Button 
                 className={`bg-orange-600 hover:bg-orange-700 text-white px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg shadow-lg hover:shadow-xl cursor-pointer font-bold rounded-lg transition-all duration-500 hover:scale-105 delay-500 animate-fadeInUp`}
                 onClick={() => window.location.href = '/lab-search'}
@@ -431,12 +431,12 @@ export default function Home() {
                   <h3 className="font-semibold text-gray-900 mb-3 text-lg">Daftar Isi:</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                     {[
-                      { href: "#larangan", number: 1, title: "Larangan", color: "red" },
-                      { href: "#kewajiban", number: 2, title: "Kewajiban", color: "green" },
-                      { href: "#prosedur", number: 3, title: "Prosedur Peminjaman", color: "blue" },
-                      { href: "#penampilan", number: 4, title: "Peraturan Berpenampilan", color: "purple" },
+                      { href: "#larangan", number: 1, title: "Larangan", color: "orange" },
+                      { href: "#kewajiban", number: 2, title: "Kewajiban", color: "orange" },
+                      { href: "#prosedur", number: 3, title: "Prosedur Peminjaman", color: "orange" },
+                      { href: "#penampilan", number: 4, title: "Peraturan Berpenampilan", color: "orange" },
                       { href: "#sanksi", number: 5, title: "Sanksi Pelanggaran", color: "orange" },
-                      { href: "#kontak", number: 6, title: "Kontak Penanggung Jawab", color: "indigo" }
+                      { href: "#kontak", number: 6, title: "Kontak Penanggung Jawab", color: "orange" }
                     ].map((item) => (
                       <a key={item.number} href={item.href} className={`flex items-center p-2 hover:bg-gray-50 rounded-md group transition-all duration-300 hover:scale-105`}>
                         <span className={`w-6 h-6 flex items-center justify-center bg-${item.color}-100 text-${item.color}-600 rounded-full mr-2 font-medium transition-all duration-300 group-hover:scale-110`}>{item.number}</span>
@@ -456,171 +456,171 @@ export default function Home() {
                 
                 <div className="space-y-6 sm:space-y-8">
                   
-                  <div id="larangan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-red-500 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                  <div id="larangan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                     
                     <div className="flex items-center mb-5">
-                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3 flex-shrink-0">
-                        <span className="text-red-600 font-bold">1</span>
+                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
+                        <span className="text-orange-600 font-bold">1</span>
                       </div>
                       <h3 className="text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, DILARANG:</h3>
                     </div>
                     
                     <ul className="space-y-3 text-sm sm:text-base text-gray-700 ml-2">
                       
-                      <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                        <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                      <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
                         <span>Merokok atau melakukan <i>vaping</i></span>
                       </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
                       <span>Membuang sampah sembarangan dan mengotori area Laboratorium (Lab)</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
                       <span>Membawa makanan dan minuman ke dalam Laboratorium</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
                       <span>Makan atau minum dalam Laboratorium FIT tanpa se-izin Laboran (kecuali pengajar)</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
                       <span>Membuat keributan</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">f</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">f</span>
                       <span>Melakukan perjudian dalam bentuk apapun</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">g</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">g</span>
                       <span>Merusak (melakukan vandalisme) dan mengotori fasilitas (meja, kursi, papan tulis, pintu, tembok, komputer dan seluruh peralatan dalam Laboratorium)</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">h</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">h</span>
                       <span>Melakukan kegiatan yang melanggar etika, moral, atau hukum yang berlaku</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
                       <span>Menciptakan atau menyebarkan virus komputer</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">j</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">j</span>
                       <span>Melakukan <i>cracking</i> atau <i>hacking</i></span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">k</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">k</span>
                       <span>Menginstall atau menyimpan program dalam bentuk apapun ke dalam fasilitas yang ada di Laboratorium</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">l</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">l</span>
                       <span>Mencuri fasilitas, peralatan, atau benda apapun yang merupakan milik Lab</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">m</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">m</span>
                       <span>Memainkan game dalam bentuk apapun dengan menggunakan fasilitas Lab</span>
                     </li>
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg sm:col-span-2">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">n</span>
+                    <li className="flex items-start bg-orange-50 p-3 rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">n</span>
                       <span><i>Browsing</i> ke situs-situs yang melanggar etika atau berkaitan dengan pornografi atau kekerasan	</span>
                     </li>
                   </ul>
                 </div>
                 
                 
-                <div id="kewajiban" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-green-500">
+                <div id="kewajiban" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500">
                   <div className="flex items-center mb-5">
-                    <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <span className="text-green-600 font-bold">2</span>
+                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-orange-600 font-bold">2</span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, WAJIB:</h3>
                   </div>
                   
                   <ul className="space-y-3 text-sm sm:text-base text-gray-700">
-                    <li className="flex p-3 bg-green-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
-                      <span>Mengenakan pakaian rapi dan sopan sesuai dengan peraturan berpenampilan yang dapat dilihat pada <a className="hover:underline font-bold hover:bg-green-200 hover:rounded-sm px-1" href="#penampilan">poin 4</a></span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                      <span>Mengenakan pakaian rapi dan sopan sesuai dengan peraturan berpenampilan yang dapat dilihat pada <a className="hover:underline font-bold hover:bg-orange-200 hover:rounded-sm px-1" href="#penampilan">poin 4</a></span>
                     </li>
-                    <li className="flex p-3 bg-green-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
-                      <span>Melakukan peminjaman melalui website FITBookLab. Prosedur peminjaman Laboratorium dapat dilihat pada <a className="hover:underline font-bold hover:bg-green-200 hover:rounded-sm px-1" href="#prosedur">poin 3</a></span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                      <span>Melakukan peminjaman melalui website FITBookLab. Prosedur peminjaman Laboratorium dapat dilihat pada <a className="hover:underline font-bold hover:bg-orange-200 hover:rounded-sm px-1" href="#prosedur">poin 3</a></span>
                     </li>
-                    <li className="flex p-3 bg-green-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
                       <span>Mahasiswa FIT yang berada di area Lab wajib menjaga ketertiban Laboratorium</span>
                     </li>
-                    <li className="flex p-3 bg-green-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
                       <span>Mahasiswa harus mengembalikan kembali posisi meja atau kursi jika Lab sudah selesai digunakan. Kondisi sebelum dan sesudah peminjaman harus rapi</span>
                     </li>
-                    <li className="flex p-3 bg-green-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-green-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
                       <span>Bertanggung jawab atas barang pribadi yang di bawa ke Lab. Kehilangan di luar tanggung jawab pengajar atau PIC Lab/Laboran</span>
                     </li>
                   </ul>
                 </div>
                 
                 
-                <div id="prosedur" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-blue-500">
+                <div id="prosedur" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500">
                   <div className="flex items-center mb-5">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <span className="text-blue-600 font-bold">3</span>
+                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-orange-600 font-bold">3</span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Prosedur Peminjaman Laboratorium</h3>
                   </div>
                   
                   <ul className="space-y-3 text-sm sm:text-base text-gray-700">
-                    <li className="flex p-3 bg-blue-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
                       <span>Cek jadwal perkuliahan yang ditempel di pintu Lab dan pastikan tidak ada kelas</span>
                     </li>
-                    <li className="flex p-3 bg-blue-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
-                      <span>Masuk ke website BookLab <a className="hover:underline font-bold hover:bg-blue-200 hover:rounded-sm px-1" href="https://www.fitbooklab.com">fitbooklab.com</a> atau pindai (scan) QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                      <span>Masuk ke website BookLab <a className="hover:underline font-bold hover:bg-orange-200 hover:rounded-sm px-1" href="https://www.fitbooklab.com">fitbooklab.com</a> atau pindai (scan) QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</span>
                     </li>
-                    <li className="flex p-3 bg-blue-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
                       <span>Mahasiswa hanya dapat menggunakan Lab jika pemesanan melalui website BookLab telah disetujui</span>
                     </li>
-                    <li className="flex p-3 bg-blue-50 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                    <li className="flex p-3 bg-orange-50 rounded-lg">
+                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
                       <span>Jika pemesanan sudah disetujui silahkan gunakan Lab dengan tertib dan tetap mematuhi semua Tata Tertib Penggunaan Laboratorium</span>
                     </li>
-                    <li className="flex flex-col p-3 bg-blue-50 rounded-lg">
+                    <li className="flex flex-col p-3 bg-orange-50 rounded-lg">
                       <div className="flex">
-                        <span className="flex-shrink-0 w-5 h-5 bg-blue-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
                         <span>Jika penggunaan Lab berlanjut hingga di luar jam kerja (07:00 – 16:00), ikuti prosedur berikut ini:</span>
                       </div>
                       
                       <ul className="mt-3 ml-7 space-y-3">
-                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
-                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
+                        <li className="flex p-2 bg-orange-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-orange-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
                           <span>Konfirmasi peminjaman ruang Lab di luar jam kerja dilakukan maksimal pukul 15:00 WIB di hari-H peminjaman kepada PIC Lab</span>
                         </li>
-                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
-                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">ii</span>
+                        <li className="flex p-2 bg-orange-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-orange-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">ii</span>
                           <span>PIC Lab akan memberikan kunci Lab kepada PIC peminjam Lab. PIC bertanggung jawab penuh atas keamanan dan seluruh fasilitas Lab</span>
                         </li>
-                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
-                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">iii</span>
+                        <li className="flex p-2 bg-orange-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-orange-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">iii</span>
                           <span>Matikan lampu, AC, dan semua peralatan elektronik setelah Lab digunakan</span>
                         </li>
-                        <li className="flex p-2 bg-blue-100/70 rounded-lg">
-                          <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">iv</span>
+                        <li className="flex p-2 bg-orange-100/70 rounded-lg">
+                          <span className="flex-shrink-0 w-5 h-5 bg-orange-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">iv</span>
                           <span>Kunci kembali pintu Lab</span>
                         </li>
-                        <li className="flex flex-col p-2 bg-blue-100/70 rounded-lg">
+                        <li className="flex flex-col p-2 bg-orange-100/70 rounded-lg">
                           <div className="flex">
-                            <span className="flex-shrink-0 w-5 h-5 bg-blue-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">v</span>
+                            <span className="flex-shrink-0 w-5 h-5 bg-orange-400 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">v</span>
                             <span>Pengembalian kunci:</span>
                           </div>
                           
                           <ul className="ml-7 mt-2 space-y-2">
-                            <li className="flex items-start p-2 bg-blue-100 rounded-lg">
-                              <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
+                            <li className="flex items-start p-2 bg-orange-100 rounded-lg">
+                              <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
                               <span>Jika kantor Fakultas masih buka, letakkan kunci di meja staf administrasi/office boy (OB) dan kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
                             </li>
-                            <li className="flex items-start p-2 bg-blue-100 rounded-lg">
-                              <span className="flex-shrink-0 w-4 h-4 bg-blue-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
+                            <li className="flex items-start p-2 bg-orange-100 rounded-lg">
+                              <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">•</span>
                               <span>Jika kantor Fakultas sudah tutup, titipkan kunci kepada staf Security Lobby Barat Gedung B (sebelah Pelita Shop) dan tulis di log book mereka, kemudian kirimkan bukti foto bahwa kunci telah dikembalikan ke PIC Lab</span>
                             </li>
                           </ul>
@@ -631,65 +631,65 @@ export default function Home() {
                 </div>
                 
                 
-                <div id="penampilan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-purple-500">
+                <div id="penampilan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500">
                   <div className="flex items-center mb-5">
-                    <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <span className="text-purple-600 font-bold">4</span>
+                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-orange-600 font-bold">4</span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Peraturan Berpenampilan di Laboratorium FIT</h3>
                   </div>
                   
                   <div className="grid sm:grid-cols-3 gap-4">
-                    <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="bg-orange-50 p-4 rounded-lg">
                       <h4 className="flex items-center mb-3 font-semibold">
-                        <span className="flex-shrink-0 w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
-                        <span className="text-purple-700">Atasan</span>
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
+                        <span className="text-orange-700">Atasan</span>
                       </h4>
                       <ul className="space-y-2 ml-7 text-sm sm:text-base text-gray-700">
                         <li className="flex items-start">
-                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
                           <span>Menggunakan pakaian bebas dan wajib berlengan</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
                           <span>Nyaman saat digunakan dan tidak mengganggu aktivitas praktikum</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
                           <span>Dilarang menggunakan baju vulgar dan terbuka</span>
                         </li>
                       </ul>
                     </div>
                     
-                    <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="bg-orange-50 p-4 rounded-lg">
                       <h4 className="flex items-center mb-3 font-semibold">
-                        <span className="flex-shrink-0 w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
-                        <span className="text-purple-700">Bawahan</span>
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
+                        <span className="text-orange-700">Bawahan</span>
                       </h4>
                       <ul className="space-y-2 ml-7 text-sm sm:text-base text-gray-700">
                         <li className="flex items-start">
-                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
                           <span>Celana bahan kain panjang (menutup mata kaki) dan tidak ketat</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">ii</span>
                           <span>Celana berbahan jeans panjang (menutup mata kaki) tidak ketat dan tidak sobek-sobek</span>
                         </li>
                         <li className="flex items-start">
-                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">iii</span>
                           <span>Rok panjang (menutup lutut)</span>
                         </li>
                       </ul>
                     </div>
                     
-                    <div className="bg-purple-50 p-4 rounded-lg">
+                    <div className="bg-orange-50 p-4 rounded-lg">
                       <h4 className="flex items-center mb-3 font-semibold">
-                        <span className="flex-shrink-0 w-5 h-5 bg-purple-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
-                        <span className="text-purple-700">Alas Kaki</span>
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
+                        <span className="text-orange-700">Alas Kaki</span>
                       </h4>
                       <ul className="space-y-2 ml-7 text-sm sm:text-base text-gray-700">
                         <li className="flex items-start">
-                          <span className="flex-shrink-0 w-4 h-4 bg-purple-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
+                          <span className="flex-shrink-0 w-4 h-4 bg-orange-300 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-[10px] font-bold">i</span>
                           <span>Wajib mengenakan sepatu yang menutup semua permukaan kaki</span>
                         </li>
                       </ul>
@@ -768,148 +768,148 @@ export default function Home() {
                 </div>
                 
                 
-                <div id="kontak" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-indigo-500">
+                <div id="kontak" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500">
                   <div className="flex items-center mb-5">
-                    <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <span className="text-indigo-600 font-bold">6</span>
+                    <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
+                      <span className="text-orange-600 font-bold">6</span>
                     </div>
                     <h3 className="text-xl font-bold text-gray-900">Nomor Kontak Penangung Jawab</h3>
                   </div>
                   
                   <div className="grid sm:grid-cols-2 gap-4">
-                    <div className="bg-indigo-50 p-4 rounded-lg">
-                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-orange-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">a</span>
                         Lab B338
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi melalui kontak berikut:</p>
-                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-orange-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
                         </li>
                         <li>
-                          <a href="mailto:kelvin.wiriyatama@uph.edu" className="text-indigo-600 hover:underline">kelvin.wiriyatama@uph.edu</a>
+                          <a href="mailto:kelvin.wiriyatama@uph.edu" className="text-orange-600 hover:underline">kelvin.wiriyatama@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
                         </li>
                         <li>
-                          <a href="tel:085155443290" className="text-indigo-600 hover:underline">0851-5544-3290</a>
+                          <a href="tel:085155443290" className="text-orange-600 hover:underline">0851-5544-3290</a>
                           <span className="text-gray-500 ml-1">(Kelvin Wiriyatama)</span>
                         </li>
                       </ul>
                     </div>
                     
-                    <div className="bg-indigo-50 p-4 rounded-lg">
-                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-orange-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">b</span>
                         Lab B357
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi melalui kontak berikut:</p>
-                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-orange-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
                         </li>
                         <li className="flex items-center">
-                          <a href="mailto:hery.fik@uph.edu" className="text-indigo-600 hover:underline">hery.fik@uph.edu</a>
+                          <a href="mailto:hery.fik@uph.edu" className="text-orange-600 hover:underline">hery.fik@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
                         </li>
                         <li className="flex items-center">
-                          <a href="tel:087775737824" className="text-indigo-600 hover:underline">0877-7573-7824</a>
+                          <a href="tel:087775737824" className="text-orange-600 hover:underline">0877-7573-7824</a>
                           <span className="text-gray-500 ml-1">(Hery)</span>
                         </li>
                       </ul>
                     </div>
                     
-                    <div className="bg-indigo-50 p-4 rounded-lg">
-                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-orange-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">c</span>
                         Paddock P208
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
-                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-orange-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
                         </li>
                         <li>
-                          <a href="mailto:kusno.prasetya@uph.edu" className="text-indigo-600 hover:underline">kusno.prasetya@uph.edu</a>
+                          <a href="mailto:kusno.prasetya@uph.edu" className="text-orange-600 hover:underline">kusno.prasetya@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
                         </li>
                         <li className="flex items-center">
-                          <a href="tel:0856055028999" className="text-indigo-600 hover:underline">08560-5502-8999</a>
+                          <a href="tel:0856055028999" className="text-orange-600 hover:underline">08560-5502-8999</a>
                           <span className="text-gray-500 ml-1">(Kusno Prasetya)</span>
                         </li>
                       </ul>
                     </div>
 
-                    <div className="bg-indigo-50 p-4 rounded-lg">
-                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">d</span>
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-orange-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">d</span>
                         Lab Gedung F205 dan F209-210
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:</p>
-                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-orange-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
                         </li>
                         <li>
-                          <a href="mailto:ricky.purba@uph.edu" className="text-indigo-600 hover:underline">ricky.purba@uph.edu</a>
+                          <a href="mailto:ricky.purba@uph.edu" className="text-orange-600 hover:underline">ricky.purba@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
                         </li>
                         <li className="flex items-center">
-                          <a href="tel:085974556230" className="text-indigo-600 hover:underline">0859-7455-6230</a>
+                          <a href="tel:085974556230" className="text-orange-600 hover:underline">0859-7455-6230</a>
                           <span className="text-gray-500 ml-1">(Ricky Ricardo Purba)</span>
                         </li>
                       </ul>
                     </div>
                     
-                    <div className="bg-indigo-50 p-4 rounded-lg">
-                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">e</span>
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-orange-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">e</span>
                         Laboran
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika memerlukan bantuan teknis tentang peralatan lab yang tidak bisa ditangani oleh PIC silahkan hubungi Laboran melalui kontak berikut:</p>
-                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-orange-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>
                         </li>
                         <li>
-                          <a href="mailto:ricky.purba@uph.edu" className="text-indigo-600 hover:underline">ricky.purba@uph.edu</a>
+                          <a href="mailto:ricky.purba@uph.edu" className="text-orange-600 hover:underline">ricky.purba@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
                         </li>
                         <li>
-                          <a href="tel:085974556230" className="text-indigo-600 hover:underline">0859-7455-6230</a>
+                          <a href="tel:085974556230" className="text-orange-600 hover:underline">0859-7455-6230</a>
                           <span className="text-gray-500 ml-1">(Ricky Ricardo Purba)</span>
                         </li>
                       </ul>
                     </div>
                     
-                    <div className="bg-indigo-50 p-4 rounded-lg">
-                      <h4 className="flex items-center text-indigo-700 font-semibold mb-2">
-                        <span className="flex-shrink-0 w-5 h-5 bg-indigo-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">f</span>
+                    <div className="bg-orange-50 p-4 rounded-lg">
+                      <h4 className="flex items-center text-orange-700 font-semibold mb-2">
+                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 text-xs font-bold">f</span>
                         Kepala Lab
                       </h4>
                       <p className="text-xs text-gray-600 mb-2">Jika ada masalah yang barikaitan dengan laboratorium dan bertingkat fakultas silahkan hubungi:</p>
-                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-indigo-200 pl-3">
+                      <ul className="space-y-1 text-sm text-gray-700 border-l-2 border-orange-200 pl-3">
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Email:</span>                          
                         </li>
                         <li>
-                          <a href="mailto:aditya.mitra@uph.edu" className="text-indigo-600 hover:underline">aditya.mitra@uph.edu</a>
+                          <a href="mailto:aditya.mitra@uph.edu" className="text-orange-600 hover:underline">aditya.mitra@uph.edu</a>
                         </li>
                         <li className="flex items-center">
                           <span className="font-medium mr-2">Nomor Telepon:</span>
                         </li>
                         <li>
-                          <a href="tel:08174822825" className="text-indigo-600 hover:underline">0817-4822-825</a>
+                          <a href="tel:08174822825" className="text-orange-600 hover:underline">0817-4822-825</a>
                           <span className="text-gray-500 ml-1">(Aditya Rama Mitra)</span>
                         </li>
                       </ul>
