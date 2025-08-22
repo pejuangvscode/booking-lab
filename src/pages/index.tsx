@@ -3,6 +3,7 @@ import Image from "next/legacy/image";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight, BookOpen, Shield, Users, Code } from "lucide-react";
+import React from "react";
 
 const carouselItems = [
   {
@@ -31,15 +32,153 @@ const carouselItems = [
   }
 ];
 
+const useIntersectionObserver = (options = {}) => {
+  const [isIntersecting, setIsIntersecting] = useState(false);
+  const [ref, setRef] = useState<Element | null>(null);
+
+  useEffect(() => {
+    if (!ref) return;
+
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry?.isIntersecting) {
+        setIsIntersecting(true);
+        // Once animated, stop observing
+        observer.unobserve(ref);
+      }
+    }, {
+      threshold: 0.1,
+      rootMargin: '50px 0px -50px 0px',
+      ...options
+    });
+
+    observer.observe(ref);
+
+    return () => observer.disconnect();
+  }, [ref, options]);
+
+  return [setRef, isIntersecting] as const;
+};
+
+const AnimatedSection: React.FC<{
+  children: React.ReactNode;
+  className?: string;
+  animation?: 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'fadeIn' | 'scaleIn';
+  delay?: number;
+  showByDefault?: boolean; // New prop to control initial visibility
+}> = ({ children, className = "", animation = 'fadeInUp', delay = 0, showByDefault = false }) => {
+  const [ref, isIntersecting] = useIntersectionObserver();
+  const [shouldShow, setShouldShow] = useState(showByDefault);
+
+  // Show content by default if showByDefault is true, otherwise wait for intersection
+  useEffect(() => {
+    if (showByDefault || isIntersecting) {
+      setShouldShow(true);
+    }
+  }, [isIntersecting, showByDefault]);
+
+  const getAnimationClass = () => {
+    const baseClasses = "transition-all duration-200 ease-out";
+    
+    if (!shouldShow) {
+      switch (animation) {
+        case 'fadeInUp':
+          return `${baseClasses} opacity-0 transform translate-y-12`;
+        case 'fadeInDown':
+          return `${baseClasses} opacity-0 transform -translate-y-12`;
+        case 'fadeInLeft':
+          return `${baseClasses} opacity-0 transform -translate-x-12`;
+        case 'fadeInRight':
+          return `${baseClasses} opacity-0 transform translate-x-12`;
+        case 'fadeIn':
+          return `${baseClasses} opacity-0`;
+        case 'scaleIn':
+          return `${baseClasses} opacity-0 transform scale-95`;
+        default:
+          return `${baseClasses} opacity-0 transform translate-y-12`;
+      }
+    }
+    
+    return `${baseClasses} opacity-100 transform translate-y-0 translate-x-0 scale-100`;
+  };
+
+  return (
+    <div 
+      ref={ref}
+      className={`${getAnimationClass()} ${className}`}
+      style={{ 
+        transitionDelay: `${delay}ms`,
+        willChange: 'transform, opacity'
+      }}
+    >
+      {children}
+    </div>
+  );
+};
+
+// Updated Staggered animation container
+const StaggeredAnimationContainer: React.FC<{
+  children: React.ReactNode;
+  staggerDelay?: number;
+  animation?: 'fadeInUp' | 'fadeInDown' | 'fadeInLeft' | 'fadeInRight' | 'fadeIn' | 'scaleIn';
+  className?: string;
+  showByDefault?: boolean; // New prop
+}> = ({ children, staggerDelay = 150, animation = 'fadeInUp', className = "", showByDefault = false }) => {
+  const childrenArray = React.Children.toArray(children);
+  
+  return (
+    <div className={className}>
+      {childrenArray.map((child, index) => (
+        <AnimatedSection 
+          key={index} 
+          animation={animation} 
+          delay={index * staggerDelay}
+          showByDefault={showByDefault}
+        >
+          {child}
+        </AnimatedSection>
+      ))}
+    </div>
+  );
+};
+
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-    }, 5000);
+    }, 8000);
     
     return () => clearInterval(interval);
+  }, []);
+
+  // Enhanced scroll handler for carousel fade
+  useEffect(() => {
+    const handleScroll = () => {
+      const scrollPosition = window.scrollY;
+      const windowHeight = window.innerHeight;
+      const carousel = document.getElementById('hero-carousel');
+      
+      if (carousel) {
+        const fadeStart = windowHeight * 0.2;
+        const fadeEnd = windowHeight * 0.7;
+        
+        let opacity = 1;
+        if (scrollPosition <= fadeStart) {
+          opacity = 1;
+        } else if (scrollPosition >= fadeEnd) {
+          opacity = 0;
+        } else {
+          opacity = 1 - (scrollPosition - fadeStart) / (fadeEnd - fadeStart);
+        }
+        
+        carousel.style.opacity = opacity.toString();
+        carousel.style.transform = `translateY(${scrollPosition * 0.3}px)`;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
   const nextSlide = () => {
@@ -50,6 +189,8 @@ export default function Home() {
     setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
   };
 
+
+
   return (
     <>
       <Head>
@@ -58,14 +199,20 @@ export default function Home() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] w-full overflow-hidden mt-16">
+      
+      <div 
+        id="hero-carousel"
+        className="relative h-[50vh] sm:h-[60vh] lg:h-[70vh] w-full overflow-hidden mt-16 transition-opacity duration-300 ease-out [-webkit-mask-image:linear-gradient(to_bottom,rgba(0,0,0,1)_60%,transparent_100%)] [mask-image:linear-gradient(to_bottom,rgba(0,0,0,1)_0%,transparent_100%)] [mask-repeat:no-repeat] [-webkit-mask-repeat:no-repeat]"
+        style={{ willChange: 'opacity' }}
+      >
         <div className="h-full w-full">
           {carouselItems.map((item, index) => (
             <div 
               key={item.id} 
-              className={`absolute inset-0 transition-opacity duration-1000 ${
-                index === currentSlide ? "opacity-100" : "opacity-0"
+              className={`absolute inset-0 transition-all duration-1500 ease-in-out ${
+                index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
               }`}
+              style={{ willChange: 'opacity, transform' }}
             >
               <div className="absolute inset-0 bg-gray-800">
                 <div className="h-full w-full bg-gradient-to-r from-blue-900/50 to-black/50" />
@@ -74,8 +221,8 @@ export default function Home() {
                   alt={item.title} 
                   layout="fill" 
                   objectFit="cover" 
-                  className="object-cover" 
-                  style={{ opacity: 0.8 }}
+                  className="object-cover transition-transform duration-1500 ease-out" 
+                  style={{ opacity: 0.8, willChange: 'transform' }}
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />
@@ -83,10 +230,10 @@ export default function Home() {
           ))}
         </div>
 
-        {/* Navigation Arrows */}
+        
         <button
           onClick={prevSlide}
-          className="hover:cursor-pointer absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+          className="hover:cursor-pointer absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
           aria-label="Previous slide"
           type="button"
         >
@@ -95,25 +242,25 @@ export default function Home() {
         
         <button
           onClick={nextSlide}
-          className="hover:cursor-pointer absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
+          className="hover:cursor-pointer absolute right-2 sm:right-4 top-1/2 transform -translate-y-1/2 z-20 bg-white/20 hover:bg-white/40 text-white p-2 sm:p-3 rounded-full backdrop-blur-sm transition-all duration-300 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-white/50"
           aria-label="Next slide"
           type="button"
         >
           <ChevronRight className="h-4 w-4 sm:h-6 sm:w-6" />
         </button>
 
-        {/* Content overlay */}
+        
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center text-white">
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-shadow-lg">
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 text-shadow-lg transition-all duration-1000 ease-out animate-fadeInUp`}>
                 {carouselItems[currentSlide]?.title}
               </h1>
-              <p className="text-sm sm:text-lg md:text-xl mb-6 text-shadow-lg px-4">
+              <p className={`text-sm sm:text-lg md:text-xl mb-6 text-shadow-lg px-4 transition-all duration-1000 ease-out delay-300 animate-fadeInUp`}>
                 {carouselItems[currentSlide]?.subTitle}
               </p>
               <Button 
-                className="bg-orange-600 hover:bg-orange-700 text-white px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg shadow-lg hover:shadow-xl cursor-pointer font-bold rounded-lg transition-all duration-200 hover:scale-105"
+                className={`bg-orange-600 hover:bg-orange-700 text-white px-4 sm:px-8 py-3 sm:py-4 text-sm sm:text-lg shadow-lg hover:shadow-xl cursor-pointer font-bold rounded-lg transition-all duration-500 hover:scale-105 delay-500 animate-fadeInUp`}
                 onClick={() => window.location.href = '/lab-search'}
               >
                 BOOK A LAB
@@ -122,14 +269,16 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Slide Indicators */}
+        
         <div className="absolute bottom-2 sm:bottom-4 left-0 right-0 z-10">
           <div className="flex justify-center space-x-2">
             {carouselItems.map((_, index) => (
               <button
                 key={index}
-                className={`h-1.5 sm:h-2 rounded-full transition-all cursor-pointer ${
-                  index === currentSlide ? "w-6 sm:w-8 bg-white" : "w-1.5 sm:w-2 bg-white/50"
+                className={`h-1.5 sm:h-2 rounded-full transition-all duration-500 cursor-pointer ${
+                  index === currentSlide 
+                    ? "w-6 sm:w-8 bg-white shadow-lg" 
+                    : "w-1.5 sm:w-2 bg-white/50 hover:bg-white/70"
                 }`}
                 onClick={() => setCurrentSlide(index)}
                 aria-label={`Go to slide ${index + 1}`}
@@ -140,55 +289,75 @@ export default function Home() {
         </div>
       </div>
 
-      {/* Information Sections */}
+      
       <div className="bg-gray-50">
-        {/* About BookLab Section */}
-        <section className="py-8 sm:py-12 lg:py-16 bg-white">
+        
+        <section className="py-8 sm:py-12 lg:py-16 bg-white overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto text-center">
-              <div className="flex justify-center mb-4 sm:mb-6">
-                <div className="bg-orange-100 p-3 sm:p-4 rounded-full">
-                  <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
-                </div>
-              </div>
-              <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
-                About BookLab
-              </h2>
-              <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed px-2">
-                BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien. Platform ini dirancang untuk mengoptimalkan penggunaan fasilitas lab dan memastikan ketersediaan ruang sesuai kebutuhan akademik.
-              </p>
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8">
-                <div className="text-center">
-                  <div className="bg-blue-100 p-3 rounded-full w-fit mx-auto mb-4">
-                    <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
+              <AnimatedSection animation="fadeInDown">
+                <div className="flex justify-center mb-4 sm:mb-6">
+                  <div className="bg-orange-100 p-3 sm:p-4 rounded-full">
+                    <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-orange-600" />
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Easy Booking</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm">Sistem booking yang user-friendly dengan calendar interface yang intuitif</p>
                 </div>
-                <div className="text-center">
-                  <div className="bg-green-100 p-3 rounded-full w-fit mx-auto mb-4">
-                    <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
+              </AnimatedSection>
+              
+              <AnimatedSection animation="fadeInUp" delay={200}>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-6">
+                  About BookLab
+                </h2>
+              </AnimatedSection>
+              
+              <AnimatedSection animation="fadeIn" delay={400}>
+                <p className="text-base sm:text-lg text-gray-600 mb-6 sm:mb-8 leading-relaxed px-2">
+                  BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien. Platform ini dirancang untuk mengoptimalkan penggunaan fasilitas lab dan memastikan ketersediaan ruang sesuai kebutuhan akademik.
+                </p>
+              </AnimatedSection>
+              
+              <StaggeredAnimationContainer
+                staggerDelay={100}
+                animation="scaleIn"
+                className="grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8"
+              >
+                {[
+                  {
+                    icon: <Users className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />,
+                    bgColor: "bg-blue-100",
+                    title: "Easy Booking",
+                    description: "Sistem booking yang user-friendly dengan calendar interface yang intuitif"
+                  },
+                  {
+                    icon: <Shield className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />,
+                    bgColor: "bg-green-100",
+                    title: "Real-time Updates",
+                    description: "Informasi ketersediaan lab yang selalu update secara real-time"
+                  },
+                  {
+                    icon: <Code className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />,
+                    bgColor: "bg-purple-100",
+                    title: "Multiple Labs",
+                    description: "Akses ke berbagai laboratorium dengan spesifikasi yang berbeda"
+                  }
+                ].map((feature, index) => (
+                  <div key={index} className="text-center transform transition-all duration-300 hover:scale-105">
+                    <div className={`${feature.bgColor} p-3 rounded-full w-fit mx-auto mb-4`}>
+                      {feature.icon}
+                    </div>
+                    <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">{feature.title}</h3>
+                    <p className="text-gray-600 text-xs sm:text-sm">{feature.description}</p>
                   </div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Real-time Updates</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm">Informasi ketersediaan lab yang selalu update secara real-time</p>
-                </div>
-                <div className="text-center">
-                  <div className="bg-purple-100 p-3 rounded-full w-fit mx-auto mb-4">
-                    <Code className="h-5 w-5 sm:h-6 sm:w-6 text-purple-600" />
-                  </div>
-                  <h3 className="font-semibold text-gray-900 mb-2 text-sm sm:text-base">Multiple Labs</h3>
-                  <p className="text-gray-600 text-xs sm:text-sm">Akses ke berbagai laboratorium dengan spesifikasi yang berbeda</p>
-                </div>
-              </div>
+                ))}
+              </StaggeredAnimationContainer>
             </div>
           </div>
         </section>
 
-        {/* How to Use BookLab Section */}
-        <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-b from-gray-50 to-gray-100">
+        
+        <section className="py-8 sm:py-12 lg:py-16 bg-gradient-to-b from-gray-50 to-gray-100 overflow-hidden">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
-              <div className="text-center mb-8 sm:mb-12">
+              <AnimatedSection animation="fadeInUp" className="text-center mb-8 sm:mb-12">
                 <div className="flex justify-center mb-4 sm:mb-6">
                   <div className="bg-green-100 p-3 sm:p-4 rounded-full">
                     <BookOpen className="h-6 w-6 sm:h-8 sm:w-8 text-green-600" />
@@ -200,88 +369,74 @@ export default function Home() {
                 <p className="text-base sm:text-lg text-gray-600 px-2">
                   Ikuti langkah-langkah berikut untuk melakukan booking laboratorium
                 </p>
-              </div>
+              </AnimatedSection>
               
-              <div className="space-y-6 sm:space-y-8">
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    1
+              <StaggeredAnimationContainer
+                staggerDelay={100}
+                animation="fadeInLeft"
+                className="space-y-6 sm:space-y-8"
+              >
+                {[
+                  {
+                    number: 1,
+                    title: "Sign In ke Akun Anda",
+                    description: "Klik tombol \"Sign In\" di pojok kanan atas dan masuk menggunakan akun Google Anda."
+                  },
+                  {
+                    number: 2,
+                    title: "Pilih Lab dan Waktu",
+                    description: "Buka halaman \"Lab Search\" atau \"Booking Calendar\" untuk melihat ketersediaan lab dan pilih waktu yang diinginkan."
+                  },
+                  {
+                    number: 3,
+                    title: "Isi Form Booking",
+                    description: "Lengkapi informasi booking seperti nama event, deskripsi, dan jumlah peserta yang akan menggunakan lab."
+                  },
+                  {
+                    number: 4,
+                    title: "Konfirmasi Booking",
+                    description: "Review informasi booking Anda dan klik \"Submit\" untuk mengirim request."
+                  },
+                  {
+                    number: 5,
+                    title: "Monitor Status Booking",
+                    description: "Cek status booking Anda di halaman \"Dashboard\" untuk melihat apakah booking sudah dikonfirmasi atau masih pending."
+                  },
+                  {
+                    number: 6,
+                    title: "Complete Booking",
+                    description: "Setelah selesai menggunakan lab, kembali ke \"Dashboard\" dan klik tombol \"Complete Booking\" pada booking Anda yang berstatus \"accepted\". Jangan lupa untuk mengupload bukti bahwa ruangan telah dibersihkan di halaman complete booking."
+                  }
+                ].map((step) => (
+                  <div key={step.number} className="flex items-start space-x-4 sm:space-x-6 group">
+                    <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg transform transition-all duration-300 group-hover:scale-110 group-hover:bg-orange-600">
+                      {step.number}
+                    </div>
+                    <div className="flex-1 transform transition-all duration-300 group-hover:translate-x-2">
+                      <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">{step.title}</h3>
+                      <p className="text-sm sm:text-base text-gray-600">{step.description}</p>
+                    </div>
                   </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Sign In ke Akun Anda</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Klik tombol "Sign In" di pojok kanan atas dan masuk menggunakan akun Google Anda.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    2
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Pilih Lab dan Waktu</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Buka halaman "Lab Search" atau "Booking Calendar" untuk melihat ketersediaan lab dan pilih waktu yang diinginkan.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    3
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Isi Form Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Lengkapi informasi booking seperti nama event, deskripsi, dan jumlah peserta yang akan menggunakan lab.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    4
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Konfirmasi Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Review informasi booking Anda dan klik "Submit" untuk mengirim request.</p>
-                  </div>
-                </div>
-                
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    5
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Monitor Status Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Cek status booking Anda di halaman "Dashboard" untuk melihat apakah booking sudah dikonfirmasi atau masih pending.</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start space-x-4 sm:space-x-6">
-                  <div className="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-base sm:text-lg">
-                    6
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg sm:text-xl font-semibold text-gray-900 mb-2">Complete Booking</h3>
-                    <p className="text-sm sm:text-base text-gray-600">Setelah selesai menggunakan lab, kembali ke "Dashboard" dan klik tombol "Complete Booking" pada booking Anda yang berstatus "accepted". Jangan lupa untuk mengupload bukti bahwa ruangan telah dibersihkan di halaman complete booking.</p>
-                  </div>
-                </div>
-              </div>
+                ))}
+              </StaggeredAnimationContainer>
               
-              <div className="mt-8 sm:mt-12 text-center">
+              <AnimatedSection animation="scaleIn" delay={800} className="mt-8 sm:mt-12 text-center">
                 <Button 
-                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg hover:shadow-xl cursor-pointer font-bold rounded-lg transition-all duration-200 hover:scale-105"
+                  className="bg-orange-600 hover:bg-orange-700 text-white px-6 sm:px-8 py-3 sm:py-4 text-base sm:text-lg shadow-lg hover:shadow-xl cursor-pointer font-bold rounded-lg transition-all duration-300 hover:scale-105 transform"
                   onClick={() => window.location.href = '/lab-search'}
                 >
                   Start Booking Now
                 </Button>
-              </div>
+              </AnimatedSection>
             </div>
           </div>
         </section>
 
-        {/* Lab Rules Section */}
-        <section className="py-12 sm:py-16 lg:py-20 bg-white">
+        
+        <AnimatedSection animation="fadeInUp" className="py-12 sm:py-16 lg:py-20 bg-white">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="text-center mb-10 sm:mb-14">
-
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-5">
                   Tata Tertib Penggunaan Laboratorium FIT
                 </h2>
@@ -290,53 +445,52 @@ export default function Home() {
                 </p>
               </div>
               
-              {/* Table of Contents */}
-              <div className="bg-white p-5 rounded-xl shadow-md mb-8 sm:mb-10">
-                <h3 className="font-semibold text-gray-900 mb-3 text-lg">Daftar Isi:</h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
-                  <a href="#larangan" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
-                    <span className="w-6 h-6 flex items-center justify-center bg-red-100 text-red-600 rounded-full mr-2 font-medium">1</span>
-                    <span className="text-gray-700 group-hover:text-red-600">Larangan</span>
-                  </a>
-                  <a href="#kewajiban" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
-                    <span className="w-6 h-6 flex items-center justify-center bg-green-100 text-green-600 rounded-full mr-2 font-medium">2</span>
-                    <span className="text-gray-700 group-hover:text-green-600">Kewajiban</span>
-                  </a>
-                  <a href="#prosedur" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
-                    <span className="w-6 h-6 flex items-center justify-center bg-blue-100 text-blue-600 rounded-full mr-2 font-medium">3</span>
-                    <span className="text-gray-700 group-hover:text-blue-600">Prosedur Peminjaman</span>
-                  </a>
-                  <a href="#penampilan" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
-                    <span className="w-6 h-6 flex items-center justify-center bg-purple-100 text-purple-600 rounded-full mr-2 font-medium">4</span>
-                    <span className="text-gray-700 group-hover:text-purple-600">Peraturan Berpenampilan</span>
-                  </a>
-                  <a href="#sanksi" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
-                    <span className="w-6 h-6 flex items-center justify-center bg-orange-100 text-orange-600 rounded-full mr-2 font-medium">5</span>
-                    <span className="text-gray-700 group-hover:text-orange-600">Sanksi Pelanggaran</span>
-                  </a>
-                  <a href="#kontak" className="flex items-center p-2 hover:bg-gray-50 rounded-md group transition-colors">
-                    <span className="w-6 h-6 flex items-center justify-center bg-indigo-100 text-indigo-600 rounded-full mr-2 font-medium">6</span>
-                    <span className="text-gray-700 group-hover:text-indigo-600">Kontak Penanggung Jawab</span>
-                  </a>
-                </div>
-              </div>
               
-              {/* Rules Content */}
-              <div className="space-y-8 sm:space-y-10">
-                {/* 1. Larangan */}
-                <div id="larangan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-red-500">
-                  <div className="flex items-center mb-5">
-                    <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3 flex-shrink-0">
-                      <span className="text-red-600 font-bold">1</span>
-                    </div>
-                    <h3 className="text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, DILARANG:</h3>
+              <AnimatedSection animation="fadeIn" delay={200}>
+                <div className="bg-white p-5 rounded-xl shadow-md mb-8 sm:mb-10">
+                  <h3 className="font-semibold text-gray-900 mb-3 text-lg">Daftar Isi:</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
+                    {[
+                      { href: "#larangan", number: 1, title: "Larangan", color: "red" },
+                      { href: "#kewajiban", number: 2, title: "Kewajiban", color: "green" },
+                      { href: "#prosedur", number: 3, title: "Prosedur Peminjaman", color: "blue" },
+                      { href: "#penampilan", number: 4, title: "Peraturan Berpenampilan", color: "purple" },
+                      { href: "#sanksi", number: 5, title: "Sanksi Pelanggaran", color: "orange" },
+                      { href: "#kontak", number: 6, title: "Kontak Penanggung Jawab", color: "indigo" }
+                    ].map((item) => (
+                      <a key={item.number} href={item.href} className={`flex items-center p-2 hover:bg-gray-50 rounded-md group transition-all duration-300 hover:scale-105`}>
+                        <span className={`w-6 h-6 flex items-center justify-center bg-${item.color}-100 text-${item.color}-600 rounded-full mr-2 font-medium transition-all duration-300 group-hover:scale-110`}>{item.number}</span>
+                        <span className={`text-gray-700 group-hover:text-${item.color}-600 transition-colors duration-300`}>{item.title}</span>
+                      </a>
+                    ))}
                   </div>
+                </div>
+              </AnimatedSection>
+              
+              
+              <StaggeredAnimationContainer
+                staggerDelay={100}
+                animation="fadeInUp"
+                className="space-y-8 sm:space-y-10"
+              >
+                
+                <div className="space-y-6 sm:space-y-8">
                   
-                  <ul className="space-y-3 text-sm sm:text-base text-gray-700 ml-2">
-                    <li className="flex items-start bg-red-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
-                      <span>Merokok atau melakukan <i>vaping</i></span>
-                    </li>
+                  <div id="larangan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-red-500 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                    
+                    <div className="flex items-center mb-5">
+                      <div className="w-10 h-10 rounded-full bg-red-100 flex items-center justify-center mr-3 flex-shrink-0">
+                        <span className="text-red-600 font-bold">1</span>
+                      </div>
+                      <h3 className="text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, DILARANG:</h3>
+                    </div>
+                    
+                    <ul className="space-y-3 text-sm sm:text-base text-gray-700 ml-2">
+                      
+                      <li className="flex items-start bg-red-50 p-3 rounded-lg">
+                        <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                        <span>Merokok atau melakukan <i>vaping</i></span>
+                      </li>
                     <li className="flex items-start bg-red-50 p-3 rounded-lg">
                       <span className="flex-shrink-0 w-5 h-5 bg-red-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
                       <span>Membuang sampah sembarangan dan mengotori area Laboratorium (Lab)</span>
@@ -392,7 +546,7 @@ export default function Home() {
                   </ul>
                 </div>
                 
-                {/* 2. Kewajiban */}
+                
                 <div id="kewajiban" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-green-500">
                   <div className="flex items-center mb-5">
                     <div className="w-10 h-10 rounded-full bg-green-100 flex items-center justify-center mr-3 flex-shrink-0">
@@ -425,7 +579,7 @@ export default function Home() {
                   </ul>
                 </div>
                 
-                {/* 3. Prosedur Peminjaman */}
+                
                 <div id="prosedur" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-blue-500">
                   <div className="flex items-center mb-5">
                     <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center mr-3 flex-shrink-0">
@@ -496,7 +650,7 @@ export default function Home() {
                   </ul>
                 </div>
                 
-                {/* 4. Peraturan Berpenampilan */}
+                
                 <div id="penampilan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-purple-500">
                   <div className="flex items-center mb-5">
                     <div className="w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center mr-3 flex-shrink-0">
@@ -567,7 +721,7 @@ export default function Home() {
                   Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FIT dan juga PIC Lab yang bertugas
                 </div>
 
-                {/* 5. Sanksi Pelanggaran */}
+                
                 <div id="sanksi" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500">
                   <div className="flex items-center mb-5">
                     <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
@@ -633,7 +787,7 @@ export default function Home() {
                   </ul>
                 </div>
                 
-                {/* 6. Nomor Kontak */}
+                
                 <div id="kontak" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-indigo-500">
                   <div className="flex items-center mb-5">
                     <div className="w-10 h-10 rounded-full bg-indigo-100 flex items-center justify-center mr-3 flex-shrink-0">
@@ -783,11 +937,13 @@ export default function Home() {
                   </div>
                 </div>
               </div>
+              </StaggeredAnimationContainer>
             </div>
           </div>
-        </section>
+        </AnimatedSection>
+        
 
-        <section className="py-8 sm:py-12 lg:py-16 bg-gray-100">
+        <AnimatedSection animation="fadeInUp" className="py-8 sm:py-12 lg:py-16 bg-gray-100">
           <div className="container mx-auto px-4">
             <div className="max-w-4xl mx-auto">
               <div className="bg-white p-6 sm:p-8 rounded-xl shadow-lg overflow-hidden">
@@ -799,7 +955,7 @@ export default function Home() {
                     <h3 className="text-xl sm:text-2xl font-bold text-gray-800">Faculty of Information Technology</h3>
                     <p className="text-sm sm:text-base text-gray-600">Universitas Pelita Harapan</p>
                     
-                    {/* Faculty social media links */}
+                    
                     <div className="mt-3 flex items-center justify-center space-x-4">
                       <a href="https://www.uph.edu/faculty/faculty-of-information-technology/" target="_blank" rel="noopener noreferrer" className="text-gray-500 hover:text-gray-700 transition-colors">
                         <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -850,8 +1006,38 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </section>
+        </AnimatedSection>
       </div>
+    <style jsx global>{`
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-fadeInUp {
+          animation: fadeInUp 0.8s ease-out forwards;
+        }
+        
+        .text-shadow-lg {
+          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+        
+        /* Smooth scrolling */
+        html {
+          scroll-behavior: smooth;
+        }
+        
+        /* Performance optimizations */
+        .transition-all {
+          will-change: transform, opacity;
+        }
+      `}</style>
     </>
   );
 }
