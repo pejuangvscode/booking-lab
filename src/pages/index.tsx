@@ -46,7 +46,7 @@ const useIntersectionObserver = (options = {}) => {
         observer.unobserve(ref);
       }
     }, {
-      threshold: 0.1,
+      threshold: 0.02,
       rootMargin: '50px 0px -50px 0px',
       ...options
     });
