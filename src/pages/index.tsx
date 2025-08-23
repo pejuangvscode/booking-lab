@@ -46,7 +46,7 @@ const useIntersectionObserver = (options = {}) => {
       }
     }, {
       threshold: 0.02,
-      rootMargin: '18px 0px -18px 0px',
+      rootMargin: '25px 0px -25px 0px',
       ...options
     });
 
@@ -209,7 +209,7 @@ export default function Home() {
               style={{ willChange: 'opacity, transform' }}
             >
               <div className="absolute inset-0 bg-gray-800">
-                <div className="h-full w-full bg-gradient-to-r from-blue-900/50 to-black/50" />
+                <div className="h-full w-full bg-gradient-to-r from-black-900/50 to-black/50" />
                 <Image 
                   src={item.imageSrc} 
                   alt={item.title} 
@@ -247,7 +247,7 @@ export default function Home() {
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto text-center text-white">
-              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-1 transition-all duration-1000 ease-out animate-fadeInUp`}>
+              <h1 className={`text-2xl sm:text-3xl md:text-4xl lg:text-5xl mb-2 font-bold mb-1 transition-all duration-1000 ease-out animate-fadeInUp`}>
                 {carouselItems[currentSlide]?.title}
               </h1>
               <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl mb-6 transition-all duration-1000 ease-out animate-fadeInUp">

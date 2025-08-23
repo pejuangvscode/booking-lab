@@ -1,5 +1,5 @@
 import { type AppType } from "next/app";
-import { Geist } from "next/font/google";
+import { Poppins } from "next/font/google";
 import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import {
@@ -15,8 +15,10 @@ import { Navbar } from "~/components/navbar";
 
 import "~/styles/globals.css";
 
-const geist = Geist({
-  subsets: ["latin"],
+const geist = Poppins({
+  weight: ['300', '700'],
+  subsets: ['latin'],
+  variable: '--font-poppins',
 });
 
 import type { AppProps } from "next/app";
@@ -39,14 +41,6 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
       retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000)
     }
   );
-
-  useEffect(() => {
-    if (syncUser.error) {
-      console.error("Error syncing user:", syncUser.error);}
-    if (syncUser.data) {
-      console.log("User synced successfully:", syncUser.data);
-    }
-  }, [syncUser.data, syncUser.error]);
 
   useEffect(() => {
     if (isLoaded && isSignedIn && user && syncUser.data) {
