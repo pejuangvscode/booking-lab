@@ -216,7 +216,7 @@ export default function Home() {
                   layout="fill" 
                   objectFit="cover" 
                   className="object-cover transition-transform duration-1500 ease-out" 
-                  style={{ opacity: 0.6, willChange: 'transform' }}
+                  style={{ opacity: 0.7, willChange: 'transform' }}
                 />
               </div>
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/20" />

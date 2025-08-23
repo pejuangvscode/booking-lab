@@ -260,25 +260,6 @@ export default function ManageBookingPage() {
               Manage recurring bookings grouped by class code
             </p>
           </div>
-          
-          {/* <div className="flex items-center gap-2">
-            <Button
-              onClick={() => setBulkDeleteMode(!bulkDeleteMode)}
-              variant={bulkDeleteMode ? "destructive" : "outline"}
-              className="whitespace-nowrap"
-            >
-              {bulkDeleteMode ? "Cancel" : "Bulk Delete"}
-            </Button>
-            {bulkDeleteMode && selectedClassCodes.size > 0 && (
-              <Button
-                onClick={handleBulkDelete}
-                variant="destructive"
-                disabled={bulkDeleteBookingsMutation.isPending}
-              >
-                Delete Selected ({selectedClassCodes.size})
-              </Button>
-            )}
-          </div> */}
         </div>
 
         {/* Admin info */}
@@ -388,9 +369,6 @@ export default function ManageBookingPage() {
                     )}
                     
                     <div className="flex items-center space-x-3">
-                      <div className="bg-orange-600 text-white px-3 py-1 rounded-full text-sm font-medium">
-                        {group.classCode}
-                      </div>
                       <div>
                         <h3 className="font-semibold text-gray-900">
                           {group.instructor}

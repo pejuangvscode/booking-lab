@@ -16,7 +16,7 @@ import { Navbar } from "~/components/navbar";
 import "~/styles/globals.css";
 
 const geist = Poppins({
-  weight: ['300', '700'],
+  weight: ['300', '500', '700'],
   subsets: ['latin'],
   variable: '--font-poppins',
 });

@@ -50,7 +50,6 @@ export default function BookingPage() {
   const [checking, setChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isMultipleBooking, setIsMultipleBooking] = useState(false);
-  const [classId, setClassId] = useState("");
 
   const [endDate, setEndDate] = useState("");
   const [selectedDays, setSelectedDays] = useState<number[]>([]);
@@ -70,6 +69,12 @@ export default function BookingPage() {
     { value: 5, label: 'Friday', short: 'Fri' },
     { value: 6, label: 'Saturday', short: 'Sat' },
   ];
+
+  const generateUniqueCode = () => {
+    const timestamp = Date.now();
+    const randomStr = Math.random().toString(36).substr(2, 6).toUpperCase();
+    return `MBK-${timestamp}-${randomStr}`;
+  };
 
   const {
     data: labDetail,
@@ -261,6 +266,7 @@ export default function BookingPage() {
     const endTimeValue = `${endHour}:${endMinute}`;
 
     if (isMultipleBooking) {
+      const uniqueCode = `MBK-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
       const bookingData = {
         labId: labId as string,
         startDate: bookingDate,
@@ -276,7 +282,7 @@ export default function BookingPage() {
         userData: {
           name: requestorName,
         },
-        equipment: classId
+        equipment: uniqueCode
       };
 
       const confirmed = await confirm(
@@ -331,7 +337,7 @@ export default function BookingPage() {
         );
         
         if (!confirmed) return;
-        
+        const uniqueCode = generateUniqueCode();
         const bookingData = {
           labId: labId as string,
           bookingDate: new Date(bookingDate).toISOString(),
@@ -346,6 +352,7 @@ export default function BookingPage() {
             name: requestorName,
             nim: ""
           },
+          equipment: uniqueCode
         };
         
         bookingMutation.mutate(bookingData);
@@ -818,24 +825,6 @@ export default function BookingPage() {
                 {formErrors.eventType && (
                   <p className="text-red-500 text-xs">{formErrors.eventType}</p>
                 )}                
-              </div>
-
-              {/* Class ID */}
-              <div className="space-y-2">
-                <label htmlFor="classId" className="block text-sm font-medium text-gray-700">
-                  Class ID
-                </label>
-                <Input
-                  type="text"
-                  id="classId"
-                  value={classId}
-                  onChange={(e) => setClassId(e.target.value)}
-                  placeholder="Enter class ID"
-                  className={formErrors.classId ? "border-red-500" : ""}
-                />
-                {formErrors.classId && (
-                  <p className="text-red-500 text-xs">{formErrors.classId}</p>
-                )}
               </div>
 
               {/* Faculty */}

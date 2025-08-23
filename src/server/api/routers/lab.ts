@@ -15,7 +15,7 @@ export const labRouter = createTRPCRouter({
         department: "Faculty of Information & Technology",
         type: room.type || "Unknown",
         capacity: room.capacity || 0,
-        image: room.image || '',
+        image: room.image || "",
       }));
     } catch (error) {
       console.error("Error fetching labs:", error);
