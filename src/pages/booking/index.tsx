@@ -320,7 +320,7 @@ export default function BookingPage() {
 
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
-    
+
     if (startTimeValue >= endTimeValue) {
       errors.endTime = "End time must be after start time";
     }
@@ -528,6 +528,7 @@ export default function BookingPage() {
                   onChange={(e) => setBookingDate(e.target.value)}
                   min={new Date().toISOString().split('T')[0]}
                   className={formErrors.bookingDate ? "border-red-500" : ""}
+                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.bookingDate && (
                   <p className="text-red-500 text-xs">{formErrors.bookingDate}</p>
@@ -539,7 +540,7 @@ export default function BookingPage() {
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">Start Time</label>
                   <div className="flex space-x-2">
-                    <Select value={startHour} onValueChange={setStartHour}>
+                    <Select value={startHour} onValueChange={setStartHour} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
                       <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
                         <SelectValue placeholder="Hour" />
                       </SelectTrigger>
@@ -552,7 +553,7 @@ export default function BookingPage() {
                       </SelectContent>
                     </Select>
 
-                    <Select value={startMinute} onValueChange={setStartMinute}>
+                    <Select value={startMinute} onValueChange={setStartMinute} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
                       <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
                         <SelectValue placeholder="Minute" />
                       </SelectTrigger>
@@ -573,7 +574,7 @@ export default function BookingPage() {
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-gray-700">End Time</label>
                   <div className="flex space-x-2">
-                    <Select value={endHour} onValueChange={setEndHour}>
+                    <Select value={endHour} onValueChange={setEndHour} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Hour" />
                       </SelectTrigger>
@@ -586,7 +587,7 @@ export default function BookingPage() {
                       </SelectContent>
                     </Select>
 
-                    <Select value={endMinute} onValueChange={setEndMinute}>
+                    <Select value={endMinute} onValueChange={setEndMinute} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
                       <SelectTrigger className="w-full">
                         <SelectValue placeholder="Minute" />
                       </SelectTrigger>
@@ -616,6 +617,7 @@ export default function BookingPage() {
                 value={bookingType} 
                 onValueChange={handleBookingTypeChange}
                 className={`grid gap-4 ${labDetail?.capacity === 0 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
+                disabled={isSubmitting || checking || bookingMutation.status === "pending"}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem 
@@ -704,6 +706,7 @@ export default function BookingPage() {
                   }
                   className={formErrors.participants ? "border-red-500" : ""}
                   required={labDetail?.capacity === 0}
+                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.participants && (
                   <p className="text-red-500 text-xs">{formErrors.participants}</p>
@@ -748,6 +751,7 @@ export default function BookingPage() {
                   onChange={(e) => setEventName(e.target.value)}
                   placeholder="E.g., Algorithm Class, Department Meeting"
                   className={formErrors.eventName ? "border-red-500" : ""}
+                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.eventName && (
                   <p className="text-red-500 text-xs">{formErrors.eventName}</p>
@@ -759,7 +763,7 @@ export default function BookingPage() {
                 <label htmlFor="eventType" className="block text-sm font-medium text-gray-700">
                   Event Type
                 </label>
-                <Select value={eventType} onValueChange={setEventType}>
+                <Select value={eventType} onValueChange={setEventType} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
                   <SelectTrigger className={formErrors.eventType ? "border-red-500" : ""}>
                     <SelectValue placeholder="Select event type" />
                   </SelectTrigger>
@@ -788,6 +792,7 @@ export default function BookingPage() {
                   onChange={(e) => setFaculty(e.target.value)}
                   placeholder="Enter your faculty name"
                   className={formErrors.faculty ? "border-red-500" : ""}
+                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.faculty && (
                   <p className="text-red-500 text-xs">{formErrors.faculty}</p>
@@ -806,6 +811,7 @@ export default function BookingPage() {
                   onChange={(e) => setPhone(e.target.value)}
                   placeholder="Phone number"
                   className={formErrors.phone ? "border-red-500" : ""}
+                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.phone && (
                   <p className="text-red-500 text-xs">{formErrors.phone}</p>
@@ -824,6 +830,7 @@ export default function BookingPage() {
                   onChange={(e) => setRequestorName(e.target.value)}
                   placeholder="Your full name"
                   className={formErrors.requestorName ? "border-red-500" : ""}
+                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.requestorName && (
                   <p className="text-red-500 text-xs">{formErrors.requestorName}</p>
@@ -842,6 +849,7 @@ export default function BookingPage() {
                   onChange={(e) => setRequestorNIM(e.target.value)}
                   placeholder="Your student ID number"
                   className={formErrors.requestorNIM ? "border-red-500" : ""}
+                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.requestorNIM && (
                   <p className="text-red-500 text-xs">{formErrors.requestorNIM}</p>
