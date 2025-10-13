@@ -62,7 +62,8 @@ const roomColors: Record<string, string> = {
   "F205": "#4285F4",
   "B338": "#3C7A0C",
   "B357": "#5E35B1",
-  "F209": "#F25022", 
+  "F209": "#F25022",
+  "MM16": "#E81123"
 };
 
 type BookingEvent = {
@@ -113,6 +114,7 @@ export default function BookingCalendar() {
     { id: "B338", name: "Informatics Studio", capacity: 20 },
     { id: "B357", name: "Information System Lab", capacity: 20 },
     { id: "F209", name: "Lab F209", capacity: 30 },
+    { id: "MM16", name: "Meeting Room MM Fl.16", capacity: 14 },
   ]);
 
   const { 
@@ -637,11 +639,11 @@ export default function BookingCalendar() {
             <div className="lg:col-span-1 order-2 lg:order-1">
               <Card className="mb-8 lg:mb-0">
                 <CardHeader className="pb-2 sm:pb-3">
-                  <CardTitle className="text-sm sm:text-base">Available Laboratories</CardTitle>
+                  <CardTitle className="text-sm sm:text-base">Room Legend</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 sm:space-y-4">
-                  <div className="mt-1 sm:mt-2">
-                    <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Room Legend:</div>
+                  <div className="">
+                    {/* <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Room Legend:</div> */}
                     <div className="grid grid-cols-2 lg:grid-cols-1 gap-1 sm:gap-2">
                       {rooms.map((room) => (
                         <div 
@@ -668,13 +670,13 @@ export default function BookingCalendar() {
                     </div>
                   </div>
                   
-                  <div className="border-t pt-2 sm:pt-3 hidden sm:block">
+                  {/* <div className="border-t pt-2 sm:pt-3 hidden sm:block">
                     <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Booking Types:</div>
                     <div className="space-y-1 text-xs text-gray-600">
                       <div>• <span className="font-medium text-orange-600">Full</span>: Entire room/space</div>
                       <div>• <span className="font-medium text-blue-600">Partial</span>: Specific number of seats</div>
                     </div>
-                  </div>
+                  </div> */}
                 </CardContent>
               </Card>
             </div>

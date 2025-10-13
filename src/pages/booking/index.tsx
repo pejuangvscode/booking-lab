@@ -313,11 +313,11 @@ export default function BookingPage() {
     if (!endHour || !endMinute) errors.endTime = "End time is required";
     if (!eventName) errors.eventName = "Event name is required";
     if (!eventType) errors.eventType = "Event type is required";
-    if (!phone) errors.phone = "Phone number is required";
+    if (!phone && labId !== "MM16") errors.phone = "Phone number is required";
     if (!requestorName) errors.requestorName = "Requestor name is required";
-    if (!requestorNIM) errors.requestorNIM = "Requestor NIM is required";
-    if (!faculty) errors.faculty = "Faculty is required";
-
+    if (!requestorNIM && labId !== "MM16") errors.requestorNIM = "Requestor NIM is required";
+    if (!faculty && labId !== "MM16") errors.faculty = "Faculty is required";
+    
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
 
@@ -759,6 +759,7 @@ export default function BookingPage() {
               </div>
 
               {/* Event Type */}
+
               <div className="space-y-2">
                 <label htmlFor="eventType" className="block text-sm font-medium text-gray-700">
                   Event Type
@@ -781,7 +782,7 @@ export default function BookingPage() {
               </div>
 
               {/* Faculty */}
-              <div className="space-y-2">
+              {labId !== "MM16" && (<div className="space-y-2">
                 <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">
                   Faculty
                 </label>
@@ -797,10 +798,11 @@ export default function BookingPage() {
                 {formErrors.faculty && (
                   <p className="text-red-500 text-xs">{formErrors.faculty}</p>
                 )}
-              </div>
+              </div>)}
+              
 
               {/* Requestor Phone */}
-              <div className="space-y-2">
+              {labId !== "MM16" && (<div className="space-y-2">
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                   Requestor Phone
                 </label>
@@ -816,7 +818,8 @@ export default function BookingPage() {
                 {formErrors.phone && (
                   <p className="text-red-500 text-xs">{formErrors.phone}</p>
                 )}
-              </div>
+              </div>)}
+              
 
               {/* Requestor Name */}
               <div className="space-y-2">
@@ -838,7 +841,7 @@ export default function BookingPage() {
               </div>
 
               {/* Requestor NIM */}
-              <div className="space-y-2">
+              {labId !== "MM16" && (<div className="space-y-2">
                 <label htmlFor="requestorNIM" className="block text-sm font-medium text-gray-700">
                   Requestor NIM
                 </label>
@@ -854,7 +857,8 @@ export default function BookingPage() {
                 {formErrors.requestorNIM && (
                   <p className="text-red-500 text-xs">{formErrors.requestorNIM}</p>
                 )}
-              </div>
+              </div>)}
+              
             </div>
 
             {/* Note Message */}
