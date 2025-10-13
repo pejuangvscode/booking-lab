@@ -317,7 +317,7 @@ export default function BookingPage() {
     if (!requestorName) errors.requestorName = "Requestor name is required";
     if (!requestorNIM && labId !== "MM16") errors.requestorNIM = "Requestor NIM is required";
     if (!faculty && labId !== "MM16") errors.faculty = "Faculty is required";
-    
+
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
 
@@ -433,7 +433,7 @@ export default function BookingPage() {
       
     } catch (err) {
       setChecking(false);
-      console.error("Error checking conflicts:", err);
+      console.error("Error checking conflicts :", err);
       await error("Could not check for booking conflicts. Please try again.", "Connection Error");
       setFormErrors({
         conflict: "Could not check for booking conflicts. Please try again."
