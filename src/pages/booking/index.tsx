@@ -105,7 +105,7 @@ export default function BookingPage() {
   });
 
   useEffect(() => {
-    if (labDetail?.capacity === 0) {
+    if (labDetail?.capacity === 0 || labId === "MM16") {
       setBookingType("full");
       setParticipants("0");
     }
@@ -144,7 +144,7 @@ export default function BookingPage() {
         }
         
         try {
-          const finalParticipants = labDetail?.capacity === 0 
+          const finalParticipants = labDetail?.capacity === 0 || labId === "MM16"
             ? parseInt(participants) || 1
             : bookingType === "full" 
               ? (labDetail?.capacity || parseInt(participants) || 1)
@@ -317,7 +317,7 @@ export default function BookingPage() {
     if (!requestorName) errors.requestorName = "Requestor name is required";
     if (!requestorNIM && labId !== "MM16") errors.requestorNIM = "Requestor NIM is required";
     if (!faculty && labId !== "MM16") errors.faculty = "Faculty is required";
-    
+
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
 
@@ -337,7 +337,7 @@ export default function BookingPage() {
       }
     }
 
-    if (labDetail?.capacity === 0) {
+    if (labDetail?.capacity === 0 || labId === "MM16") {
       if (participants.trim() === "" || isNaN(parseInt(participants))) {
         errors.participants = "Number of participants is required for flexible space rooms";
       } else if (parseInt(participants) < 0) {
@@ -359,7 +359,7 @@ export default function BookingPage() {
       return;
     }
     
-    const finalParticipants = labDetail?.capacity === 0 
+    const finalParticipants = labDetail?.capacity === 0 || labId === "MM16"
       ? parseInt(participants) || 0
       : bookingType === "full" 
         ? (labDetail?.capacity || parseInt(participants) || 1)
@@ -433,7 +433,7 @@ export default function BookingPage() {
       
     } catch (err) {
       setChecking(false);
-      console.error("Error checking conflicts:", err);
+      console.error("Error checking conflicts :", err);
       await error("Could not check for booking conflicts. Please try again.", "Connection Error");
       setFormErrors({
         conflict: "Could not check for booking conflicts. Please try again."
@@ -616,21 +616,21 @@ export default function BookingPage() {
               <RadioGroup 
                 value={bookingType} 
                 onValueChange={handleBookingTypeChange}
-                className={`grid gap-4 ${labDetail?.capacity === 0 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
+                className={`grid gap-4 ${labDetail?.capacity === 0 || labId === "MM16" ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
                 disabled={isSubmitting || checking || bookingMutation.status === "pending"}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem 
                     value="full" 
                     id="full" 
-                    disabled={labDetail?.capacity === 0}
+                    disabled={labDetail?.capacity === 0 || labId === "MM16"}
                   />
                   <Label htmlFor="full" className="flex-1 cursor-pointer">
                     <Card className={`p-4 border-2 transition-all duration-200 ${
                       bookingType === "full" 
                         ? "border-orange-500 bg-orange-50" 
                         : "border-gray-200 hover:border-gray-300"
-                    } ${labDetail?.capacity === 0 ? 'opacity-100' : ''}`}>
+                    } ${labDetail?.capacity === 0 || labId === "MM16" ? 'opacity-100' : ''}`}>
                       <CardContent className="p-0">
                         <div className="flex items-center space-x-3">
                           <Building className={`h-5 w-5 ${
@@ -638,10 +638,10 @@ export default function BookingPage() {
                           }`} />
                           <div>
                             <div className="font-medium text-sm">
-                              {labDetail?.capacity === 0 ? "Book Entire Space" : "Book Full Room"}
+                              {labDetail?.capacity === 0 || labId === "MM16" ? "Book Entire Space" : "Book Full Room"}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {labDetail?.capacity === 0 
+                              {labDetail?.capacity === 0 || labId === "MM16"
                                 ? "Flexible space, no capacity limit"
                                 : labDetail?.capacity && labDetail.capacity > 0 
                                   ? `${labDetail.capacity} seats` 
@@ -656,7 +656,7 @@ export default function BookingPage() {
                 </div>
 
                 {/* Partial Room Option */}
-                {labDetail?.capacity !== 0 && (
+                {labDetail?.capacity !== 0 || labId !== "MM16" && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="partial" id="partial" />
                     <Label htmlFor="partial" className="flex-1 cursor-pointer">
@@ -688,7 +688,7 @@ export default function BookingPage() {
             {(bookingType === "partial") && (
               <div className="space-y-2">
                 <label htmlFor="participants" className="block text-sm font-medium text-gray-700">
-                  Number of Participants {labDetail?.capacity === 0 && <span className="text-red-500">*</span>}
+                  Number of Participants {labDetail?.capacity === 0 || labId === "MM16" && <span className="text-red-500">*</span>}
                 </label>
                 <Input
                   type="number"
@@ -698,14 +698,14 @@ export default function BookingPage() {
                   min="1"
                   max={labDetail?.capacity && labDetail.capacity > 0 ? labDetail.capacity : 999}
                   placeholder={
-                    labDetail?.capacity === 0
+                    labDetail?.capacity === 0 || labId === "MM16"
                       ? "Enter number of participants (required)"
                       : labDetail?.capacity && labDetail.capacity > 0 
                         ? `Enter number (max: ${labDetail.capacity})`
                         : "Enter number of participants"
                   }
                   className={formErrors.participants ? "border-red-500" : ""}
-                  required={labDetail?.capacity === 0}
+                  required={labDetail?.capacity === 0 || labId === "MM16"}
                   disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.participants && (
