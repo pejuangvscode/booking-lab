@@ -105,9 +105,12 @@ export default function BookingPage() {
   });
 
   useEffect(() => {
-    if (labDetail?.capacity === 0 || labId === "MM16") {
+    if (labDetail?.capacity === 0) {
       setBookingType("full");
       setParticipants("0");
+    } else if (labId === "MM16"){ 
+      setBookingType("full");
+      setParticipants("14");
     }
   }, [labDetail]);
 
