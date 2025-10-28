@@ -108,7 +108,7 @@ export default function LabSearch() {
         </div> */}
 
         {/* Search Section */}
-        {/* <div className="max-w-2xl mx-auto mb-8 sm:mb-12">
+        <div className="max-w-2xl mx-auto mb-8 sm:mb-12">
           <div className="relative">
             <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
               <Search className="h-5 w-5 sm:h-6 sm:w-6 text-gray-400" />
@@ -121,7 +121,7 @@ export default function LabSearch() {
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
-        </div> */}
+        </div>
         
         {/* Loading State */}
         {isLoading && (

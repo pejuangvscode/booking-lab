@@ -42,22 +42,7 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
     }
   );
 
-  useEffect(() => {
-    if (isLoaded && isSignedIn && user && syncUser.data) {
-      const userRole = user.publicMetadata?.role || syncUser.data?.role;
-      const currentPath = nextRouter.pathname;
-
-      
-      if (userRole === 'admin') {
-        if( currentPath === '/lab-search' || currentPath === '/booking' || currentPath === '/dashboard' || currentPath === '/booking-calendar') {
-          void nextRouter.push('/admin/dashboard');
-        }
-      } 
-      else if (currentPath === '/admin/dashboard' && userRole !== 'admin') {
-        void nextRouter.push('/');
-      }
-    }
-  }, [isLoaded, isSignedIn, user, syncUser.data, nextRouter.pathname]);
+  // ...existing code...
 
   useEffect(() => {
     NProgress.configure({ 

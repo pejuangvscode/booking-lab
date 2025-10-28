@@ -1,4 +1,5 @@
 import { clerkMiddleware, createRouteMatcher, getAuth } from '@clerk/nextjs/server';
+import { db } from './server/db';
 import { NextRequest, NextResponse } from 'next/server';
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
@@ -47,28 +48,42 @@ export default clerkMiddleware(async (auth, req) => {
   try {
     const { userId, sessionClaims, sessionId } = await auth();
     if (isAdminRoute(req)) {
-      
-      if (userId && sessionClaims) {
-        const userRole = (sessionClaims?.metadata as Record<string, unknown>)?.role as string | undefined ?? 
-                        (sessionClaims?.publicMetadata as Record<string, unknown>)?.role as string | undefined;
-                
-        if (userRole && userRole !== 'admin') {
-          const homeUrl = new URL('/', req.url);
-          homeUrl.searchParams.set('error', 'unauthorized');
-          homeUrl.searchParams.set('message', `Admin access requires admin role. Your role: ${userRole}`);
-          return NextResponse.redirect(homeUrl);
-        }
-        
-        return NextResponse.next();
+      // Ambil userId dari Clerk
+      const { userId } = await auth();
+      if (!userId) {
+        // Belum login
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('redirect_url', req.url);
+        return NextResponse.redirect(signInUrl);
       }
-      
-      if (hasAuthCookies(req)) {
-        return NextResponse.next();
+      // Fetch ke endpoint /api/auth/role untuk cek role user
+      let userRole: string | undefined;
+      try {
+        const apiRes = await fetch(`${req.nextUrl.origin}/api/auth/role`, {
+          headers: { 'x-user-id': userId },
+        });
+        const data = await apiRes.json();
+        userRole = data.role;
+      } catch (err) {
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('redirect_url', req.url);
+        return NextResponse.redirect(signInUrl);
       }
-      
-      const signInUrl = new URL('/sign-in', req.url);
-      signInUrl.searchParams.set('redirect_url', req.url);
-      return NextResponse.redirect(signInUrl);
+      if (!userRole) {
+        // Tidak ada role
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('redirect_url', req.url);
+        return NextResponse.redirect(signInUrl);
+      }
+      if (userRole !== 'admin') {
+        // Role bukan admin, redirect ke home
+        const homeUrl = new URL('/', req.url);
+        homeUrl.searchParams.set('error', 'unauthorized');
+        homeUrl.searchParams.set('message', `Admin access requires admin role. Your role: ${userRole}`);
+        return NextResponse.redirect(homeUrl);
+      }
+      // Role admin, lanjut render
+      return NextResponse.next();
     }
 
     if (isProtectedRoute(req)) {
