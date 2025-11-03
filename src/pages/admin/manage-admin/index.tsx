@@ -119,11 +119,11 @@ export default function ManageAdminPage() {
                     {labs?.map((lab) => (
                       <SelectItem key={lab.id} value={lab.id}>
                         {lab.name} ({lab.facilityId})
-                        {lab.pic && (
+                        {/* {lab.pic && (
                           <Badge variant="secondary" className="ml-2">
                             PIC: {lab.pic.role}
                           </Badge>
-                        )}
+                        )} */}
                       </SelectItem>
                     ))}
                   </SelectContent>

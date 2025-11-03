@@ -106,9 +106,9 @@ export const adminRouter = createTRPCRouter({
       }
     }),
 
-  getAllBookings: publicProcedure
+  getAllBookings: protectedProcedure
     .input(z.object({
-      status: z.enum(["all", "pending", "accepted", "rejected", "completed"]).default("all"),
+      status: z.enum(["all", "pending", "accepted", "rejected", "completed", "cancelled"]).default("all"),
       page: z.number().min(1).default(1),
       limit: z.number().min(1).max(100).default(10),
       search: z.string().optional(),
@@ -122,9 +122,59 @@ export const adminRouter = createTRPCRouter({
       }
 
       try {
+        const userId = ctx.userId;
+        if (!userId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "User not authenticated",
+          });
+        }
+
+        // Get user with their managed labs and role
+        const currentUser = await ctx.db.users.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            role: true,
+            managedLabs: {
+              select: {
+                id: true,
+                name: true,
+                facilityId: true
+              }
+            }
+          }
+        });
+
+        if (!currentUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        // Check if user has admin rights
+        if (currentUser.role !== 'admin' && currentUser.role !== 'super_admin') {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Access denied. Admin role required.",
+          });
+        }
+
         const skip = (input.page - 1) * input.limit;
         
-        const where: any = {};
+        interface BookingWhereClause {
+          status?: string;
+          OR?: Array<{
+            eventName?: { contains: string; mode: "insensitive" };
+            requesterName?: { contains: string; mode: "insensitive" };
+            faculty?: { contains: string; mode: "insensitive" };
+            eventType?: { contains: string; mode: "insensitive" };
+          }>;
+          roomId?: { in: string[] };
+        }
+        
+        const where: BookingWhereClause = {};
         
         if (input.status !== "all") {
           where.status = input.status;
@@ -137,6 +187,35 @@ export const adminRouter = createTRPCRouter({
             { faculty: { contains: input.search, mode: "insensitive" } },
             { eventType: { contains: input.search, mode: "insensitive" } }
           ];
+        }
+
+        // If user is not super_admin, filter by assigned labs only
+        if (currentUser.role === 'admin') {
+          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          
+          if (managedLabIds.length === 0) {
+            // Admin not assigned to any labs - return empty result
+            return {
+              bookings: [],
+              pagination: {
+                currentPage: input.page,
+                totalPages: 0,
+                totalItems: 0,
+                hasNext: false,
+                hasPrev: false,
+              },
+              userInfo: {
+                role: currentUser.role,
+                managedLabs: currentUser.managedLabs,
+                canAccessAllLabs: false
+              }
+            };
+          }
+          
+          // Filter bookings by assigned labs
+          where.roomId = {
+            in: managedLabIds
+          };
         }
 
         const [bookings, total] = await Promise.all([
@@ -167,6 +246,11 @@ export const adminRouter = createTRPCRouter({
             totalItems: total,
             hasNext: input.page * input.limit < total,
             hasPrev: input.page > 1,
+          },
+          userInfo: {
+            role: currentUser.role,
+            managedLabs: currentUser.managedLabs,
+            canAccessAllLabs: currentUser.role === 'super_admin'
           }
         };
       } catch (error) {
@@ -177,7 +261,7 @@ export const adminRouter = createTRPCRouter({
       }
     }),
 
-  approveBooking: publicProcedure
+  approveBooking: protectedProcedure
     .input(z.object({
       bookingId: z.number(),
       adminNote: z.string().optional(),
@@ -191,8 +275,52 @@ export const adminRouter = createTRPCRouter({
       }
 
       try {
+        const userId = ctx.userId;
+        if (!userId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "User not authenticated",
+          });
+        }
+
+        // Get user with their managed labs and role
+        const currentUser = await ctx.db.users.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            role: true,
+            managedLabs: {
+              select: {
+                id: true
+              }
+            }
+          }
+        });
+
+        if (!currentUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        if (currentUser.role !== 'admin' && currentUser.role !== 'super_admin') {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Access denied. Admin role required.",
+          });
+        }
+
         const booking = await ctx.db.bookings.findUnique({
           where: { id: input.bookingId },
+          include: {
+            room: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
         });
 
         if (!booking) {
@@ -202,6 +330,17 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
+        // Check if admin has access to this lab (unless super_admin)
+        if (currentUser.role === 'admin') {
+          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          if (!managedLabIds.includes(booking.roomId)) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Access denied. You can only manage bookings for labs assigned to you.",
+            });
+          }
+        }
+
         if (booking.status !== "pending") {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -209,7 +348,7 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        const adminId = ctx.userId || "temp-admin-id";
+        const adminId = ctx.userId ?? "temp-admin-id";
 
         const updatedBooking = await ctx.db.bookings.update({
           where: { id: input.bookingId },
@@ -233,7 +372,7 @@ export const adminRouter = createTRPCRouter({
       }
     }),
 
-  rejectBooking: publicProcedure
+  rejectBooking: protectedProcedure
     .input(z.object({
       bookingId: z.number(),
       rejectionReason: z.string().min(1, "Rejection reason is required"),
@@ -247,8 +386,52 @@ export const adminRouter = createTRPCRouter({
       }
 
       try {
+        const userId = ctx.userId;
+        if (!userId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "User not authenticated",
+          });
+        }
+
+        // Get user with their managed labs and role
+        const currentUser = await ctx.db.users.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            role: true,
+            managedLabs: {
+              select: {
+                id: true
+              }
+            }
+          }
+        });
+
+        if (!currentUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        if (currentUser.role !== 'admin' && currentUser.role !== 'super_admin') {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Access denied. Admin role required.",
+          });
+        }
+
         const booking = await ctx.db.bookings.findUnique({
           where: { id: input.bookingId },
+          include: {
+            room: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
         });
 
         if (!booking) {
@@ -258,6 +441,17 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
+        // Check if admin has access to this lab (unless super_admin)
+        if (currentUser.role === 'admin') {
+          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          if (!managedLabIds.includes(booking.roomId)) {
+            throw new TRPCError({
+              code: "FORBIDDEN",
+              message: "Access denied. You can only manage bookings for labs assigned to you.",
+            });
+          }
+        }
+
         if (booking.status !== "pending") {
           throw new TRPCError({
             code: "BAD_REQUEST",
@@ -265,7 +459,7 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        const adminId = ctx.userId || "temp-admin-id";
+        const adminId = ctx.userId ?? "temp-admin-id";
 
         const updatedBooking = await ctx.db.bookings.update({
           where: { id: input.bookingId },
@@ -285,6 +479,135 @@ export const adminRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: `Failed to reject booking: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        });
+      }
+    }),
+
+  cancelBooking: protectedProcedure
+    .input(z.object({
+      bookingId: z.number(),
+      cancelReason: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {      
+      if (!ctx.db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection not available",
+        });
+      }
+
+      try {
+        const userId = ctx.userId;
+        if (!userId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "User not authenticated",
+          });
+        }
+
+        // Get current user with their managed labs and role
+        const currentUser = await ctx.db.users.findUnique({
+          where: { id: userId },
+          select: {
+            id: true,
+            role: true,
+            managedLabs: {
+              select: {
+                id: true
+              }
+            }
+          }
+        });
+
+        if (!currentUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        const booking = await ctx.db.bookings.findUnique({
+          where: { id: input.bookingId },
+          include: {
+            room: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        });
+
+        if (!booking) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found",
+          });
+        }
+
+        // Check permissions:
+        // 1. User can cancel their own accepted bookings
+        // 2. Admin can cancel accepted bookings for their assigned labs
+        // 3. Super admin can cancel any accepted booking
+        const isOwner = booking.userId === userId;
+        const isAdmin = currentUser.role === 'admin' || currentUser.role === 'super_admin';
+        const isSuper = currentUser.role === 'super_admin';
+        
+        let hasPermission = false;
+        
+        if (isOwner) {
+          hasPermission = true;
+        } else if (isSuper) {
+          hasPermission = true;
+        } else if (isAdmin) {
+          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          hasPermission = managedLabIds.includes(booking.roomId);
+        }
+
+        if (!hasPermission) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Access denied. You can only cancel your own bookings or bookings for labs you manage.",
+          });
+        }
+
+        if (booking.status !== "accepted") {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Only accepted bookings can be cancelled",
+          });
+        }
+
+        // Check if booking date is in the past (cannot cancel past bookings)
+        const bookingDateTime = new Date(booking.bookingDate);
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // Set to start of today
+        
+        if (bookingDateTime < now) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot cancel bookings for past dates",
+          });
+        }
+
+        const updatedBooking = await ctx.db.bookings.update({
+          where: { id: input.bookingId },
+          data: {
+            status: "cancelled",
+            rejectedAt: new Date(), // Reuse rejectedAt field for cancelled timestamp
+            rejectedBy: userId,
+            rejectionReason: input.cancelReason ?? `Cancelled by ${isOwner ? 'user' : 'admin'}`,
+          },
+          include: {
+            room: true
+          }
+        });
+
+        return updatedBooking;
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to cancel booking: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
     }),

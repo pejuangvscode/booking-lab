@@ -656,7 +656,7 @@ export default function BookingPage() {
                 </div>
 
                 {/* Partial Room Option */}
-                {labDetail?.capacity !== 0 || labId !== "MM16" && (
+                {labDetail?.capacity !== 0 && labId !== "MM16" && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="partial" id="partial" />
                     <Label htmlFor="partial" className="flex-1 cursor-pointer">

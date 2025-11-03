@@ -355,57 +355,87 @@ export const bookingRouter = createTRPCRouter({
 
 
   cancelBooking: protectedProcedure
-  .input(z.object({ 
-    id: z.number()
-  }))
-  .mutation(async ({ ctx, input }) => {
-    try {
-    
-      const existingBooking = await ctx.db.bookings.findFirst({
-        where: { 
-          id: input.id,
-          userId: ctx.userId
+    .input(z.object({ 
+      id: z.number(),
+      cancelReason: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        const userId = ctx.userId;
+        if (!userId) {
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: "User not authenticated",
+          });
         }
-      });
-
-      if (!existingBooking) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Booking not found or you don't have permission to cancel it",
-        });
-      }
-
-    
-      if (existingBooking.status.toLowerCase() === 'cancelled') {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Booking is already cancelled",
-        });
-      }
-
-    
-      const cancelledBooking = await ctx.db.bookings.update({
-        where: { id: input.id },
-        data: { 
-          status: 'cancelled',
-        },
-        include: {
-          room: true
-        }
-      });
-
-      return cancelledBooking;
-    } catch (error) {      
-      if (error instanceof TRPCError) {
-        throw error;
-      }
       
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: "Failed to cancel booking",
-      });
-    }
-  }),
+        const existingBooking = await ctx.db.bookings.findFirst({
+          where: { 
+            id: input.id,
+            userId: ctx.userId
+          },
+          include: {
+            room: {
+              select: {
+                id: true,
+                name: true
+              }
+            }
+          }
+        });
+
+        if (!existingBooking) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Booking not found or you don't have permission to cancel it",
+          });
+        }
+
+        // Only accepted bookings can be cancelled
+        if (existingBooking.status !== 'accepted') {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Only accepted bookings can be cancelled",
+          });
+        }
+
+        // Check if booking date is in the past (cannot cancel past bookings)
+        const bookingDateTime = new Date(existingBooking.bookingDate);
+        const now = new Date();
+        now.setHours(0, 0, 0, 0); // Set to start of today
+        
+        if (bookingDateTime < now) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Cannot cancel bookings for past dates",
+          });
+        }
+      
+        const cancelledBooking = await ctx.db.bookings.update({
+          where: { id: input.id },
+          data: { 
+            status: 'cancelled',
+            rejectedAt: new Date(),
+            rejectedBy: userId,
+            rejectionReason: input.cancelReason ?? "Cancelled by user",
+          },
+          include: {
+            room: true
+          }
+        });
+
+        return cancelledBooking;
+      } catch (error) {      
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to cancel booking: ${error instanceof Error ? error.message : 'Unknown error'}`,
+        });
+      }
+    }),
 
   getAllBookings: publicProcedure.query(async ({ ctx }) => {
     try {

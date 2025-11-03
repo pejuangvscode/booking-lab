@@ -101,7 +101,7 @@ export default function Dashboard() {
     );
     
     if (confirmed) {
-      cancelBookingMutation.mutate({ id: bookingId });
+      cancelBookingMutation.mutate({ id: bookingId, cancelReason: "Cancelled by user" });
     }
   };
 
@@ -283,32 +283,49 @@ export default function Dashboard() {
                               <Info className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
                               Details
                             </Button>
-                            {booking.status === 'accepted' ? (
+                            {booking.status === 'accepted' && (
+                              <>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-green-600 hover:text-green-800 bg-green-100 hover:bg-green-200 border-green-200 hover:cursor-pointer text-[10px] sm:text-xs py-1 h-auto"
+                                  onClick={() => router.push(`/complete-booking?bookingId=${booking.id}`)}
+                                  disabled={cancelBookingMutation.isPending}
+                                >
+                                  <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                  Complete
+                                </Button>
+                                <Button 
+                                  variant="outline" 
+                                  size="sm" 
+                                  className="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 border-red-200 hover:cursor-pointer text-[10px] sm:text-xs py-1 h-auto"
+                                  onClick={() => handleCancelBooking(booking.id)}
+                                  disabled={cancelBookingMutation.isPending}
+                                >
+                                  {cancelBookingMutation.isPending ? ( 
+                                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
+                                  ) : (
+                                    <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                  )}
+                                  Cancel
+                                </Button>
+                              </>
+                            )}
+                            {booking.status === 'pending' && (
                               <Button 
                                 variant="outline" 
                                 size="sm" 
-                                className="text-green-600 hover:text-green-800 bg-green-100 hover:bg-green-200 border-green-200 hover:cursor-pointer text-[10px] sm:text-xs py-1 h-auto"
-                                onClick={() => router.push(`/complete-booking?bookingId=${booking.id}`)}
+                                className="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 border-red-200 hover:cursor-pointer text-[10px] sm:text-xs py-1 h-auto"
+                                onClick={() => handleCancelBooking(booking.id)}
                                 disabled={cancelBookingMutation.isPending}
                               >
-                                <CheckCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                                Complete
+                                {cancelBookingMutation.isPending ? ( 
+                                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
+                                ) : (
+                                  <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                                )}
+                                Cancel
                               </Button>
-                            ) : (
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="text-red-600 hover:text-red-800 bg-red-100 hover:bg-red-200 border-red-200 hover:cursor-pointer text-[10px] sm:text-xs py-1 h-auto"
-                              onClick={() => handleCancelBooking(booking.id)}
-                              disabled={cancelBookingMutation.isPending}
-                            >
-                              {cancelBookingMutation.isPending ? ( 
-                                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
-                              ) : (
-                                <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                              )}
-                              Cancel
-                            </Button>
                             )}
                           </div>
                         </td>

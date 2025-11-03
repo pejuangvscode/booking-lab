@@ -21,7 +21,7 @@ import {
   CheckCircle,
   XCircle,
   Eye,
-  Image,
+  Image as ImageIcon,
   ExternalLink
 } from "lucide-react";
 import Head from 'next/head';
@@ -30,7 +30,7 @@ import { AdminProtection } from '~/components/admin-protection';
 export default function AdminBookings() {
   const router = useRouter();
   
-  const [activeTab, setActiveTab] = useState<"pending" | "accepted" | "rejected" | "completed">("pending");
+  const [activeTab, setActiveTab] = useState<"pending" | "accepted" | "rejected" | "completed" | "cancelled">("pending");
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedBooking, setSelectedBooking] = useState<any>(null);
@@ -93,6 +93,22 @@ export default function AdminBookings() {
     }
   });
 
+  const cancelMutation = api.admin.cancelBooking.useMutation({
+    onSuccess: () => {
+      toast.success("Booking cancelled successfully!", {
+        description: "The booking has been cancelled."
+      });
+      void refetch();
+      setSelectedBooking(null);
+      setRejectionReason("");
+    },
+    onError: (err) => {
+      toast.error("Failed to cancel booking", {
+        description: err.message
+      });
+    }
+  });
+
   const handleApprove = (booking: any) => {
     approveMutation.mutate({
       bookingId: booking.id,
@@ -112,6 +128,13 @@ export default function AdminBookings() {
     });
   };
 
+  const handleCancel = (booking: any) => {
+    cancelMutation.mutate({
+      bookingId: booking.id,
+      cancelReason: rejectionReason || "Cancelled by admin"
+    });
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "pending":
@@ -122,6 +145,8 @@ export default function AdminBookings() {
         return <Badge className="bg-red-100 text-red-800 border-red-300">Rejected</Badge>;
       case "completed":
         return <Badge className="bg-blue-100 text-blue-800 border-blue-300">Completed</Badge>;
+      case "cancelled":
+        return <Badge className="bg-gray-100 text-gray-800 border-gray-300">Cancelled</Badge>;
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -154,11 +179,51 @@ export default function AdminBookings() {
             <h1 className="text-4xl font-bold text-gray-900 mb-2">
               Admin Dashboard
             </h1>
+            
+            {/* Lab Assignment Info */}
+            {bookingsData?.userInfo && (
+              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                <div className="flex items-center gap-2 mb-2">
+                  <MapPin className="w-5 h-5 text-blue-600" />
+                  <span className="font-medium text-blue-900">
+                    {bookingsData.userInfo.canAccessAllLabs ? 'Super Admin Access' : 'Lab Assignment'}
+                  </span>
+                </div>
+                
+                {bookingsData.userInfo.canAccessAllLabs ? (
+                  <p className="text-sm text-blue-700">
+                    You have access to manage all labs and bookings in the system.
+                  </p>
+                ) : (
+                  <div>
+                    <p className="text-sm text-blue-700 mb-2">
+                      You can manage bookings for the following labs:
+                    </p>
+                    {bookingsData.userInfo.managedLabs.length > 0 ? (
+                      <div className="flex flex-wrap gap-2">
+                        {bookingsData.userInfo.managedLabs.map((lab) => (
+                          <Badge key={lab.id} className="bg-blue-100 text-blue-800 border-blue-300">
+                            {lab.name} ({lab.facilityId})
+                          </Badge>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-2 text-amber-600">
+                        <span className="w-4 h-4 rounded-full bg-amber-100 flex items-center justify-center">!</span>
+                        <span className="text-sm">
+                          No labs assigned. Contact Kelvin Wiriyatama to get lab assignments.
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* Tab */}
-          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as any)} className="mb-6">
-            <TabsList className="grid w-full grid-cols-4 bg-white shadow-sm">
+          <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "pending" | "accepted" | "rejected" | "completed" | "cancelled")} className="mb-6">
+            <TabsList className="grid w-full grid-cols-5 bg-white shadow-sm">
               <TabsTrigger value="pending" className="flex items-center gap-2 hover:cursor-pointer">
                 <Clock className="w-4 h-4" />
                 Pending
@@ -174,6 +239,10 @@ export default function AdminBookings() {
               <TabsTrigger value="completed" className="flex items-center gap-2 hover:cursor-pointer">
                 <Eye className="w-4 h-4" />
                 Completed
+              </TabsTrigger>
+              <TabsTrigger value="cancelled" className="flex items-center gap-2 hover:cursor-pointer">
+                <XCircle className="w-4 h-4" />
+                Cancelled
               </TabsTrigger>
             </TabsList>
 
@@ -204,7 +273,10 @@ export default function AdminBookings() {
                   <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
                   <p className="text-gray-500">
-                    There are no {activeTab} bookings at the moment.
+                    {bookingsData?.userInfo && !bookingsData.userInfo.canAccessAllLabs && bookingsData.userInfo.managedLabs.length === 0 
+                      ? "You don't have access to any labs. Contact super admin to get lab assignments."
+                      : `There are no ${activeTab} bookings at the moment.`
+                    }
                   </p>
                 </div>
               )}
@@ -290,7 +362,7 @@ export default function AdminBookings() {
                                 onClick={() => handleImageClick(booking.equipment!)}
                                 className="flex items-center gap-2 hover:cursor-pointer"
                               >
-                                <Image className="w-4 h-4" />
+                                <ImageIcon className="w-4 h-4" />
                                 {activeTab === "completed" ? "View Completion Photo" : "View Photo"}
                               </Button>
                               <a 
@@ -411,6 +483,58 @@ export default function AdminBookings() {
                                     disabled={rejectMutation.isPending}
                                   >
                                     {rejectMutation.isPending ? "Rejecting..." : "Confirm Rejection"}
+                                  </Button>
+                                  <DialogClose asChild>
+                                    <Button variant="outline">Cancel</Button>
+                                  </DialogClose>
+                                </div>
+                              </div>
+                            </DialogContent>
+                          </Dialog>
+                        </div>
+                      )}
+
+                      {/* Cancel Button - Only for accepted bookings */}
+                      {booking.status === "accepted" && (
+                        <div className="flex gap-3 pt-4 border-t">
+                          <Dialog>
+                            <DialogTrigger asChild>
+                              <Button 
+                                variant="destructive"
+                                className="flex-1 bg-orange-600 hover:bg-orange-700 hover:cursor-pointer"
+                                onClick={() => setSelectedBooking(booking)}
+                              >
+                                <XCircle className="w-4 h-4 mr-2" />
+                                Cancel Booking
+                              </Button>
+                            </DialogTrigger>
+                            <DialogContent className="max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Cancel Booking</DialogTitle>
+                              </DialogHeader>
+                              <div className="space-y-4">
+                                <p className="text-gray-600">
+                                  Cancel booking for: <strong>{booking.eventName}</strong>
+                                </p>
+                                <div>
+                                  <label className="block text-sm font-medium mb-2">
+                                    Cancel Reason (Optional)
+                                  </label>
+                                  <Textarea
+                                    value={rejectionReason}
+                                    onChange={(e) => setRejectionReason(e.target.value)}
+                                    placeholder="Please provide a reason for cancellation..."
+                                    rows={3}
+                                  />
+                                </div>
+                                <div className="flex gap-2">
+                                  <Button 
+                                    onClick={() => handleCancel(booking)}
+                                    variant="destructive"
+                                    className="flex-1 bg-orange-600 hover:bg-orange-700"
+                                    disabled={cancelMutation.isPending}
+                                  >
+                                    {cancelMutation.isPending ? "Cancelling..." : "Confirm Cancellation"}
                                   </Button>
                                   <DialogClose asChild>
                                     <Button variant="outline">Cancel</Button>
