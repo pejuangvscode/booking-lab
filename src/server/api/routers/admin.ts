@@ -514,6 +514,26 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
+        // If setting a PIC, make sure they have admin role
+        if (input.picId) {
+          // Update user role to admin if not already
+          await ctx.db.users.upsert({
+            where: { id: input.picId },
+            update: { role: "admin" },
+            create: {
+              id: input.picId,
+              role: "admin",
+            },
+          });
+
+          // Update Clerk metadata
+          await clerkClient.users.updateUserMetadata(input.picId, {
+            publicMetadata: {
+              role: "admin"
+            }
+          });
+        }
+
         // Update lab PIC
         const updatedLab = await ctx.db.lab.update({
           where: { id: input.labId },

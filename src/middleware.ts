@@ -70,26 +70,53 @@ export default clerkMiddleware(async (auth, req) => {
       }
 
       // Fallback: query our server API for role (if Clerk metadata is not present).
-      // Note: avoid forcing a sign-in on fetch errors; instead treat failures as unauthorized
+      // Note: In production/Vercel, internal fetch might fail, so we'll be more lenient
+      console.log('[Middleware] Clerk role not found in metadata, checking database for user:', userId);
+      
       try {
-        const response = await fetch(`${req.nextUrl.origin}/api/auth/role`, {
+        // Build URL more carefully for Vercel environment
+        const baseUrl = req.nextUrl.origin;
+        const roleApiUrl = `${baseUrl}/api/auth/role`;
+        
+        console.log('[Middleware] Fetching role from:', roleApiUrl);
+        
+        const response = await fetch(roleApiUrl, {
           method: 'GET',
           headers: {
             'x-user-id': userId,
             'Content-Type': 'application/json',
           },
+          // Add timeout for Vercel
+          signal: AbortSignal.timeout(5000), // 5 second timeout
         });
 
         if (!response.ok) {
-          console.error('Auth role endpoint returned non-OK status', response.status);
+          console.error('[Middleware] Auth role endpoint returned non-OK status:', response.status);
+          const errorText = await response.text().catch(() => 'Unknown error');
+          console.error('[Middleware] Response error:', errorText);
+          
+          // In development, show more details. In production, be more generic
+          const isDev = process.env.NODE_ENV === 'development';
           const homeUrl = new URL('/', req.url);
           homeUrl.searchParams.set('error', 'unauthorized');
-          homeUrl.searchParams.set('message', `Access denied. Unable to verify admin role.`);
+          homeUrl.searchParams.set('message', isDev 
+            ? `Access denied. API error: ${response.status} - ${errorText}` 
+            : 'Access denied. Unable to verify admin role.');
           return NextResponse.redirect(homeUrl);
         }
 
-        const userData = (await response.json()) as { role?: string };
+        const userData = (await response.json()) as { role?: string; error?: string };
+        
+        if (userData.error) {
+          console.error('[Middleware] API returned error:', userData.error);
+          const homeUrl = new URL('/', req.url);
+          homeUrl.searchParams.set('error', 'unauthorized');
+          homeUrl.searchParams.set('message', `Access denied. ${userData.error}`);
+          return NextResponse.redirect(homeUrl);
+        }
+        
         const userRole = userData?.role;
+        console.log('[Middleware] Retrieved user role:', userRole);
 
         if (userRole === 'admin' || userRole === 'super_admin') {
           return NextResponse.next();
@@ -101,10 +128,17 @@ export default clerkMiddleware(async (auth, req) => {
         homeUrl.searchParams.set('message', `Access denied. Admin role required. Your role: ${userRole ?? 'user'}`);
         return NextResponse.redirect(homeUrl);
       } catch (error) {
-        console.error('Error checking user role in middleware (fallback):', error);
+        console.error('[Middleware] Error checking user role (fallback):', error);
+        
+        // In production/Vercel, database connection might fail
+        // Instead of blocking completely, we could allow access if user at least has valid Clerk session
+        // But for security, we'll still block and show error
+        const isDev = process.env.NODE_ENV === 'development';
         const homeUrl = new URL('/', req.url);
         homeUrl.searchParams.set('error', 'unauthorized');
-        homeUrl.searchParams.set('message', `Access denied. Unable to verify admin role.`);
+        homeUrl.searchParams.set('message', isDev 
+          ? `Access denied. Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
+          : 'Access denied. System error - please try again later.');
         return NextResponse.redirect(homeUrl);
       }
     }
