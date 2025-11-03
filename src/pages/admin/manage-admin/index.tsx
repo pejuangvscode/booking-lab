@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { api } from "~/utils/api";
-import { AdminAuthGuard } from "~/components/admin-auth-guard";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "~/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~/components/ui/select";
@@ -89,7 +88,6 @@ export default function ManageAdminPage() {
   };
 
   return (
-    <AdminAuthGuard>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl mt-15 font-bold text-gray-900 mb-2">Manage PIC</h1>
@@ -229,6 +227,5 @@ export default function ManageAdminPage() {
           </CardContent>
         </Card>
       </div>
-    </AdminAuthGuard>
   );
 }

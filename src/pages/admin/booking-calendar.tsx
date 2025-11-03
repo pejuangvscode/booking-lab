@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useUser } from '@clerk/nextjs';
+import { AdminAuthGuard } from '~/components/admin-auth-guard';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader2, Filter, X, Check } from "lucide-react";
 import Head from 'next/head';
@@ -500,6 +501,7 @@ export default function BookingCalendar() {
   }
 
   return (
+    <AdminAuthGuard>
     <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 mt-16 sm:mt-20">
       <Head>
         <title>Laboratory Booking Calendar</title>

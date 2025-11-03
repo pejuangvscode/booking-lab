@@ -1,6 +1,6 @@
-import { clerkMiddleware, createRouteMatcher, getAuth } from '@clerk/nextjs/server';
-import { db } from './server/db';
-import { NextRequest, NextResponse } from 'next/server';
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server';
+import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 
 const isAdminRoute = createRouteMatcher(['/admin(.*)']);
 
@@ -24,16 +24,16 @@ const isPublicRoute = createRouteMatcher([
 const isTRPCRoute = createRouteMatcher(['/api/trpc(.*)']);
 
 function hasAuthCookies(req: NextRequest) {
-  const cookies = req.headers.get('cookie') || '';
+  const cookies = req.headers.get('cookie') ?? '';
   return cookies.includes('__clerk_db_jwt') || 
          cookies.includes('__session') || 
          cookies.includes('__clerk');
 }
 
-export default clerkMiddleware(async (auth, req) => {  
-  const url = req.nextUrl.clone();
+const staticFilePattern = /\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|woff|woff2|ttf|otf|eot|json|txt|xml|map)$/;
 
-  if (req.nextUrl.pathname.startsWith('/_next') || req.nextUrl.pathname.match(/\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|woff|woff2|ttf|otf|eot|json|txt|xml|map)$/)) {
+export default clerkMiddleware(async (auth, req) => {  
+  if (req.nextUrl.pathname.startsWith('/_next') || staticFilePattern.exec(req.nextUrl.pathname)) {
     return NextResponse.next();
   }
 
@@ -46,10 +46,9 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   try {
-    const { userId, sessionClaims, sessionId } = await auth();
+    const { userId } = await auth();
+    
     if (isAdminRoute(req)) {
-      // Ambil userId dari Clerk
-      const { userId } = await auth();
       if (!userId) {
         // Belum login
         const signInUrl = new URL('/sign-in', req.url);
@@ -57,50 +56,40 @@ export default clerkMiddleware(async (auth, req) => {
         return NextResponse.redirect(signInUrl);
       }
       
-      // Query database langsung untuk mendapatkan role user
-      let userRole: string | undefined;
+      // Untuk admin route, buat API call ke server untuk cek role
       try {
-        const user = await db.users.findUnique({
-          where: { id: userId },
-          select: { role: true }
+        const response = await fetch(`${req.nextUrl.origin}/api/auth/role`, {
+          method: 'GET',
+          headers: {
+            'x-user-id': userId,
+            'Content-Type': 'application/json',
+          },
         });
-        userRole = user?.role;
-      } catch (err) {
-        console.error('Database query error in middleware:', err);
-        // Jika error database, biarkan akses untuk menghindari redirect loop
-        return NextResponse.next();
-      }
-      
-      if (!userRole) {
-        // Tidak ada role di database, buat user baru dengan role default
-        try {
-          await db.users.upsert({
-            where: { id: userId },
-            update: {},
-            create: {
-              id: userId,
-              role: 'user'
-            }
-          });
-          userRole = 'user';
-        } catch (err) {
-          console.error('Error creating user in middleware:', err);
-          // Jika gagal membuat user, redirect ke sign-in
-          const signInUrl = new URL('/sign-in', req.url);
-          signInUrl.searchParams.set('redirect_url', req.url);
-          return NextResponse.redirect(signInUrl);
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch user data');
         }
+
+        const userData = await response.json() as { role?: string };
+        const userRole = userData?.role;
+
+        if (!userRole || (userRole !== 'admin' && userRole !== 'super_admin')) {
+          // Bukan admin, redirect ke home dengan pesan error
+          const homeUrl = new URL('/', req.url);
+          homeUrl.searchParams.set('error', 'unauthorized');
+          homeUrl.searchParams.set('message', `Access denied. Admin role required. Your role: ${userRole ?? 'user'}`);
+          return NextResponse.redirect(homeUrl);
+        }
+        
+        return NextResponse.next();
+      } catch (error) {
+        console.error('Error checking user role in middleware:', error);
+        // Jika error saat cek role, redirect ke sign-in
+        const signInUrl = new URL('/sign-in', req.url);
+        signInUrl.searchParams.set('redirect_url', req.url);
+        signInUrl.searchParams.set('error', 'auth_check_failed');
+        return NextResponse.redirect(signInUrl);
       }
-      
-      if (userRole !== 'admin' && userRole !== 'super_admin') {
-        // Role bukan admin atau super_admin, redirect ke home
-        const homeUrl = new URL('/', req.url);
-        homeUrl.searchParams.set('error', 'unauthorized');
-        homeUrl.searchParams.set('message', `Admin access requires admin or super admin role. Your role: ${userRole}`);
-        return NextResponse.redirect(homeUrl);
-      }
-      // Role admin atau super_admin, lanjut render
-      return NextResponse.next();
     }
 
     if (isProtectedRoute(req)) {
