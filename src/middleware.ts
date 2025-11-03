@@ -56,25 +56,42 @@ export default clerkMiddleware(async (auth, req) => {
         signInUrl.searchParams.set('redirect_url', req.url);
         return NextResponse.redirect(signInUrl);
       }
-      // Fetch ke endpoint /api/auth/role untuk cek role user
+      
+      // Query database langsung untuk mendapatkan role user
       let userRole: string | undefined;
       try {
-        const apiRes = await fetch(`${req.nextUrl.origin}/api/auth/role`, {
-          headers: { 'x-user-id': userId },
+        const user = await db.users.findUnique({
+          where: { id: userId },
+          select: { role: true }
         });
-        const data = await apiRes.json();
-        userRole = data.role;
+        userRole = user?.role;
       } catch (err) {
-        const signInUrl = new URL('/sign-in', req.url);
-        signInUrl.searchParams.set('redirect_url', req.url);
-        return NextResponse.redirect(signInUrl);
+        console.error('Database query error in middleware:', err);
+        // Jika error database, biarkan akses untuk menghindari redirect loop
+        return NextResponse.next();
       }
+      
       if (!userRole) {
-        // Tidak ada role
-        const signInUrl = new URL('/sign-in', req.url);
-        signInUrl.searchParams.set('redirect_url', req.url);
-        return NextResponse.redirect(signInUrl);
+        // Tidak ada role di database, buat user baru dengan role default
+        try {
+          await db.users.upsert({
+            where: { id: userId },
+            update: {},
+            create: {
+              id: userId,
+              role: 'user'
+            }
+          });
+          userRole = 'user';
+        } catch (err) {
+          console.error('Error creating user in middleware:', err);
+          // Jika gagal membuat user, redirect ke sign-in
+          const signInUrl = new URL('/sign-in', req.url);
+          signInUrl.searchParams.set('redirect_url', req.url);
+          return NextResponse.redirect(signInUrl);
+        }
       }
+      
       if (userRole !== 'admin' && userRole !== 'super_admin') {
         // Role bukan admin atau super_admin, redirect ke home
         const homeUrl = new URL('/', req.url);
@@ -99,6 +116,8 @@ export default clerkMiddleware(async (auth, req) => {
     return NextResponse.next();
     
   } catch (error) {
+    console.error('Middleware error:', error);
+    
     if (isAdminRoute(req)) {
       if (hasAuthCookies(req)) {
         return NextResponse.next();
