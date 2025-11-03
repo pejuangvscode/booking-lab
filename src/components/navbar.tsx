@@ -56,7 +56,13 @@ export function Navbar() {
   const isAdmin = () => {
     const clerkRole = user?.publicMetadata?.role;
     const dbRole = dbUser?.role;
-    return clerkRole === 'admin' || dbRole === 'admin';
+    return clerkRole === 'admin' || dbRole === 'admin' || dbRole === 'super_admin' || clerkRole === 'super_admin';
+  };
+
+  const isSuperAdmin = () => {
+    const clerkRole = user?.publicMetadata?.role;
+    const dbRole = dbUser?.role;
+    return dbRole === 'super_admin' || clerkRole === 'super_admin';
   };
 
   const isActive = (path: string) => {
@@ -173,7 +179,14 @@ export function Navbar() {
                     >
                       Booking Calendar
                     </Link>
-                    
+                    {isSuperAdmin() && (
+                      <Link
+                        href="/admin/manage-admin"
+                        className={getLinkClasses('/admin/manage-admin')}
+                      >
+                        Manage Admin
+                      </Link>
+                    )}
                   </>
                 )}
             </div>
@@ -314,6 +327,15 @@ export function Navbar() {
               >
                 Booking Calendar
               </Link>
+              {isSuperAdmin() && (
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/admin/manage-admin"
+                  className={getMobileLinkClasses('/admin/manage-admin')}
+                >
+                  Manage Admin
+                </Link>
+              )}
             </>
           )}
         </div>

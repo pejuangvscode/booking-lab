@@ -75,14 +75,14 @@ export default clerkMiddleware(async (auth, req) => {
         signInUrl.searchParams.set('redirect_url', req.url);
         return NextResponse.redirect(signInUrl);
       }
-      if (userRole !== 'admin') {
-        // Role bukan admin, redirect ke home
+      if (userRole !== 'admin' && userRole !== 'super_admin') {
+        // Role bukan admin atau super_admin, redirect ke home
         const homeUrl = new URL('/', req.url);
         homeUrl.searchParams.set('error', 'unauthorized');
-        homeUrl.searchParams.set('message', `Admin access requires admin role. Your role: ${userRole}`);
+        homeUrl.searchParams.set('message', `Admin access requires admin or super admin role. Your role: ${userRole}`);
         return NextResponse.redirect(homeUrl);
       }
-      // Role admin, lanjut render
+      // Role admin atau super_admin, lanjut render
       return NextResponse.next();
     }
 

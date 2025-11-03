@@ -26,18 +26,18 @@ export function AdminAuthGuard({ children }: { children: React.ReactNode }) {
     }
 
     const clerkRole = user.publicMetadata?.role;
-    if (clerkRole && clerkRole !== 'admin') {
-      router.replace('/');
+    if (clerkRole && clerkRole !== 'admin' && clerkRole !== 'super_admin') {
+      void router.replace('/');
       return;
     }
 
-    if (dbUser && dbUser.role !== 'admin') {
-      router.replace('/');
+    if (dbUser && dbUser.role !== 'admin' && dbUser.role !== 'super_admin') {
+      void router.replace('/');
       return;
     }
   }, [isLoaded, isSignedIn, user, dbUser, router, isLoading]);
 
-  if (!isLoaded || isLoading || !isSignedIn || !user || !dbUser || dbUser.role !== 'admin') {
+  if (!isLoaded || isLoading || !isSignedIn || !user || !dbUser || (dbUser.role !== 'admin' && dbUser.role !== 'super_admin')) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">

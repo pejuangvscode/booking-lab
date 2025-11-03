@@ -35,7 +35,7 @@ export default function LabSearch() {
     data: labData = [],
     isLoading: isLabsLoading,
     error: labsError,
-  } = api.lab.getAll.useQuery();
+  } = api.admin.getAccessibleLabs.useQuery();
 
   const {
     data: roomTypes = [],

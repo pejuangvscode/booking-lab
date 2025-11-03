@@ -1,69 +1,64 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
 generator client {
-    provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-    provider = "postgresql"
-    url      = env("DATABASE_URL")
-    directUrl = env("DIRECT_URL")
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
 }
 
 model Users {
-    id        String    @id @unique @default(uuid())
-    createdAt DateTime  @default(now())
-    role      String   @default("user")
+  id        String     @id @unique @default(uuid())
+  createdAt DateTime   @default(now())
+  role      String     @default("user")
+  bookings  Bookings[]
+  managedLabs Lab[] @relation("LabPIC")
 
-    bookings  Bookings[]
-
-    @@map("users")
+  @@map("users")
 }
 
 model Lab {
-    id          String    @id @unique @default(uuid())
-    facilityId  String    @unique
-    name        String
-    type        String
-    capacity    Int
-    department  String
-    createdAt   DateTime  @default(now())
-    image       String?
+  id         String     @id @unique @default(uuid())
+  facilityId String     @unique
+  name       String
+  type       String
+  capacity   Int
+  department String
+  createdAt  DateTime   @default(now())
+  image      String?
+  picId      String?
+  bookings   Bookings[]
+  pic        Users? @relation("LabPIC", fields: [picId], references: [id])
 
-    bookings    Bookings[]
-
-    @@map("rooms")
+  @@map("rooms")
 }
 
 model Bookings {
-    id          Int      @id @default(autoincrement())
-    userId      String
-    roomId      String
-    bookingDate DateTime
-    startTime   String
-    endTime     String
-    participants Int
-    eventName   String
-    eventType   String
-    phone       String
-    faculty     String
-    equipment   String?
-    status      String   @default("pending")
-    createdAt   DateTime @default(now())
-    
-    requesterName String?
-    requesterNIM  String?
+  id              Int       @id @default(autoincrement())
+  userId          String
+  roomId          String
+  bookingDate     DateTime
+  startTime       String
+  endTime         String
+  participants    Int
+  eventName       String
+  eventType       String
+  phone           String
+  faculty         String
+  equipment       String?
+  status          String    @default("pending")
+  createdAt       DateTime  @default(now())
+  requesterNIM    String?
+  requesterName   String?
+  rejectedAt      DateTime?
+  rejectedBy      String?
+  rejectionReason String?
+  adminNote       String?
+  approvedAt      DateTime?
+  approvedBy      String?
+  room            Lab     @relation(fields: [roomId], references: [id])
+  user            Users     @relation(fields: [userId], references: [id])
 
-    adminNote       String?
-    rejectionReason String?
-    approvedAt      DateTime?
-    approvedBy      String?
-    rejectedAt      DateTime?
-    rejectedBy      String?
-
-    user Users @relation(fields: [userId], references: [id])
-    room Lab @relation(fields: [roomId], references: [id])
-
-    @@map("bookings")
+  @@map("bookings")
 }

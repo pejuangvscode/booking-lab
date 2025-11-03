@@ -80,7 +80,7 @@ export default function BookingPage() {
     data: labDetail,
     isLoading: isLabLoading,
     error: labError
-  } = api.lab.getById.useQuery(
+  } = api.admin.getAccessibleLabById.useQuery(
     { id: labId as string },
     { 
       enabled: !!labId,
