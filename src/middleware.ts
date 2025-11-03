@@ -46,17 +46,31 @@ export default clerkMiddleware(async (auth, req) => {
   }
 
   try {
-    const { userId } = await auth();
-    
+    const { userId, sessionClaims } = await auth();
+
     if (isAdminRoute(req)) {
+      // Not signed in -> send to sign-in
       if (!userId) {
-        // Belum login
         const signInUrl = new URL('/sign-in', req.url);
         signInUrl.searchParams.set('redirect_url', req.url);
         return NextResponse.redirect(signInUrl);
       }
-      
-      // Untuk admin route, buat API call ke server untuk cek role
+
+      // Prefer checking role from Clerk session claims (fast, available in Edge)
+      const clerkRole =
+        (sessionClaims?.publicMetadata as Record<string, unknown> | undefined)?.role as
+          | string
+          | undefined ??
+        (sessionClaims?.metadata as Record<string, unknown> | undefined)?.role as
+          | string
+          | undefined;
+
+      if (clerkRole === 'admin' || clerkRole === 'super_admin') {
+        return NextResponse.next();
+      }
+
+      // Fallback: query our server API for role (if Clerk metadata is not present).
+      // Note: avoid forcing a sign-in on fetch errors; instead treat failures as unauthorized
       try {
         const response = await fetch(`${req.nextUrl.origin}/api/auth/role`, {
           method: 'GET',
@@ -67,28 +81,31 @@ export default clerkMiddleware(async (auth, req) => {
         });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch user data');
-        }
-
-        const userData = await response.json() as { role?: string };
-        const userRole = userData?.role;
-
-        if (!userRole || (userRole !== 'admin' && userRole !== 'super_admin')) {
-          // Bukan admin, redirect ke home dengan pesan error
+          console.error('Auth role endpoint returned non-OK status', response.status);
           const homeUrl = new URL('/', req.url);
           homeUrl.searchParams.set('error', 'unauthorized');
-          homeUrl.searchParams.set('message', `Access denied. Admin role required. Your role: ${userRole ?? 'user'}`);
+          homeUrl.searchParams.set('message', `Access denied. Unable to verify admin role.`);
           return NextResponse.redirect(homeUrl);
         }
-        
-        return NextResponse.next();
+
+        const userData = (await response.json()) as { role?: string };
+        const userRole = userData?.role;
+
+        if (userRole === 'admin' || userRole === 'super_admin') {
+          return NextResponse.next();
+        }
+
+        // Not admin -> redirect to home with unauthorized message
+        const homeUrl = new URL('/', req.url);
+        homeUrl.searchParams.set('error', 'unauthorized');
+        homeUrl.searchParams.set('message', `Access denied. Admin role required. Your role: ${userRole ?? 'user'}`);
+        return NextResponse.redirect(homeUrl);
       } catch (error) {
-        console.error('Error checking user role in middleware:', error);
-        // Jika error saat cek role, redirect ke sign-in
-        const signInUrl = new URL('/sign-in', req.url);
-        signInUrl.searchParams.set('redirect_url', req.url);
-        signInUrl.searchParams.set('error', 'auth_check_failed');
-        return NextResponse.redirect(signInUrl);
+        console.error('Error checking user role in middleware (fallback):', error);
+        const homeUrl = new URL('/', req.url);
+        homeUrl.searchParams.set('error', 'unauthorized');
+        homeUrl.searchParams.set('message', `Access denied. Unable to verify admin role.`);
+        return NextResponse.redirect(homeUrl);
       }
     }
 
