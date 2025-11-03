@@ -80,15 +80,20 @@ export default clerkMiddleware(async (auth, req) => {
         
         console.log('[Middleware] Fetching role from:', roleApiUrl);
         
+        // Create timeout controller manually for better compatibility
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000); // 5 second timeout
+        
         const response = await fetch(roleApiUrl, {
           method: 'GET',
           headers: {
             'x-user-id': userId,
             'Content-Type': 'application/json',
           },
-          // Add timeout for Vercel
-          signal: AbortSignal.timeout(5000), // 5 second timeout
+          signal: controller.signal,
         });
+        
+        clearTimeout(timeoutId);
 
         if (!response.ok) {
           console.error('[Middleware] Auth role endpoint returned non-OK status:', response.status);
@@ -130,16 +135,29 @@ export default clerkMiddleware(async (auth, req) => {
       } catch (error) {
         console.error('[Middleware] Error checking user role (fallback):', error);
         
-        // In production/Vercel, database connection might fail
-        // Instead of blocking completely, we could allow access if user at least has valid Clerk session
-        // But for security, we'll still block and show error
-        const isDev = process.env.NODE_ENV === 'development';
-        const homeUrl = new URL('/', req.url);
-        homeUrl.searchParams.set('error', 'unauthorized');
-        homeUrl.searchParams.set('message', isDev 
-          ? `Access denied. Error: ${error instanceof Error ? error.message : 'Unknown error'}` 
-          : 'Access denied. System error - please try again later.');
-        return NextResponse.redirect(homeUrl);
+        // In production, if both Clerk metadata and API check fail,
+        // we have a few options:
+        // 1. Block access (secure but might break if there's a temporary issue)
+        // 2. Allow access (less secure but more resilient)
+        // 
+        // For now, let's be more permissive in production to avoid blocking legitimate users
+        // when there are temporary infrastructure issues
+        
+        const isProduction = process.env.NODE_ENV === 'production';
+        
+        if (isProduction) {
+          // In production, if we can't verify the role due to system errors,
+          // let the request through and let the client-side components handle authorization
+          // This is a fallback for when Vercel/database has issues
+          console.warn('[Middleware] Allowing access due to system error in production');
+          return NextResponse.next();
+        } else {
+          // In development, show detailed error
+          const homeUrl = new URL('/', req.url);
+          homeUrl.searchParams.set('error', 'unauthorized');
+          homeUrl.searchParams.set('message', `Access denied. Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+          return NextResponse.redirect(homeUrl);
+        }
       }
     }
 

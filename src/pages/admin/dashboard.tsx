@@ -25,6 +25,7 @@ import {
   ExternalLink
 } from "lucide-react";
 import Head from 'next/head';
+import { AdminProtection } from '~/components/admin-protection';
 
 export default function AdminBookings() {
   const router = useRouter();
@@ -141,6 +142,7 @@ export default function AdminBookings() {
   };
 
   return (
+    <AdminProtection>
     <div className="min-h-screen">
       <Head>
         <title>Admin Dashboard</title>
@@ -490,5 +492,6 @@ export default function AdminBookings() {
         </DialogContent>
       </Dialog>
     </div>
+    </AdminProtection>
   );
 }
