@@ -79,7 +79,11 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
 const MyApp: AppType = ({ Component, pageProps, router }) => {
   return (
     <div className={geist.className}>
-      <ClerkProvider {...pageProps}>
+      <ClerkProvider 
+        {...pageProps}
+        afterSignInUrl="/auth/redirect"
+        afterSignUpUrl="/auth/redirect"
+      >
         <AppContent Component={Component} pageProps={pageProps} router={router} />
       </ClerkProvider>
     </div>

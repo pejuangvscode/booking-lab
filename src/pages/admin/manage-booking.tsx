@@ -303,7 +303,7 @@ export default function ManageBookingPage() {
             <div className="space-y-2">
               <label className="text-sm font-medium">Status</label>
               <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
+                <SelectTrigger className="hover:cursor-pointer">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>

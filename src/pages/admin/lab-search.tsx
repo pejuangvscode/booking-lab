@@ -97,14 +97,14 @@ export default function LabSearch() {
       
       <div className="container mx-auto px-4 py-6 sm:py-8 mt-16 sm:mt-20 relative z-10">
         {/* Header */}
-        <div className="text-left mb-8">
+        {/* <div className="text-left mb-8">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900">
             Laboratory List
           </h1>
           <p className="text-left text-lg sm:text-xl text-gray-600 mx-auto">
             Find and book available laboratories
           </p>
-        </div>
+        </div> */}
 
         {/* Search Section */}
         <div className="max-w-2xl mx-auto mb-8 sm:mb-12">

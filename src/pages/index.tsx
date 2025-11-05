@@ -35,6 +35,18 @@ const carouselItems = [
     imageSrc: "/MM16.jpg",
     title: "Meeting Room MM Fl.16",
     subTitle: "MM16"
+  },
+  {
+    id: 6,
+    imageSrc: "/MH16.jpg",
+    title: "Multifunction Room MM Fl.16",
+    subTitle: "MH16"
+  },
+  {
+    id: 7,
+    imageSrc: "/PD208.jpg",
+    title: "Lab PD208",
+    subTitle: "PD208"
   }
 ];
 

@@ -50,7 +50,9 @@ export default function SignInPage() {
                 path="/sign-in" 
                 routing="path" 
                 signUpUrl="/sign-up" 
-                redirectUrl={redirectUrl as string || '/dashboard'} 
+                afterSignInUrl={redirectUrl ? `/auth/redirect?redirect_url=${encodeURIComponent(redirectUrl as string)}` : '/auth/redirect'}
+                afterSignUpUrl={redirectUrl ? `/auth/redirect?redirect_url=${encodeURIComponent(redirectUrl as string)}` : '/auth/redirect'}
+                redirectUrl={redirectUrl as string || '/auth/redirect'} 
               />
             </div>
             

@@ -6,6 +6,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "~
 import { Badge } from "~/components/ui/badge";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Loader2, UserCheck, Users } from "lucide-react";
+import Head from "next/head";
 
 type LabWithPIC = {
   id: string;
@@ -88,6 +89,10 @@ export default function ManageAdminPage() {
   };
 
   return (
+    <>
+      <Head>
+        <title>Manage PIC - Admin Dashboard</title>
+      </Head>
       <div className="container mx-auto px-4 py-8">
         <div className="mb-8">
           <h1 className="text-3xl mt-15 font-bold text-gray-900 mb-2">Manage PIC</h1>
@@ -107,7 +112,7 @@ export default function ManageAdminPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
+              <div className="hover:cursor-pointer">
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Pilih Lab
                 </label>
@@ -152,7 +157,7 @@ export default function ManageAdminPage() {
             <Button
               onClick={handleAssignAdmin}
               disabled={!selectedLabId || !selectedAdminId || setLabPICMutation.isPending}
-              className="w-full md:w-auto"
+              className="w-full md:w-auto hover:cursor-pointer"
             >
               {setLabPICMutation.isPending ? (
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
@@ -210,6 +215,7 @@ export default function ManageAdminPage() {
                         size="sm"
                         onClick={() => handleRemovePIC(lab.id)}
                         disabled={setLabPICMutation.isPending}
+                        className="hover:cursor-pointer"
                       >
                         Hapus PIC
                       </Button>
@@ -227,5 +233,6 @@ export default function ManageAdminPage() {
           </CardContent>
         </Card>
       </div>
+    </>
   );
 }

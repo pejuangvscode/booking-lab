@@ -63,7 +63,9 @@ const roomColors: Record<string, string> = {
   "B338": "#3C7A0C",
   "B357": "#5E35B1",
   "F209": "#F25022",
-  "MM16": "#E81123"
+  "MM16": "#E81123",
+  "MH16": "#FFB900",
+  "PD208": "#008272",
 };
 
 type BookingEvent = {
@@ -115,6 +117,8 @@ export default function BookingCalendar() {
     { id: "B357", name: "Information System Lab", capacity: 20 },
     { id: "F209", name: "Lab F209", capacity: 30 },
     { id: "MM16", name: "Meeting Room MM Fl.16", capacity: 14 },
+    { id: "MH16", name: "Multifunction Room MH Fl.16", capacity: 50 },
+    { id: "PD208", name: "Lab Paddock 208", capacity: 30 },
   ]);
 
   const { 
