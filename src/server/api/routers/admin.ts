@@ -170,23 +170,71 @@ export const adminRouter = createTRPCRouter({
             requesterName?: { contains: string; mode: "insensitive" };
             faculty?: { contains: string; mode: "insensitive" };
             eventType?: { contains: string; mode: "insensitive" };
+          }> | Array<{
+            status?: string;
+            AND?: Array<any>;
           }>;
           roomId?: { in: string[] };
+          bookingDate?: { lt: Date } | { gte: Date };
+          AND?: Array<any>;
         }
         
         const where: BookingWhereClause = {};
         
         if (input.status !== "all") {
-          where.status = input.status;
+          // Special handling for completed tab
+          if (input.status === "completed") {
+            // Show both:
+            // 1. Bookings with status "completed"
+            // 2. Accepted bookings that are more than 1 day past their booking date
+            const oneDayAgo = new Date();
+            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+            oneDayAgo.setHours(23, 59, 59, 999); // End of the day 1 day ago
+            
+            where.OR = [
+              { status: "completed" },
+              {
+                AND: [
+                  { status: "accepted" },
+                  { bookingDate: { lt: oneDayAgo } }
+                ]
+              }
+            ];
+          } else if (input.status === "accepted") {
+            // Show only accepted bookings that haven't passed the 1-day completion threshold
+            const oneDayAgo = new Date();
+            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+            oneDayAgo.setHours(23, 59, 59, 999);
+            
+            where.AND = [
+              { status: "accepted" },
+              { bookingDate: { gte: oneDayAgo } }
+            ];
+          } else {
+            // For other statuses (pending, rejected, cancelled), show as normal
+            where.status = input.status;
+          }
         }
         
         if (input.search) {
-          where.OR = [
-            { eventName: { contains: input.search, mode: "insensitive" } },
-            { requesterName: { contains: input.search, mode: "insensitive" } },
-            { faculty: { contains: input.search, mode: "insensitive" } },
-            { eventType: { contains: input.search, mode: "insensitive" } }
+          const searchConditions = [
+            { eventName: { contains: input.search, mode: "insensitive" as const } },
+            { requesterName: { contains: input.search, mode: "insensitive" as const } },
+            { faculty: { contains: input.search, mode: "insensitive" as const } },
+            { eventType: { contains: input.search, mode: "insensitive" as const } }
           ];
+
+          if (where.OR && Array.isArray(where.OR) && where.OR.length > 0) {
+            // If we already have OR conditions (like for completed tab), wrap everything in AND
+            where.AND = [
+              { OR: where.OR },
+              { OR: searchConditions }
+            ];
+            delete where.OR;
+          } else {
+            // Normal search
+            where.OR = searchConditions;
+          }
         }
 
         // If user is not super_admin, filter by assigned labs only

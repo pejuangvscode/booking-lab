@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useRouter } from 'next/router';
 import { api } from '~/utils/api';
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
 import { Textarea } from "~/components/ui/textarea";
@@ -16,7 +15,6 @@ import {
   MapPin, 
   Phone, 
   GraduationCap, 
-  FileText, 
   Search,
   CheckCircle,
   XCircle,
@@ -33,22 +31,15 @@ export default function AdminBookings() {
   const [activeTab, setActiveTab] = useState<"pending" | "accepted" | "rejected" | "completed" | "cancelled">("pending");
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedBooking, setSelectedBooking] = useState<any>(null);
+  // const [selectedBooking, setSelectedBooking] = useState<any>(null);
   const [rejectionReason, setRejectionReason] = useState("");
   const [adminNote, setAdminNote] = useState("");
   const [showImageDialog, setShowImageDialog] = useState(false);
   const [selectedImage, setSelectedImage] = useState("");
+  const [showDetailDialog, setShowDetailDialog] = useState(false);
+  const [detailBooking, setDetailBooking] = useState<any>(null);
 
-  const debugAuth = api.admin.debugAuth.useQuery();
-
-  const getQueryStatus = () => {
-    switch (activeTab) {
-      case "completed":
-        return "accepted";
-      default:
-        return activeTab;
-    }
-  };
+  // const debugAuth = api.admin.debugAuth.useQuery();
 
   const {
     data: bookingsData,
@@ -67,7 +58,7 @@ export default function AdminBookings() {
         description: "The booking has been accepted and the user will be notified."
       });
       void refetch();
-      setSelectedBooking(null);
+      // setSelectedBooking(null);
       setAdminNote("");
     },
     onError: (err) => {
@@ -83,7 +74,7 @@ export default function AdminBookings() {
         description: "The booking has been rejected and the user will be notified."
       });
       void refetch();
-      setSelectedBooking(null);
+      // setSelectedBooking(null);
       setRejectionReason("");
     },
     onError: (err) => {
@@ -99,7 +90,7 @@ export default function AdminBookings() {
         description: "The booking has been cancelled."
       });
       void refetch();
-      setSelectedBooking(null);
+      // setSelectedBooking(null);
       setRejectionReason("");
     },
     onError: (err) => {
@@ -155,6 +146,11 @@ export default function AdminBookings() {
   const handleImageClick = (imageUrl: string) => {
     setSelectedImage(imageUrl);
     setShowImageDialog(true);
+  };
+
+  const handleRowClick = (booking: any) => {
+    setDetailBooking(booking);
+    setShowDetailDialog(true);
   };
 
   const isValidImageUrl = (url: string) => {
@@ -281,274 +277,357 @@ export default function AdminBookings() {
                 </div>
               )}
 
-              {/* Bookings Grid */}
-              <div className="grid gap-6">
-                {bookingsData?.bookings.map((booking) => (
-                  <Card key={booking.id} className="bg-white shadow-lg hover:shadow-xl transition-all duration-300 border-0">
-                    <CardHeader className="pb-4">
-                      <div className="flex justify-between items-start">
-                        <div className="flex-1">
-                          <CardTitle className="text-xl text-gray-900 mb-2">
-                            {booking.eventName}
-                          </CardTitle>
-                          <div className="flex items-center gap-4 text-sm text-gray-600">
-                            <div className="flex items-center gap-1">
-                              <Users className="w-4 h-4" />
-                              {booking.requesterName}
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <GraduationCap className="w-4 h-4" />
-                              {booking.faculty}
-                            </div>
-                          </div>
-                        </div>
-                        <div className="flex flex-col items-end gap-2">
-                          {getStatusBadge(booking.status)}
-                          <span className="text-xs text-gray-500">
-                            {new Date(booking.createdAt).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </div>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                      {/* Booking Details Grid */}
-                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                        <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
-                          <MapPin className="w-4 h-4 text-blue-600" />
-                          <div>
-                            <p className="text-xs text-gray-600">Room</p>
-                            <p className="font-medium text-gray-900">{booking.room?.name}</p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 p-3 bg-green-50 rounded-lg">
-                          <Calendar className="w-4 h-4 text-green-600" />
-                          <div>
-                            <p className="text-xs text-gray-600">Date</p>
-                            <p className="font-medium text-gray-900">
-                              {new Date(booking.bookingDate).toLocaleDateString()}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 p-3 bg-purple-50 rounded-lg">
-                          <Clock className="w-4 h-4 text-purple-600" />
-                          <div>
-                            <p className="text-xs text-gray-600">Time</p>
-                            <p className="font-medium text-gray-900">
-                              {booking.startTime} - {booking.endTime}
-                            </p>
-                          </div>
-                        </div>
-
-                        <div className="flex items-center gap-2 p-3 bg-orange-50 rounded-lg">
-                          <Users className="w-4 h-4 text-orange-600" />
-                          <div>
-                            <p className="text-xs text-gray-600">Participants</p>
-                            <p className="font-medium text-gray-900">{booking.participants} people</p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Equipment/Photo Section */}
-                      {booking.equipment && (
-                        <div>
-                          {isValidImageUrl(booking.equipment) ? (
-                            <div className="flex items-center gap-2">
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleImageClick(booking.equipment!)}
-                                className="flex items-center gap-2 hover:cursor-pointer"
-                              >
-                                <ImageIcon className="w-4 h-4" />
-                                {activeTab === "completed" ? "View Completion Photo" : "View Photo"}
-                              </Button>
-                              <a 
-                                href={booking.equipment} 
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-600 hover:text-blue-800 text-sm flex items-center gap-1"
-                              >
-                              </a>
-                            </div>
-                          ) : (
-                            <p className="text-sm text-gray-600 bg-gray-50 p-2 rounded">
-                              {booking.equipment}
-                            </p>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Admin Notes/Rejection Reason */}
-                      {booking.adminNote && (
-                        <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                          <p className="text-sm font-medium text-green-800 mb-1">Admin Note</p>
-                          <p className="text-sm text-green-700">{booking.adminNote}</p>
-                        </div>
-                      )}
-
-                      {booking.rejectionReason && (
-                        <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                          <p className="text-sm font-medium text-red-800 mb-1">Rejection Reason</p>
-                          <p className="text-sm text-red-700">{booking.rejectionReason}</p>
-                        </div>
-                      )}
-
-                      {/* Action Buttons - Only for pending bookings */}
-                      {booking.status === "pending" && (
-                        <div className="flex gap-3 pt-4 border-t">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                className="flex-1 bg-green-600 hover:bg-green-700 hover:cursor-pointer"
-                                onClick={() => setSelectedBooking(booking)}
-                              >
-                                <CheckCircle className="w-4 h-4 mr-2" />
-                                Accept
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-md">
-                              <DialogHeader>
-                                <DialogTitle>Accept Booking</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <p className="text-gray-600">
-                                  Accept booking for: <strong>{booking.eventName}</strong>
+              {/* Bookings Table */}
+              {bookingsData?.bookings && bookingsData.bookings.length > 0 && (
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                  <div className="overflow-x-auto">
+                    <table className="w-full table-fixed">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="w-1/4 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Event Details
+                          </th>
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Schedule
+                          </th>
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Room & Capacity
+                          </th>
+                          <th className="w-1/5 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Requester
+                          </th>
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Status
+                          </th>
+                          <th className="w-1/8 px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-100">
+                        {bookingsData?.bookings.map((booking) => (
+                          <tr 
+                            key={booking.id} 
+                            className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                            onClick={() => handleRowClick(booking)}
+                          >
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <h3 className="text-sm font-semibold text-gray-900 leading-tight truncate" title={booking.eventName}>
+                                  {booking.eventName}
+                                </h3>
+                                <p className="text-xs text-gray-500">
+                                  Created {new Date(booking.createdAt).toLocaleDateString('id-ID', { 
+                                    day: 'numeric', 
+                                    month: 'short', 
+                                    year: 'numeric' 
+                                  })}
                                 </p>
-                                <div>
-                                  <label className="block text-sm font-medium mb-2">
-                                    Admin Note (Optional)
-                                  </label>
-                                  <Textarea
-                                    value={adminNote}
-                                    onChange={(e) => setAdminNote(e.target.value)}
-                                    placeholder="Add any notes for this acceptance..."
-                                    rows={3}
-                                  />
+                                
+                                {/* Equipment/Photo - Only for completed bookings */}
+                                {booking.status === "completed" && booking.equipment && (
+                                  <div className="mt-2">
+                                    {isValidImageUrl(booking.equipment) ? (
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          handleImageClick(booking.equipment!);
+                                        }}
+                                        className="flex items-center gap-1 text-xs px-2 py-1 h-6 border-gray-300 hover:border-gray-400 hover:cursor-pointer"
+                                      >
+                                        <ImageIcon className="w-3 h-3" />
+                                        Completion Photo
+                                      </Button>
+                                    ) : (
+                                      <div className="bg-gray-50 border border-gray-200 rounded px-2 py-1">
+                                        <p className="text-xs text-gray-700 truncate" title={booking.equipment}>
+                                          Completion Documentation
+                                        </p>
+                                      </div>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                  <Calendar className="w-4 h-4 text-gray-500" />
+                                  {new Date(booking.bookingDate).toLocaleDateString('id-ID', { 
+                                    weekday: 'short',
+                                    day: 'numeric',
+                                    month: 'short'
+                                  })}
                                 </div>
-                                <div className="flex gap-2">
-                                  <Button 
-                                    onClick={() => handleApprove(booking)}
-                                    className="flex-1 bg-green-600 hover:bg-green-700"
-                                    disabled={approveMutation.isPending}
-                                  >
-                                    {approveMutation.isPending ? "Accepting..." : "Confirm Acceptance"}
-                                  </Button>
-                                  <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                  </DialogClose>
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Clock className="w-4 h-4 text-gray-500" />
+                                  {booking.startTime} - {booking.endTime}
                                 </div>
                               </div>
-                            </DialogContent>
-                          </Dialog>
-
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="destructive"
-                                className="flex-1 bg-red-600 hover:bg-red-700 hover:cursor-pointer"
-                                onClick={() => setSelectedBooking(booking)}
-                              >
-                                <XCircle className="w-4 h-4 mr-2" />
-                                Reject
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-md">
-                              <DialogHeader>
-                                <DialogTitle>Reject Booking</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <p className="text-gray-600">
-                                  Reject booking for: <strong>{booking.eventName}</strong>
-                                </p>
-                                <div>
-                                  <label className="block text-sm font-medium mb-2">
-                                    Rejection Reason *
-                                  </label>
-                                  <Textarea
-                                    value={rejectionReason}
-                                    onChange={(e) => setRejectionReason(e.target.value)}
-                                    placeholder="Please provide a reason for rejection..."
-                                    required
-                                    rows={3}
-                                  />
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <div className="flex items-center gap-2 text-sm font-medium text-gray-900">
+                                  <MapPin className="w-4 h-4 text-gray-500" />
+                                  <span className="truncate" title={booking.room?.name}>
+                                    {booking.room?.name}
+                                  </span>
                                 </div>
-                                <div className="flex gap-2">
-                                  <Button 
-                                    onClick={() => handleReject(booking)}
-                                    variant="destructive"
-                                    className="flex-1"
-                                    disabled={rejectMutation.isPending}
-                                  >
-                                    {rejectMutation.isPending ? "Rejecting..." : "Confirm Rejection"}
-                                  </Button>
-                                  <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                  </DialogClose>
+                                <div className="flex items-center gap-2 text-sm text-gray-600">
+                                  <Users className="w-4 h-4 text-gray-500" />
+                                  {booking.participants} people
                                 </div>
                               </div>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
-                      )}
-
-                      {/* Cancel Button - Only for accepted bookings */}
-                      {booking.status === "accepted" && (
-                        <div className="flex gap-3 pt-4 border-t">
-                          <Dialog>
-                            <DialogTrigger asChild>
-                              <Button 
-                                variant="destructive"
-                                className="flex-1 bg-orange-600 hover:bg-orange-700 hover:cursor-pointer"
-                                onClick={() => setSelectedBooking(booking)}
-                              >
-                                <XCircle className="w-4 h-4 mr-2" />
-                                Cancel Booking
-                              </Button>
-                            </DialogTrigger>
-                            <DialogContent className="max-w-md">
-                              <DialogHeader>
-                                <DialogTitle>Cancel Booking</DialogTitle>
-                              </DialogHeader>
-                              <div className="space-y-4">
-                                <p className="text-gray-600">
-                                  Cancel booking for: <strong>{booking.eventName}</strong>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <p className="text-sm font-semibold text-gray-900 truncate" title={booking.requesterName ?? undefined}>
+                                  {booking.requesterName ?? 'N/A'}
                                 </p>
-                                <div>
-                                  <label className="block text-sm font-medium mb-2">
-                                    Cancel Reason (Optional)
-                                  </label>
-                                  <Textarea
-                                    value={rejectionReason}
-                                    onChange={(e) => setRejectionReason(e.target.value)}
-                                    placeholder="Please provide a reason for cancellation..."
-                                    rows={3}
-                                  />
+                                <div className="flex items-center gap-1 text-xs text-gray-600">
+                                  <GraduationCap className="w-3 h-3" />
+                                  <span className="truncate" title={booking.faculty}>
+                                    {booking.faculty}
+                                  </span>
                                 </div>
-                                <div className="flex gap-2">
-                                  <Button 
-                                    onClick={() => handleCancel(booking)}
-                                    variant="destructive"
-                                    className="flex-1 bg-orange-600 hover:bg-orange-700"
-                                    disabled={cancelMutation.isPending}
-                                  >
-                                    {cancelMutation.isPending ? "Cancelling..." : "Confirm Cancellation"}
-                                  </Button>
-                                  <DialogClose asChild>
-                                    <Button variant="outline">Cancel</Button>
-                                  </DialogClose>
-                                </div>
+                                {booking.phone && (
+                                  <div className="flex items-center gap-1 text-xs text-gray-600">
+                                    <Phone className="w-3 h-3" />
+                                    <span className="truncate">
+                                      {booking.phone}
+                                    </span>
+                                  </div>
+                                )}
                               </div>
-                            </DialogContent>
-                          </Dialog>
-                        </div>
-                      )}
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-3">
+                                {getStatusBadge(booking.status)}
+                                
+                                {/* Admin Notes/Rejection Reason */}
+                                {booking.adminNote && (
+                                  <div className="bg-green-50 border border-green-200 rounded-lg p-2">
+                                    <p className="text-xs font-medium text-green-800 mb-1">Admin Note:</p>
+                                    <p className="text-xs text-green-700 leading-relaxed">
+                                      {booking.adminNote}
+                                    </p>
+                                  </div>
+                                )}
+                                
+                                {booking.rejectionReason && (
+                                  <div className="bg-red-50 border border-red-200 rounded-lg p-2">
+                                    <p className="text-xs font-medium text-red-800 mb-1">Rejection Reason:</p>
+                                    <p className="text-xs text-red-700 leading-relaxed">
+                                      {booking.rejectionReason}
+                                    </p>
+                                  </div>
+                                )}
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex flex-col items-center space-y-2">
+                                {/* Action Buttons for pending bookings */}
+                                {booking.status === "pending" && (
+                                  <>
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button 
+                                          size="sm"
+                                          className="w-20 bg-green-600 hover:bg-green-700 text-xs font-medium hover:cursor-pointer"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            // setSelectedBooking(booking);
+                                          }}
+                                        >
+                                          <CheckCircle className="w-3 h-3 mr-1" />
+                                          Accept
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-md">
+                                        <DialogHeader>
+                                          <DialogTitle>Accept Booking</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <p className="text-gray-600">
+                                            Accept booking for: <strong>{booking.eventName}</strong>
+                                          </p>
+                                          <div>
+                                            <label className="block text-sm font-medium mb-2">
+                                              Admin Note (Optional)
+                                            </label>
+                                            <Textarea
+                                              value={adminNote}
+                                              onChange={(e) => setAdminNote(e.target.value)}
+                                              onClick={(e) => e.stopPropagation()}
+                                              placeholder="Add any notes for this acceptance..."
+                                              rows={3}
+                                            />
+                                          </div>
+                                          <div className="flex gap-2">
+                                            <Button 
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleApprove(booking);
+                                              }}
+                                              className="flex-1 bg-green-600 hover:bg-green-700 hover:cursor-pointer"
+                                              disabled={approveMutation.isPending}
+                                            >
+                                              {approveMutation.isPending ? "Accepting..." : "Confirm Acceptance"}
+                                            </Button>
+                                            <DialogClose asChild>
+                                              <Button 
+                                                variant="outline" 
+                                                className="hover:cursor-pointer"
+                                                onClick={(e) => e.stopPropagation()}
+                                              >
+                                                Cancel
+                                              </Button>
+                                            </DialogClose>
+                                          </div>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+
+                                    <Dialog>
+                                      <DialogTrigger asChild>
+                                        <Button 
+                                          variant="destructive"
+                                          size="sm"
+                                          className="w-20 bg-red-600 hover:bg-red-700 text-xs font-medium hover:cursor-pointer"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            // setSelectedBooking(booking);
+                                            setRejectionReason(""); // Clear previous reason
+                                          }}
+                                        >
+                                          <XCircle className="w-3 h-3 mr-1" />
+                                          Reject
+                                        </Button>
+                                      </DialogTrigger>
+                                      <DialogContent className="max-w-md">
+                                        <DialogHeader>
+                                          <DialogTitle>Reject Booking</DialogTitle>
+                                        </DialogHeader>
+                                        <div className="space-y-4">
+                                          <p className="text-gray-600">
+                                            Reject booking for: <strong>{booking.eventName}</strong>
+                                          </p>
+                                          <div>
+                                            <label className="block text-sm font-medium mb-2">
+                                              Rejection Reason *
+                                            </label>
+                                            <Textarea
+                                              value={rejectionReason}
+                                              onChange={(e) => setRejectionReason(e.target.value)}
+                                              onClick={(e) => e.stopPropagation()}
+                                              placeholder="Please provide a reason for rejection..."
+                                              required
+                                              rows={3}
+                                            />
+                                          </div>
+                                          <div className="flex gap-2">
+                                            <Button 
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                handleReject(booking);
+                                              }}
+                                              variant="destructive"
+                                              className="flex-1"
+                                              disabled={rejectMutation.isPending}
+                                            >
+                                              {rejectMutation.isPending ? "Rejecting..." : "Confirm Rejection"}
+                                            </Button>
+                                            <DialogClose asChild>
+                                              <Button 
+                                                variant="outline" 
+                                                className="hover:cursor-pointer"
+                                                onClick={(e) => e.stopPropagation()}
+                                              >
+                                                Cancel
+                                              </Button>
+                                            </DialogClose>
+                                          </div>
+                                        </div>
+                                      </DialogContent>
+                                    </Dialog>
+                                  </>
+                                )}
+
+                                {/* Cancel Button for accepted bookings */}
+                                {booking.status === "accepted" && (
+                                  <Dialog>
+                                    <DialogTrigger asChild>
+                                      <Button 
+                                        variant="destructive"
+                                        size="sm"
+                                        className="w-20 bg-orange-600 hover:bg-orange-700 text-xs font-medium hover:cursor-pointer"
+                                        onClick={(e) => {
+                                          e.stopPropagation();
+                                          // setSelectedBooking(booking);
+                                          setRejectionReason(""); // Clear previous reason
+                                        }}
+                                      >
+                                        <XCircle className="w-3 h-3 mr-1" />
+                                        Cancel
+                                      </Button>
+                                    </DialogTrigger>
+                                    <DialogContent className="max-w-md">
+                                      <DialogHeader>
+                                        <DialogTitle>Cancel Booking</DialogTitle>
+                                      </DialogHeader>
+                                      <div className="space-y-4">
+                                        <p className="text-gray-600">
+                                          Cancel booking for: <strong>{booking.eventName}</strong>
+                                        </p>
+                                        <div>
+                                          <label className="block text-sm font-medium mb-2">
+                                            Cancel Reason (Optional)
+                                          </label>
+                                          <Textarea
+                                            value={rejectionReason}
+                                            onChange={(e) => setRejectionReason(e.target.value)}
+                                            onClick={(e) => e.stopPropagation()}
+                                            placeholder="Please provide a reason for cancellation..."
+                                            rows={3}
+                                          />
+                                        </div>
+                                        <div className="flex gap-2">
+                                          <Button 
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handleCancel(booking);
+                                            }}
+                                            variant="destructive"
+                                            className="flex-1 bg-orange-600 hover:bg-orange-700 hover:cursor-pointer"
+                                            disabled={cancelMutation.isPending}
+                                          >
+                                            {cancelMutation.isPending ? "Cancelling..." : "Confirm Cancellation"}
+                                          </Button>
+                                          <DialogClose asChild>
+                                            <Button 
+                                              variant="outline" 
+                                              className="hover:cursor-pointer"
+                                              onClick={(e) => e.stopPropagation()}
+                                            >
+                                              Cancel
+                                            </Button>
+                                          </DialogClose>
+                                        </div>
+                                      </div>
+                                    </DialogContent>
+                                  </Dialog>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
 
               {/* Pagination */}
               {bookingsData?.pagination && bookingsData.pagination.totalPages > 1 && (
@@ -557,7 +636,7 @@ export default function AdminBookings() {
                     variant="outline"
                     disabled={!bookingsData.pagination.hasPrev}
                     onClick={() => setPage(page - 1)}
-                    className="bg-white"
+                    className="bg-white hover:cursor-pointer"
                   >
                     Previous
                   </Button>
@@ -570,7 +649,7 @@ export default function AdminBookings() {
                     variant="outline"
                     disabled={!bookingsData.pagination.hasNext}
                     onClick={() => setPage(page + 1)}
-                    className="bg-white"
+                    className="bg-white hover:cursor-pointer"
                   >
                     Next
                   </Button>
@@ -610,7 +689,209 @@ export default function AdminBookings() {
               Open in new tab
             </Button>
             <DialogClose asChild>
-              <Button variant="outline">Close</Button>
+              <Button 
+                variant="outline" 
+                className="hover:cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Close
+              </Button>
+            </DialogClose>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Booking Detail Dialog */}
+      <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
+        <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold">Booking Details</DialogTitle>
+          </DialogHeader>
+          
+          {detailBooking && (
+            <div className="space-y-6">
+              {/* Header Info */}
+              <div className="bg-gray-50 p-4 rounded-lg">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                      {detailBooking.eventName}
+                    </h3>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <p><strong>Status:</strong> {getStatusBadge(detailBooking.status)}</p>
+                      <p><strong>Created:</strong> {new Date(detailBooking.createdAt).toLocaleDateString('id-ID', {
+                        weekday: 'long',
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}</p>
+                    </div>
+                  </div>
+                  <div className="space-y-1 text-sm">
+                    <p><strong className="text-gray-700">Booking ID:</strong> <code className="bg-gray-200 px-2 py-1 rounded text-xs">{detailBooking.id}</code></p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Booking Information */}
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Schedule & Location */}
+                <div className="space-y-4">
+                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Schedule & Location</h4>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Calendar className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="font-medium">{new Date(detailBooking.bookingDate).toLocaleDateString('id-ID', {
+                          weekday: 'long',
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}</p>
+                        <p className="text-sm text-gray-600">Booking Date</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <Clock className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="font-medium">{detailBooking.startTime} - {detailBooking.endTime}</p>
+                        <p className="text-sm text-gray-600">Time Duration</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <MapPin className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="font-medium">{detailBooking.room?.name}</p>
+                        <p className="text-sm text-gray-600">Room Location</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <Users className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="font-medium">{detailBooking.participants} people</p>
+                        <p className="text-sm text-gray-600">Expected Participants</p>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Requester Information */}
+                <div className="space-y-4">
+                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Requester Information</h4>
+                  
+                  <div className="space-y-3">
+                    <div className="flex items-center gap-3">
+                      <Users className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="font-medium">{detailBooking.requesterName}</p>
+                        <p className="text-sm text-gray-600">Full Name</p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-3">
+                      <GraduationCap className="w-5 h-5 text-gray-500" />
+                      <div>
+                        <p className="font-medium">{detailBooking.faculty}</p>
+                        <p className="text-sm text-gray-600">Faculty</p>
+                      </div>
+                    </div>
+                    
+                    {detailBooking.phone && (
+                      <div className="flex items-center gap-3">
+                        <Phone className="w-5 h-5 text-gray-500" />
+                        <div>
+                          <p className="font-medium">{detailBooking.phone}</p>
+                          <p className="text-sm text-gray-600">Phone Number</p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Equipment/Documentation - Only for completed bookings */}
+              {detailBooking.status === "completed" && detailBooking.equipment && (
+                <div className="space-y-4">
+                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Completion Documentation</h4>
+                  
+                  {isValidImageUrl(detailBooking.equipment) ? (
+                    <div className="space-y-2">
+                      <p className="text-sm text-gray-600">Completion photo uploaded:</p>
+                      <div className="flex items-center gap-3">
+                        <img 
+                          src={detailBooking.equipment} 
+                          alt="Completion Documentation" 
+                          className="w-20 h-20 object-cover rounded-lg border"
+                          onError={(e) => {
+                            (e.target as HTMLImageElement).src = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iODAiIGhlaWdodD0iODAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0iI2RkZCIvPjx0ZXh0IHg9IjUwJSIgeT0iNTAlIiBmb250LXNpemU9IjEyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkeT0iLjNlbSI+Tm8gSW1hZ2U8L3RleHQ+PC9zdmc+';
+                          }}
+                        />
+                        <div className="space-y-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleImageClick(detailBooking.equipment)}
+                            className="flex items-center gap-2"
+                          >
+                            <ImageIcon className="w-4 h-4" />
+                            View Full Size
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => window.open(detailBooking.equipment, '_blank')}
+                            className="flex items-center gap-2"
+                          >
+                            <ExternalLink className="w-4 h-4" />
+                            Open in New Tab
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="bg-gray-50 p-4 rounded-lg">
+                      <p className="text-sm text-gray-700">{detailBooking.equipment}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              {/* Admin Notes/Rejection Reason */}
+              {(detailBooking.adminNote || detailBooking.rejectionReason) && (
+                <div className="space-y-4">
+                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Admin Notes</h4>
+                  
+                  {detailBooking.adminNote && (
+                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
+                      <p className="text-sm font-semibold text-green-800 mb-2">Admin Note:</p>
+                      <p className="text-sm text-green-700">{detailBooking.adminNote}</p>
+                    </div>
+                  )}
+                  
+                  {detailBooking.rejectionReason && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                      <p className="text-sm font-semibold text-red-800 mb-2">Rejection Reason:</p>
+                      <p className="text-sm text-red-700">{detailBooking.rejectionReason}</p>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
+          
+          <div className="flex justify-end pt-4 border-t">
+            <DialogClose asChild>
+              <Button 
+                variant="outline" 
+                className="hover:cursor-pointer"
+                onClick={(e) => e.stopPropagation()}
+              >
+                Close
+              </Button>
             </DialogClose>
           </div>
         </DialogContent>
