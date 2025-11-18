@@ -68,7 +68,7 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
 
   return (
     <div className="min-h-screen flex flex-col">
-      {/* <Navbar /> */}
+      <Navbar />
       <main className="flex-grow">
         <Component {...pageProps} router={router} />
       </main>
