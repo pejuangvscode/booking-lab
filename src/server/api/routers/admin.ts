@@ -962,18 +962,16 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        // Get all admin users from database
+        // Get all admin users from database (only admin role, not super_admin)
         const dbAdmins = await ctx.db.users.findMany({
           where: {
-            role: {
-              in: ['admin', 'super_admin']
-            }
+            role: 'admin'
           },
           select: {
             id: true,
             role: true,
           },
-          orderBy: { role: "desc" }, // super_admin first
+          orderBy: { id: "asc" }, // alphabetical by ID
         });
 
         // Get user details from Clerk for each admin (with better error handling)

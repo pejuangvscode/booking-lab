@@ -391,11 +391,11 @@ export const bookingRouter = createTRPCRouter({
           });
         }
 
-        // Only accepted bookings can be cancelled
-        if (existingBooking.status !== 'accepted') {
+        // Only pending or accepted bookings can be cancelled
+        if (existingBooking.status !== 'accepted' && existingBooking.status !== 'pending') {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Only accepted bookings can be cancelled",
+            message: "Only pending or accepted bookings can be cancelled",
           });
         }
 
