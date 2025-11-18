@@ -16,11 +16,11 @@ type LabWithPIC = {
   type: string;
   capacity: number;
   image: string;
-  pic?: {
+  pics: {
     id: string;
     name: string;
     role: string;
-  } | null;
+  }[];
 };
 
 type AdminUser = {
@@ -60,11 +60,19 @@ export default function ManageAdminPage() {
     if (!selectedAdminId || selectedLabIds.length === 0) return;
 
     try {
-      // Assign admin to multiple labs
+      // Assign admin to multiple labs - add to existing PICs
       for (const labId of selectedLabIds) {
+        const lab = labs?.find(l => l.id === labId);
+        const currentPicIds = lab?.pics.map(pic => pic.id) || [];
+        
+        // Add the new PIC if not already assigned
+        const newPicIds = currentPicIds.includes(selectedAdminId) 
+          ? currentPicIds 
+          : [...currentPicIds, selectedAdminId];
+
         await setLabPICMutation.mutateAsync({
           labId: labId,
-          picId: selectedAdminId,
+          picIds: newPicIds,
         });
       }
 
@@ -84,11 +92,17 @@ export default function ManageAdminPage() {
     }
   };
 
-  const handleRemovePIC = async (labId: string) => {
+  const handleRemovePIC = async (labId: string, picIdToRemove: string) => {
     try {
+      const lab = labs?.find(l => l.id === labId);
+      const currentPicIds = lab?.pics.map(pic => pic.id) || [];
+      
+      // Remove the specific PIC
+      const newPicIds = currentPicIds.filter(id => id !== picIdToRemove);
+
       await setLabPICMutation.mutateAsync({
         labId,
-        picId: null,
+        picIds: newPicIds,
       });
 
       // Refresh data
@@ -165,7 +179,7 @@ export default function ManageAdminPage() {
                           </p>
                           {labs && (
                             <p className="text-xs text-gray-600 mt-1">
-                              Currently PIC for: {labs.filter(lab => lab.pic?.id === selectedAdmin.id).length} labs
+                              Currently PIC for: {labs.filter(lab => lab.pics.some(pic => pic.id === selectedAdmin.id)).length} labs
                             </p>
                           )}
                         </div>
@@ -208,7 +222,7 @@ export default function ManageAdminPage() {
                               <div className="font-medium text-sm text-gray-900">{lab.name}</div>
                               <div className="text-xs text-gray-500">{lab.facilityId} • {lab.type}</div>
                               <div className="text-xs text-gray-500">
-                                {lab.pic ? `Current PIC: ${lab.pic.name}` : 'No PIC assigned'}
+                                {lab.pics.length > 0 ? `${lab.pics.length} PIC${lab.pics.length > 1 ? 's' : ''} assigned` : 'No PIC assigned'}
                               </div>
                             </div>
                           </div>
@@ -377,19 +391,34 @@ export default function ManageAdminPage() {
                               <h4 className="font-medium text-gray-900 mb-2 flex items-center gap-2">
                                 Person In Charge (PIC)
                               </h4>
-                              {lab.pic ? (
+                              {lab.pics.length > 0 ? (
                                 <div className="space-y-2">
-                                  <div className="flex items-center gap-3">
-                                    <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                                      <UserCheck className="w-4 h-4 text-gray-600" />
+                                  {lab.pics.map((pic) => (
+                                    <div key={pic.id} className="flex items-center gap-3">
+                                      <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
+                                        <UserCheck className="w-4 h-4 text-gray-600" />
+                                      </div>
+                                      <div className="flex-1">
+                                        <p className="font-medium text-gray-900">{pic.name}</p>
+                                        <p className="text-sm text-gray-500">{pic.role}</p>
+                                      </div>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleRemovePIC(lab.id, pic.id)}
+                                        disabled={setLabPICMutation.isPending}
+                                        className="hover:cursor-pointer text-red-600 border-red-300 hover:bg-red-50 hover:border-red-400"
+                                      >
+                                        {setLabPICMutation.isPending ? (
+                                          <Loader2 className="h-3 w-3 animate-spin" />
+                                        ) : (
+                                          <X className="h-3 w-3" />
+                                        )}
+                                      </Button>
                                     </div>
-                                    <div>
-                                      <p className="font-medium text-gray-900">{lab.pic.name}</p>
-                                      <p className="text-sm text-gray-500">{lab.pic.role}</p>
-                                    </div>
-                                  </div>
+                                  ))}
                                   <Badge variant="default" className="bg-gray-100 text-gray-800 border-gray-300">
-                                    ✓ PIC Assigned
+                                    ✓ {lab.pics.length} PIC{lab.pics.length > 1 ? 's' : ''} Assigned
                                   </Badge>
                                 </div>
                               ) : (
@@ -409,23 +438,6 @@ export default function ManageAdminPage() {
                                 </div>
                               )}
                             </div>
-                            
-                            {lab.pic && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleRemovePIC(lab.id)}
-                                disabled={setLabPICMutation.isPending}
-                                className="hover:cursor-pointer text-gray-600 border-gray-300 hover:bg-gray-50 hover:border-gray-400"
-                              >
-                                {setLabPICMutation.isPending ? (
-                                  <Loader2 className="h-4 w-4 animate-spin mr-1" />
-                                ) : (
-                                  <X className="h-4 w-4 mr-1" />
-                                )}
-                                Remove PIC
-                              </Button>
-                            )}
                           </div>
                         </div>
                       </div>

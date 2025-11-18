@@ -13,7 +13,6 @@ model Users {
   createdAt DateTime   @default(now())
   role      String     @default("user")
   bookings  Bookings[]
-  managedLabs Lab[] @relation("LabPIC")
 
   @@map("users")
 }
@@ -27,9 +26,8 @@ model Lab {
   department String
   createdAt  DateTime   @default(now())
   image      String?
-  picId      String?
+  picIds     Json?     // JSON array of PIC user IDs
   bookings   Bookings[]
-  pic        Users? @relation("LabPIC", fields: [picId], references: [id])
 
   @@map("rooms")
 }

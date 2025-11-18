@@ -11,11 +11,11 @@ interface LabWithPIC {
   type: string;
   capacity: number;
   image: string | null;
-  pic: {
+  pics: Array<{
     id: string;
     name: string;
     role: string;
-  } | null;
+  }>;
 }
 
 export const adminRouter = createTRPCRouter({
@@ -130,19 +130,12 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        // Get user with their managed labs and role
+        // Get user with their role
         const currentUser = await ctx.db.users.findUnique({
           where: { id: userId },
           select: {
             id: true,
             role: true,
-            managedLabs: {
-              select: {
-                id: true,
-                name: true,
-                facilityId: true
-              }
-            }
           }
         });
 
@@ -159,6 +152,29 @@ export const adminRouter = createTRPCRouter({
             code: "FORBIDDEN",
             message: "Access denied. Admin role required.",
           });
+        }
+
+        // Get managed labs based on role
+        let managedLabs: Array<{ id: string; name: string; facilityId: string }> = [];
+        let canAccessAllLabs = false;
+
+        if (currentUser.role === 'super_admin') {
+          // Super admin can access all labs
+          const allLabs = await ctx.db.lab.findMany({
+            select: {
+              id: true,
+              name: true,
+              facilityId: true
+            }
+          });
+          managedLabs = allLabs;
+          canAccessAllLabs = true;
+        } else if (currentUser.role === 'admin') {
+          // Admin can only access labs where they are PIC
+          managedLabs = await ctx.db.$queryRaw`
+            SELECT "id", "name", "facilityId" FROM "rooms" 
+            WHERE "picIds"::jsonb ? ${userId}
+          ` as Array<{ id: string; name: string; facilityId: string }>;
         }
 
         const skip = (input.page - 1) * input.limit;
@@ -239,7 +255,7 @@ export const adminRouter = createTRPCRouter({
 
         // If user is not super_admin, filter by assigned labs only
         if (currentUser.role === 'admin') {
-          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          const managedLabIds = managedLabs.map(lab => lab.id);
           
           if (managedLabIds.length === 0) {
             // Admin not assigned to any labs - return empty result
@@ -254,8 +270,8 @@ export const adminRouter = createTRPCRouter({
               },
               userInfo: {
                 role: currentUser.role,
-                managedLabs: currentUser.managedLabs,
-                canAccessAllLabs: false
+                managedLabs: managedLabs,
+                canAccessAllLabs: canAccessAllLabs
               }
             };
           }
@@ -297,8 +313,8 @@ export const adminRouter = createTRPCRouter({
           },
           userInfo: {
             role: currentUser.role,
-            managedLabs: currentUser.managedLabs,
-            canAccessAllLabs: currentUser.role === 'super_admin'
+            managedLabs: managedLabs,
+            canAccessAllLabs: canAccessAllLabs
           }
         };
       } catch (error) {
@@ -337,13 +353,14 @@ export const adminRouter = createTRPCRouter({
           select: {
             id: true,
             role: true,
-            managedLabs: {
-              select: {
-                id: true
-              }
-            }
           }
         });
+
+        // Get managed labs separately since picIds is stored as JSON
+        const managedLabs = await ctx.db.$queryRaw`
+          SELECT "id", "name", "facilityId" FROM "rooms" 
+          WHERE "picIds"::jsonb ? ${userId}
+        ` as Array<{ id: string; name: string; facilityId: string }>;
 
         if (!currentUser) {
           throw new TRPCError({
@@ -380,7 +397,7 @@ export const adminRouter = createTRPCRouter({
 
         // Check if admin has access to this lab (unless super_admin)
         if (currentUser.role === 'admin') {
-          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          const managedLabIds = managedLabs.map(lab => lab.id);
           if (!managedLabIds.includes(booking.roomId)) {
             throw new TRPCError({
               code: "FORBIDDEN",
@@ -448,13 +465,14 @@ export const adminRouter = createTRPCRouter({
           select: {
             id: true,
             role: true,
-            managedLabs: {
-              select: {
-                id: true
-              }
-            }
           }
         });
+
+        // Get managed labs separately since picIds is stored as JSON
+        const managedLabs = await ctx.db.$queryRaw`
+          SELECT "id", "name", "facilityId" FROM "rooms" 
+          WHERE "picIds"::jsonb ? ${userId}
+        ` as Array<{ id: string; name: string; facilityId: string }>;
 
         if (!currentUser) {
           throw new TRPCError({
@@ -491,7 +509,7 @@ export const adminRouter = createTRPCRouter({
 
         // Check if admin has access to this lab (unless super_admin)
         if (currentUser.role === 'admin') {
-          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          const managedLabIds = managedLabs.map(lab => lab.id);
           if (!managedLabIds.includes(booking.roomId)) {
             throw new TRPCError({
               code: "FORBIDDEN",
@@ -559,13 +577,14 @@ export const adminRouter = createTRPCRouter({
           select: {
             id: true,
             role: true,
-            managedLabs: {
-              select: {
-                id: true
-              }
-            }
           }
         });
+
+        // Get managed labs separately since picIds is stored as JSON
+        const managedLabs = await ctx.db.$queryRaw`
+          SELECT "id", "name", "facilityId" FROM "rooms" 
+          WHERE "picIds"::jsonb ? ${userId}
+        ` as Array<{ id: string; name: string; facilityId: string }>;
 
         if (!currentUser) {
           throw new TRPCError({
@@ -608,7 +627,7 @@ export const adminRouter = createTRPCRouter({
         } else if (isSuper) {
           hasPermission = true;
         } else if (isAdmin) {
-          const managedLabIds = currentUser.managedLabs.map(lab => lab.id);
+          const managedLabIds = managedLabs.map(lab => lab.id);
           hasPermission = managedLabIds.includes(booking.roomId);
         }
 
@@ -693,34 +712,19 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        let labs: Awaited<ReturnType<typeof ctx.db.lab.findMany<{ include: { pic: { select: { id: true; role: true } } } }>>>;
+        let labs: Awaited<ReturnType<typeof ctx.db.lab.findMany>>;
         if (user.role === 'super_admin') {
           // Super admin can access all labs
           labs = await ctx.db.lab.findMany({
-            include: {
-              pic: {
-                select: {
-                  id: true,
-                  role: true,
-                }
-              }
-            },
             orderBy: { name: "asc" },
           });
         } else if (user.role === 'admin') {
           // Admin can only access labs where they are PIC
-          labs = await ctx.db.lab.findMany({
-            where: { picId: ctx.userId },
-            include: {
-              pic: {
-                select: {
-                  id: true,
-                  role: true,
-                }
-              }
-            },
-            orderBy: { name: "asc" },
-          });
+          labs = await ctx.db.$queryRaw`
+            SELECT * FROM "rooms" 
+            WHERE "picIds"::jsonb ? ${ctx.userId}
+            ORDER BY "name" ASC
+          ` as any;
         } else {
           // Other roles cannot access any labs
           labs = [];
@@ -736,31 +740,30 @@ export const adminRouter = createTRPCRouter({
             type: string | null;
             capacity: number | null;
             image: string | null;
-            pic: {
-              id: string;
-              role: string;
-            } | null;
+            picIds: string[] | null;
           }>;
 
           const result = await Promise.all(labsArray.map(async (room) => {
-            let picWithName = null;
-            if (room.pic) {
-              try {
-                const clerkUser = await clerkClient.users.getUser(room.pic.id);
-                const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
-                picWithName = {
-                  id: room.pic.id,
-                  name: fullName ?? clerkUser.username ?? 'Unknown User',
-                  role: room.pic.role,
-                };
-              } catch {
-                // If Clerk user not found, use fallback name
-                picWithName = {
-                  id: room.pic.id,
-                  name: `User ${room.pic.id.slice(0, 8)}`,
-                  role: room.pic.role,
-                };
-              }
+            let picsWithNames: Array<{ id: string; name: string; role: string }> = [];
+            if (room.picIds && Array.isArray(room.picIds)) {
+              const picPromises = room.picIds.map(async (picId) => {
+                try {
+                  const clerkUser = await clerkClient.users.getUser(picId);
+                  const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
+                  return {
+                    id: picId,
+                    name: fullName ?? clerkUser.username ?? 'Unknown User',
+                    role: 'admin',
+                  };
+                } catch {
+                  return {
+                    id: picId,
+                    name: `User ${picId.slice(0, 8)}`,
+                    role: 'admin',
+                  };
+                }
+              });
+              picsWithNames = await Promise.all(picPromises);
             }
 
             return {
@@ -771,7 +774,7 @@ export const adminRouter = createTRPCRouter({
               type: room.type ?? "Unknown",
               capacity: room.capacity ?? 0,
               image: room.image ?? "",
-              pic: picWithName,
+              pics: picsWithNames,
             };
           }));
           return result;
@@ -819,13 +822,12 @@ export const adminRouter = createTRPCRouter({
           });
         } else if (user.role === 'admin') {
           // Admin can only access labs where they are PIC
-          lab = await ctx.db.lab.findFirst({
-            where: {
-              facilityId: input.id,
-              picId: ctx.userId
-            },
-          });
-        } else {
+          const labs = await ctx.db.$queryRaw`
+            SELECT * FROM "rooms" 
+            WHERE "facilityId" = ${input.id} AND "picIds"::jsonb ? ${ctx.userId}
+            LIMIT 1
+          ` as any;
+          lab = labs && (labs as any[]).length > 0 ? (labs as any[])[0] : null;
           // Other roles cannot access any labs
           lab = null;
         }
@@ -861,7 +863,7 @@ export const adminRouter = createTRPCRouter({
   setLabPIC: protectedProcedure
     .input(z.object({
       labId: z.string(),
-      picId: z.string().nullable(),
+      picIds: z.array(z.string()),
     }))
     .mutation(async ({ ctx, input }) => {
       if (!ctx.userId) {
@@ -885,56 +887,50 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        // If setting a PIC, make sure they have admin role
-        if (input.picId) {
-          // Update user role to admin if not already
+        // Update user roles to admin for all PICs
+        for (const picId of input.picIds) {
           await ctx.db.users.upsert({
-            where: { id: input.picId },
+            where: { id: picId },
             update: { role: "admin" },
             create: {
-              id: input.picId,
+              id: picId,
               role: "admin",
             },
           });
 
           // Update Clerk metadata
-          await clerkClient.users.updateUserMetadata(input.picId, {
+          await clerkClient.users.updateUserMetadata(picId, {
             publicMetadata: {
               role: "admin"
             }
           });
         }
 
-        // Update lab PIC
+        // Update lab PICs
         const updatedLab = await ctx.db.lab.update({
           where: { id: input.labId },
-          data: { picId: input.picId },
+          data: { picIds: input.picIds },
           select: {
             id: true,
             name: true,
             facilityId: true,
-            pic: {
-              select: {
-                id: true,
-                role: true,
-              }
-            }
+            picIds: true,
           }
         });
 
         return {
           success: true,
           lab: updatedLab,
-          message: "Lab PIC updated successfully"
+          message: "Lab PICs updated successfully"
         };
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;
         }
-        console.error("Error setting lab PIC:", error);
+        console.error("Error setting lab PICs:", error);
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
-          message: "Failed to set lab PIC",
+          message: "Failed to set lab PICs",
         });
       }
     }),

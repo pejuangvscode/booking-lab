@@ -197,7 +197,7 @@ export default function AdminBookings() {
                     </p>
                     {bookingsData.userInfo.managedLabs.length > 0 ? (
                       <div className="flex flex-wrap gap-2">
-                        {bookingsData.userInfo.managedLabs.map((lab) => (
+                        {bookingsData.userInfo.managedLabs.map((lab: { id: string; name: string; facilityId: string }) => (
                           <Badge key={lab.id} className="bg-blue-100 text-blue-800 border-blue-300">
                             {lab.name} ({lab.facilityId})
                           </Badge>
