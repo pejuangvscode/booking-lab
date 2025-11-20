@@ -7,6 +7,7 @@ import { Badge } from "~/components/ui/badge";
 import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Loader2, UserCheck, Users, X } from "lucide-react";
 import Head from "next/head";
+import { CustomDialog } from "~/components/ui/custom-dialog";
 
 type LabWithPIC = {
   id: string;
@@ -33,6 +34,21 @@ export default function ManageAdminPage() {
   const [selectedAdminId, setSelectedAdminId] = useState<string>("");
   const [selectedLabIds, setSelectedLabIds] = useState<string[]>([]);
   const [showLabSelection, setShowLabSelection] = useState(false);
+  const [dialog, setDialog] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: 'success' | 'error' | 'alert';
+    onConfirm?: () => void;
+  }>({ isOpen: false, title: '', message: '', type: 'alert' });
+
+  const showDialog = (title: string, message: string, type: 'success' | 'error' | 'alert' = 'alert', onConfirm?: () => void) => {
+    setDialog({ isOpen: true, title, message, type, onConfirm });
+  };
+
+  const closeDialog = () => {
+    setDialog(prev => ({ ...prev, isOpen: false }));
+  };
 
   // Fetch data
   const { data: labs, isLoading: labsLoading } = api.admin.getAccessibleLabs.useQuery() as {
@@ -63,7 +79,7 @@ export default function ManageAdminPage() {
       // Assign admin to multiple labs - add to existing PICs
       for (const labId of selectedLabIds) {
         const lab = labs?.find(l => l.id === labId);
-        const currentPicIds = lab?.pics.map(pic => pic.id) || [];
+        const currentPicIds = lab?.pics.map(pic => pic.id) ?? [];
         
         // Add the new PIC if not already assigned
         const newPicIds = currentPicIds.includes(selectedAdminId) 
@@ -85,17 +101,25 @@ export default function ManageAdminPage() {
       setSelectedLabIds([]);
       setShowLabSelection(false);
 
-      alert(`Admin berhasil di-assign ke ${selectedLabIds.length} lab!`);
+      showDialog(
+        "Berhasil!",
+        `Admin berhasil di-assign ke ${selectedLabIds.length} lab!`,
+        "success"
+      );
     } catch (error) {
       console.error("Error assigning admin:", error);
-      alert("Gagal assign admin. Silakan coba lagi.");
+      showDialog(
+        "Gagal!",
+        "Gagal assign admin. Silakan coba lagi.",
+        "error"
+      );
     }
   };
 
   const handleRemovePIC = async (labId: string, picIdToRemove: string) => {
     try {
       const lab = labs?.find(l => l.id === labId);
-      const currentPicIds = lab?.pics.map(pic => pic.id) || [];
+      const currentPicIds = lab?.pics.map(pic => pic.id) ?? [];
       
       // Remove the specific PIC
       const newPicIds = currentPicIds.filter(id => id !== picIdToRemove);
@@ -108,10 +132,18 @@ export default function ManageAdminPage() {
       // Refresh data
       await utils.admin.getAccessibleLabs.invalidate();
 
-      alert("PIC berhasil dihapus dari lab!");
+      showDialog(
+        "Berhasil!",
+        "PIC berhasil dihapus dari lab!",
+        "success"
+      );
     } catch (error) {
       console.error("Error removing PIC:", error);
-      alert("Gagal menghapus PIC. Silakan coba lagi.");
+      showDialog(
+        "Gagal!",
+        "Gagal menghapus PIC. Silakan coba lagi.",
+        "error"
+      );
     }
   };
 
@@ -495,6 +527,15 @@ export default function ManageAdminPage() {
           </CardContent>
         </Card>
       </div>
+
+      <CustomDialog
+        isOpen={dialog.isOpen}
+        onClose={closeDialog}
+        onConfirm={dialog.onConfirm}
+        title={dialog.title}
+        message={dialog.message}
+        type={dialog.type}
+      />
     </>
   );
 }

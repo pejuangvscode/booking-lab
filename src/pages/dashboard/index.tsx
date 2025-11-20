@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
-import { Loader2, Info, XCircle, RefreshCw, Check, CheckCircle } from 'lucide-react';
+import { Loader2, Info, XCircle, RefreshCw, Check, CheckCircle, ToggleLeft } from 'lucide-react';
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
@@ -9,6 +9,7 @@ import { api } from '~/utils/api';
 import Head from 'next/head';
 import { CustomDialog } from "~/components/ui/custom-dialog";
 import { useCustomDialog } from "~/hooks/useCustomDialog";
+import { useAdminCheck } from '~/hooks/useAdminCheck';
 
 type Booking = {
   id: number;
@@ -41,6 +42,7 @@ export default function Dashboard() {
   const { isLoaded, isSignedIn } = useAuth();
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
+  const { isAdmin } = useAdminCheck();
   
   const [currentEntriesCount, setCurrentEntriesCount] = useState(10);
   const [currentSearchTerm, setCurrentSearchTerm] = useState("");
@@ -182,8 +184,23 @@ export default function Dashboard() {
       {/* Current Bookings Section */}
       <div className="bg-white rounded-lg shadow-lg overflow-hidden mb-6 sm:mb-8">
         <div className="p-4 sm:p-6 bg-gradient-to-r from-orange-600 to-orange-700">
-          <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">My Bookings</h2>
-          <p className="text-xs sm:text-sm text-blue-100 mt-2">Manage your current room bookings</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">My Bookings</h2>
+              <p className="text-xs sm:text-sm text-blue-100 mt-2">Manage your current room bookings</p>
+            </div>
+            {isAdmin && (
+              <Button
+                onClick={() => router.push('/admin/dashboard')}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:cursor-pointer"
+              >
+                <ToggleLeft className="w-4 h-4" />
+                Admin View
+              </Button>
+            )}
+          </div>
         </div>
         
         <div className="p-4 sm:p-6">

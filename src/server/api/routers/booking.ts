@@ -840,7 +840,6 @@ export const bookingRouter = createTRPCRouter({
         // Delete all bookings with the specific class code
         const result = await ctx.db.bookings.deleteMany({
           where: {
-            userId: ctx.userId, // Only admin's bookings
             equipment: input.classCode,
           },
         });
@@ -870,7 +869,6 @@ export const bookingRouter = createTRPCRouter({
         for (const classCode of input.classCodes) {
           const result = await ctx.db.bookings.deleteMany({
             where: {
-              userId: ctx.userId, // Only admin's bookings
               equipment: classCode,
             },
           });

@@ -34,12 +34,34 @@ import { useCustomDialog } from "~/hooks/useCustomDialog";
 import { api } from "~/utils/api";
 import { format } from "date-fns";
 
+interface Booking {
+  id: number;
+  bookingDate: Date | string;
+  startTime: string;
+  endTime: string;
+  equipment: string | null;
+  eventName?: string;
+  room?: {
+    name: string;
+    facilityId: string;
+    capacity: number;
+  };
+  roomId?: string;
+  userId: string;
+  createdAt: Date;
+  approvedBy: string | null;
+  participants?: number;
+  status?: string;
+  eventType?: string;
+}
+
 interface ClassBookingGroup {
   classCode: string;
-  bookings: any[];
+  bookings: Booking[];
   totalBookings: number;
   upcomingBookings: number;
   instructor: string;
+  eventName: string;
   room: string;
   timeSlot: string;
   days: string[];
@@ -82,50 +104,35 @@ export default function ManageBookingPage() {
     }
   });
 
-  const bulkDeleteBookingsMutation = api.booking.bulkDeleteClassBookings.useMutation({
-    onSuccess: (result) => {
-      success(`Successfully deleted ${result.totalDeleted} bookings across ${result.classCount} classes`);
-      setSelectedClassCodes(new Set());
-      setBulkDeleteMode(false);
-      void refetchBookings();
-    },
-    onError: (err) => {
-      error(`Failed to bulk delete bookings: ${err.message}`);
-    }
-  });
-
-  // Group bookings by class code
   const groupedBookings = useMemo(() => {
     if (!adminBookings) return [];
 
-    const groups: { [key: string]: any[] } = {};
+    const groups: Record<string, Booking[]> = {};
     
-    adminBookings.forEach(booking => {
+    adminBookings.forEach((booking: Booking) => {
       // Check if equipment field contains class code (not starting with http)
       const classCode = booking.equipment;
       if (classCode && !classCode.startsWith('http')) {
-        if (!groups[classCode]) {
-          groups[classCode] = [];
-        }
+        groups[classCode] ??= [];
         groups[classCode].push(booking);
       }
     });
 
     return Object.entries(groups).map(([classCode, bookings]): ClassBookingGroup => {
-      const sortedBookings = bookings.sort((a, b) => 
+      const sortedBookings = bookings.sort((a: Booking, b: Booking) => 
         new Date(a.bookingDate).getTime() - new Date(b.bookingDate).getTime()
       );
 
-      const upcomingBookings = bookings.filter(booking => 
+      const upcomingBookings = bookings.filter((booking: Booking) => 
         new Date(booking.bookingDate) >= new Date()
       ).length;
 
       // Extract common information
-      const firstBooking = sortedBookings[0];
-      const lastBooking = sortedBookings[sortedBookings.length - 1];
+      const firstBooking = sortedBookings[0]!;
+      const lastBooking = sortedBookings[sortedBookings.length - 1]!;
       
       // Get unique days
-      const days = [...new Set(bookings.map(booking => 
+      const days = [...new Set(bookings.map((booking: Booking) => 
         format(new Date(booking.bookingDate), 'EEEE')
       ))];
 
@@ -134,13 +141,14 @@ export default function ManageBookingPage() {
         bookings: sortedBookings,
         totalBookings: bookings.length,
         upcomingBookings,
-        instructor: firstBooking?.requesterName || 'Unknown',
-        room: firstBooking?.room?.name || firstBooking?.roomId || 'Unknown',
-        timeSlot: `${firstBooking?.startTime} - ${firstBooking?.endTime}`,
+        instructor: firstBooking?.eventName ?? 'Unknown',
+        eventName: firstBooking?.eventName ?? 'Unknown',
+        room: firstBooking?.room?.name ?? firstBooking?.roomId ?? 'Unknown',
+        timeSlot: `${firstBooking?.startTime ?? 'Unknown'} - ${firstBooking?.endTime ?? 'Unknown'}`,
         days,
         dateRange: {
-          start: format(new Date(firstBooking?.bookingDate), 'MMM d, yyyy'),
-          end: format(new Date(lastBooking?.bookingDate), 'MMM d, yyyy')
+          start: format(new Date(firstBooking?.bookingDate ?? new Date()), 'MMM d, yyyy'),
+          end: format(new Date(lastBooking?.bookingDate ?? new Date()), 'MMM d, yyyy')
         }
       };
     });
@@ -184,9 +192,10 @@ export default function ManageBookingPage() {
   };
 
   // Handle single class deletion
-  const handleDeleteClass = async (classCode: string, totalBookings: number, upcomingBookings: number) => {
+  const handleDeleteClass = async (classCode: string, totalBookings: number, upcomingBookings: number, eventName: string) => {
     const confirmed = await confirm(
       `Are you sure you want to delete all ${totalBookings} bookings for class "${classCode}"?\n\n` +
+      `Event: ${eventName}\n` +
       `This includes ${upcomingBookings} upcoming bookings that haven't occurred yet.\n\n` +
       `This action cannot be undone.`,
       `Delete Class ${classCode}`
@@ -194,33 +203,6 @@ export default function ManageBookingPage() {
 
     if (confirmed) {
       deleteClassBookingsMutation.mutate({ classCode });
-    }
-  };
-
-  // Handle bulk deletion
-  const handleBulkDelete = async () => {
-    const selectedClasses = Array.from(selectedClassCodes);
-    const totalBookingsCount = selectedClasses.reduce((sum, classCode) => {
-      const group = groupedBookings.find(g => g.classCode === classCode);
-      return sum + (group?.totalBookings || 0);
-    }, 0);
-
-    const upcomingBookingsCount = selectedClasses.reduce((sum, classCode) => {
-      const group = groupedBookings.find(g => g.classCode === classCode);
-      return sum + (group?.upcomingBookings || 0);
-    }, 0);
-
-    const confirmed = await confirm(
-      `Are you sure you want to delete all bookings for ${selectedClasses.length} selected classes?\n\n` +
-      `Total bookings to be deleted: ${totalBookingsCount}\n` +
-      `Upcoming bookings: ${upcomingBookingsCount}\n\n` +
-      `Classes: ${selectedClasses.join(', ')}\n\n` +
-      `This action cannot be undone.`,
-      `Bulk Delete ${selectedClasses.length} Classes`
-    );
-
-    if (confirmed) {
-      bulkDeleteBookingsMutation.mutate({ classCodes: selectedClasses });
     }
   };
 
@@ -409,7 +391,8 @@ export default function ManageBookingPage() {
                           onClick={() => handleDeleteClass(
                             group.classCode, 
                             group.totalBookings,
-                            group.upcomingBookings
+                            group.upcomingBookings,
+                            group.eventName
                           )}
                           variant="destructive"
                           size="sm"

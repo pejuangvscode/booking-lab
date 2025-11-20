@@ -11,6 +11,7 @@ interface LabWithPIC {
   type: string;
   capacity: number;
   image: string | null;
+  picIds: string[];
   pics: Array<{
     id: string;
     name: string;
@@ -712,73 +713,83 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        let labs: Awaited<ReturnType<typeof ctx.db.lab.findMany>>;
+        let labs: Array<{
+          id: string;
+          name: string;
+          facilityId: string;
+          department: string;
+          type: string;
+          capacity: number;
+          image: string | null;
+          picIds: unknown;
+        }>;
+
         if (user.role === 'super_admin') {
           // Super admin can access all labs
           labs = await ctx.db.lab.findMany({
             orderBy: { name: "asc" },
           });
         } else if (user.role === 'admin') {
-          // Admin can only access labs where they are PIC
-          labs = await ctx.db.$queryRaw`
-            SELECT * FROM "rooms" 
-            WHERE "picIds"::jsonb ? ${ctx.userId}
-            ORDER BY "name" ASC
-          ` as any;
+          // Admin can access all labs (but booking behavior depends on PIC status)
+          labs = await ctx.db.lab.findMany({
+            orderBy: { name: "asc" },
+          });
         } else {
           // Other roles cannot access any labs
           labs = [];
         }
 
         // Get labs with PIC info
-        const labsWithPIC: LabWithPIC[] = await (async (): Promise<LabWithPIC[]> => {
-          // Type assertion for Prisma query result
-          const labsArray = labs as Array<{
-            id: string;
-            name: string | null;
-            facilityId: string;
-            type: string | null;
-            capacity: number | null;
-            image: string | null;
-            picIds: string[] | null;
-          }>;
-
-          const result = await Promise.all(labsArray.map(async (room) => {
-            let picsWithNames: Array<{ id: string; name: string; role: string }> = [];
-            if (room.picIds && Array.isArray(room.picIds)) {
-              const picPromises = room.picIds.map(async (picId) => {
-                try {
-                  const clerkUser = await clerkClient.users.getUser(picId);
-                  const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
-                  return {
-                    id: picId,
-                    name: fullName ?? clerkUser.username ?? 'Unknown User',
-                    role: 'admin',
-                  };
-                } catch {
-                  return {
-                    id: picId,
-                    name: `User ${picId.slice(0, 8)}`,
-                    role: 'admin',
-                  };
-                }
-              });
-              picsWithNames = await Promise.all(picPromises);
+        const labsWithPIC: LabWithPIC[] = await Promise.all(labs.map(async (room) => {
+          let picsWithNames: Array<{ id: string; name: string; role: string }> = [];
+          let picIdsArray: string[] = [];
+          
+          if (room.picIds) {
+            try {
+              // Parse picIds - it could be a JSON string or already parsed
+              if (typeof room.picIds === 'string') {
+                picIdsArray = JSON.parse(room.picIds) as string[];
+              } else if (Array.isArray(room.picIds)) {
+                picIdsArray = room.picIds as string[];
+              }
+              
+              if (Array.isArray(picIdsArray) && picIdsArray.length > 0) {
+                const picPromises = picIdsArray.map(async (picId) => {
+                  try {
+                    const clerkUser = await clerkClient.users.getUser(picId);
+                    const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
+                    return {
+                      id: picId,
+                      name: fullName || clerkUser.username || 'Unknown User',
+                      role: 'admin',
+                    };
+                  } catch {
+                    return {
+                      id: picId,
+                      name: `User ${picId.slice(0, 8)}`,
+                      role: 'admin',
+                    };
+                  }
+                });
+                picsWithNames = await Promise.all(picPromises);
+              }
+            } catch (error) {
+              console.error("Error parsing picIds:", error);
             }
+          }
 
-            return {
-              id: room.id,
-              name: room.name ?? '',
-              facilityId: room.facilityId,
-              department: "Faculty of Information & Technology",
-              type: room.type ?? "Unknown",
-              capacity: room.capacity ?? 0,
-              image: room.image ?? "",
-              pics: picsWithNames,
-            };
-          }));
-          return result;
-        })();
+          return {
+            id: room.id,
+            name: room.name,
+            facilityId: room.facilityId,
+            department: room.department,
+            type: room.type,
+            capacity: room.capacity,
+            image: room.image,
+            picIds: picIdsArray,
+            pics: picsWithNames,
+          };
+        }));
 
         return labsWithPIC;
       } catch (error) {
@@ -814,20 +825,27 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        let lab;
+        let lab: {
+          id: string;
+          name: string;
+          facilityId: string;
+          department: string;
+          type: string;
+          capacity: number;
+          image: string | null;
+        } | null = null;
+
         if (user.role === 'super_admin') {
           // Super admin can access any lab
           lab = await ctx.db.lab.findUnique({
             where: { facilityId: input.id },
           });
         } else if (user.role === 'admin') {
-          // Admin can only access labs where they are PIC
-          const labs = await ctx.db.$queryRaw`
-            SELECT * FROM "rooms" 
-            WHERE "facilityId" = ${input.id} AND "picIds"::jsonb ? ${ctx.userId}
-            LIMIT 1
-          ` as any;
-          lab = labs && (labs as any[]).length > 0 ? (labs as any[])[0] : null;
+          // Admin can access all labs (booking behavior depends on PIC status)
+          lab = await ctx.db.lab.findUnique({
+            where: { facilityId: input.id },
+          });
+        } else {
           // Other roles cannot access any labs
           lab = null;
         }
@@ -841,12 +859,12 @@ export const adminRouter = createTRPCRouter({
 
         return {
           id: lab.id,
-          name: lab.name || '',
+          name: lab.name,
           facilityId: lab.facilityId,
-          department: "Faculty of Information & Technology",
-          type: lab.type || "Unknown",
-          capacity: lab.capacity || 0,
-          image: lab.image || "",
+          department: lab.department,
+          type: lab.type,
+          capacity: lab.capacity,
+          image: lab.image ?? "",
         };
       } catch (error) {
         if (error instanceof TRPCError) {
@@ -898,12 +916,20 @@ export const adminRouter = createTRPCRouter({
             },
           });
 
-          // Update Clerk metadata
-          await clerkClient.users.updateUserMetadata(picId, {
-            publicMetadata: {
-              role: "admin"
+          // Update Clerk metadata - check if user exists first
+          try {
+            const clerkUser = await clerkClient.users.getUser(picId);
+            if (clerkUser) {
+              await clerkClient.users.updateUserMetadata(picId, {
+                publicMetadata: {
+                  role: "admin"
+                }
+              });
             }
-          });
+          } catch (clerkError) {
+            // User might not exist in Clerk yet, skip metadata update
+            console.warn(`Could not update Clerk metadata for user ${picId}:`, clerkError);
+          }
         }
 
         // Update lab PICs
@@ -958,41 +984,27 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        // Get all admin users from database (only admin role, not super_admin)
-        const dbAdmins = await ctx.db.users.findMany({
-          where: {
-            role: 'admin'
-          },
-          select: {
-            id: true,
-            role: true,
-          },
-          orderBy: { id: "asc" }, // alphabetical by ID
+        // Get ALL users from Clerk (not just admins from database)
+        const clerkUsers = await clerkClient.users.getUserList({
+          limit: 100, // Get up to 100 users
         });
 
-        // Get user details from Clerk for each admin (with better error handling)
-        const adminsWithNames = await Promise.all(
-          dbAdmins.map(async (admin) => {
-            try {
-              const clerkUser = await clerkClient.users.getUser(admin.id);
-              const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
-              return {
-                id: admin.id,
-                name: fullName ?? clerkUser.username ?? 'Unknown User',
-                role: admin.role,
-              };
-            } catch {
-              // If Clerk user not found or other error, return with ID only (silent handling)
-              return {
-                id: admin.id,
-                name: `User ${admin.id.slice(0, 8)}`,
-                role: admin.role,
-              };
-            }
+        // Map to our admin format and filter only admin/super_admin roles
+        const adminsWithNames = clerkUsers.data
+          .map((clerkUser) => {
+            const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
+            const email = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? '';
+            const role = (clerkUser.publicMetadata?.role as string) ?? 'user';
+            
+            return {
+              id: clerkUser.id,
+              name: fullName || clerkUser.username || email || 'Unknown User',
+              role: role,
+            };
           })
-        );
+          .filter(user => user.role === 'admin' || user.role === 'super_admin'); // Only show admins and super_admins
 
-        return adminsWithNames;
+        return adminsWithNames.sort((a, b) => a.name.localeCompare(b.name));
       } catch (error) {
         if (error instanceof TRPCError) {
           throw error;

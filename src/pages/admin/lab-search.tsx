@@ -7,6 +7,7 @@ import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
 import { useRef } from "react";
+import { useUser } from "@clerk/nextjs";
 
 type Lab = {
   id: string;
@@ -16,12 +17,14 @@ type Lab = {
   type: string;
   capacity: number;
   image?: string | null;
+  picIds?: string | string[] | null;
 };
 
 type SortField = "name" | "facilityId" | "type" | "capacity";
 
 export default function LabSearch() {
   const router = useRouter();
+  const { user } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [roomTypeFilter, setRoomTypeFilter] = useState("all");
   const [sortField, setSortField] = useState<SortField>("name");
@@ -38,9 +41,14 @@ export default function LabSearch() {
   } = api.admin.getAccessibleLabs.useQuery();
 
   const {
-    data: roomTypes = [],
-    isLoading: isTypesLoading,
-  } = api.lab.getRoomTypes.useQuery();
+    data: currentUser,
+    isLoading: isUserLoading,
+  } = api.user.getCurrentUser.useQuery();
+
+  // Debug: Log the lab data
+  console.log("Lab Data from backend:", labData);
+  console.log("Lab Data length:", labData.length);
+  console.log("Current user ID:", user?.id);
 
   // Function to get appropriate icon for lab type
   const getLabIcon = (type: string) => {
@@ -82,7 +90,71 @@ export default function LabSearch() {
     return "bg-amber-100 text-amber-700 border-amber-200";
   };
 
-  const isLoading = isLabsLoading || isTypesLoading;
+  // Check if current user is PIC for a specific lab
+  const isUserPICForLab = (lab: Lab) => {
+    if (!user?.id || !lab.picIds) return false;
+    
+    try {
+      // Parse picIds from JSON if it's a string
+      const picIdsArray = typeof lab.picIds === 'string' 
+        ? (JSON.parse(lab.picIds) as string[])
+        : Array.isArray(lab.picIds) 
+          ? lab.picIds 
+          : [];
+      
+      return picIdsArray.includes(user.id);
+    } catch {
+      return false;
+    }
+  };
+
+  // Check if user is super_admin
+  const isUserSuperAdmin = () => {
+    if (!user) return false;
+    
+    // First check Clerk metadata
+    const clerkRole = user.publicMetadata?.role as string;
+    if (clerkRole === 'super_admin') {
+      console.log('Super admin detected from Clerk metadata');
+      return true;
+    }
+    
+    // Fallback to database role if available
+    if (currentUser && currentUser.role === 'super_admin') {
+      console.log('Super admin detected from database');
+      return true;
+    }
+    
+    console.log('User role check:', { 
+      clerkRole, 
+      dbRole: currentUser?.role,
+      publicMetadata: user.publicMetadata,
+      userId: user.id
+    });
+    return false;
+  };
+
+  // Handle booking based on user's role and PIC status
+  const handleBooking = (lab: Lab) => {
+    const isSuperAdmin = isUserSuperAdmin();
+    console.log('Booking logic:', { isSuperAdmin, labId: lab.id, userId: user?.id });
+    
+    if (isSuperAdmin) {
+      // Super admin - always go to admin booking regardless of PIC status
+      console.log('Redirecting super admin to admin booking');
+      void router.push(`/admin/booking?labId=${lab.id}`);
+    } else if (isUserPICForLab(lab)) {
+      // User is PIC for this lab - go to admin booking
+      console.log('Redirecting PIC user to admin booking');
+      void router.push(`/admin/booking?labId=${lab.id}`);
+    } else {
+      // User is not PIC for this lab - go to regular user booking
+      console.log('Redirecting regular user to user booking');
+      void router.push(`/booking?labId=${lab.id}`);
+    }
+  };
+
+  const isLoading = isLabsLoading || isUserLoading;
   
   return (
     <div className="min-h-screen bg-gray-50 relative overflow-hidden">
@@ -121,6 +193,28 @@ export default function LabSearch() {
             />
           </div>
         </div>
+
+        {/* Toggle Dashboard Button
+        <div className="max-w-2xl mx-auto mb-6 sm:mb-8">
+          <div className="flex justify-center">
+            <Button
+              variant="outline"
+              className="bg-white border-orange-300 text-orange-700 hover:bg-orange-50 hover:border-orange-400 px-6 py-2 rounded-lg shadow-sm"
+              onClick={() => {
+                if (isUserSuperAdmin()) {
+                  // Super admin - go to admin dashboard
+                  void router.push('/admin/dashboard');
+                } else {
+                  // Regular user - go to user dashboard
+                  void router.push('/dashboard');
+                }
+              }}
+            >
+              <BookOpen className="h-4 w-4 mr-2" />
+              {isUserSuperAdmin() ? 'Admin Dashboard' : 'User Dashboard'}
+            </Button>
+          </div>
+        </div> */}
         
         {/* Loading State */}
         {isLoading && (
@@ -137,6 +231,7 @@ export default function LabSearch() {
           <div className="flex justify-center items-center p-12 sm:p-16">
             <div className="bg-red-50 rounded-2xl p-8 border border-red-200 text-center shadow-lg">
               <p className="text-lg text-red-700 mb-4">Failed to load laboratories. Please try again later.</p>
+              <p className="text-sm text-gray-600 mb-4">Error: {labsError.message}</p>
               <Button 
                 variant="outline" 
                 className="bg-red-100 border-red-300 text-red-700 hover:bg-red-200"
@@ -156,12 +251,19 @@ export default function LabSearch() {
                 <div className="bg-orange-50 rounded-2xl p-8 border border-orange-200 max-w-md mx-auto shadow-lg">
                   <Search className="h-12 w-12 text-orange-400 mx-auto mb-4" />
                   <h3 className="text-xl font-semibold text-gray-900 mb-2">No Results Found</h3>
-                  <p className="text-gray-600">Try adjusting your search criteria</p>
+                  <p className="text-gray-600 mb-4">Try adjusting your search criteria</p>
+                  <div className="text-left text-xs text-gray-500 bg-white p-4 rounded mt-4">
+                    <p>Debug Info:</p>
+                    <p>- Total labs from backend: {labData.length}</p>
+                    <p>- After filtering: {filteredData.length}</p>
+                    <p>- Your User ID: {user?.id ?? 'Not logged in'}</p>
+                    <p>- Search term: &quot;{searchTerm}&quot;</p>
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="space-y-4">
-                {currentItems.map((lab, index) => (
+                {currentItems.map((lab, _index) => (
                   <div
                     key={lab.id}
                     className="group relative bg-white rounded-2xl border border-gray-200 hover:border-orange-300 transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl shadow-sm cursor-pointer"
@@ -196,7 +298,10 @@ export default function LabSearch() {
                           <div className="mt-4 sm:mt-0 sm:ml-6 flex-shrink-0 items-center">
                             <Button
                               className="bg-gradient-to-r from-orange-400 hover:cursor-pointer to-orange-500 hover:from-orange-600 hover:to-orange-700 text-white font-semibold px-6 sm:px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 border-0"
-                              onClick={() => router.push(`/admin/booking?labId=${lab.id}`)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBooking(lab);
+                              }}
                             >
                               <Calendar className="h-4 w-4 mr-2" />
                               Book Now
@@ -246,7 +351,7 @@ export default function LabSearch() {
                     </Button>
                     
                     <div className="flex space-x-1">
-                      {[...Array(Math.min(5, totalPages))].map((_, i) => {
+                      {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
                         const pageNum = i + 1;
                         return (
                           <Button

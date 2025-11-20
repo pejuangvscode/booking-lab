@@ -20,7 +20,9 @@ import {
   XCircle,
   Eye,
   Image as ImageIcon,
-  ExternalLink
+  ExternalLink,
+  ToggleLeft,
+  ToggleRight
 } from "lucide-react";
 import Head from 'next/head';
 import { AdminProtection } from '~/components/admin-protection';
@@ -172,9 +174,19 @@ export default function AdminBookings() {
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-2">
-              Admin Dashboard
-            </h1>
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-4xl font-bold text-gray-900">
+                Admin Dashboard
+              </h1>
+              <Button
+                onClick={() => router.push('/dashboard')}
+                variant="outline"
+                className="flex items-center gap-2 hover:cursor-pointer"
+              >
+                <ToggleRight className="w-4 h-4" />
+                Switch to User View
+              </Button>
+            </div>
             
             {/* Lab Assignment Info */}
             {bookingsData?.userInfo && (

@@ -165,17 +165,20 @@ export default function BookingPage() {
     );
   };
 
-  const calculateParticipants = () => {
-    if (!labDetail) return 0;
-    
-    if (labDetail.capacity === 0) {
-      return parseInt(participants) || 0;
-    } else if (bookingType === "full") {
-      return labDetail.capacity || parseInt(participants) || 1;
-    } else {
-      return parseInt(participants) || 1;
+  useEffect(() => {
+    if (labDetail?.capacity === 0) {
+      setBookingType("full");
+      setParticipants("0");
     }
-  };
+    else if (labId === "MM16") {
+      setBookingType("full");
+      setParticipants("14");
+    }
+    else if (labId === "MH16") {
+      setBookingType("full");
+      setParticipants("50");
+    }
+  }, [labDetail, labId]);
 
   const validateForm = () => {
     const errors: { [key: string]: string } = {};
@@ -194,9 +197,9 @@ export default function BookingPage() {
     if (!endHour || !endMinute) errors.endTime = "End time is required";
     if (!eventName) errors.eventName = "Event name is required";
     if (!eventType) errors.eventType = "Event type is required";
-    if (!phone) errors.phone = "Phone number is required";
+    if (!phone && labId !== "MM16" && labId !== "MH16") errors.phone = "Phone number is required";
     if (!requestorName) errors.requestorName = "Requestor name is required";
-    if (!faculty) errors.faculty = "Faculty is required";
+    if (!faculty && labId !== "MM16") errors.faculty = "Faculty is required";
 
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
@@ -206,7 +209,7 @@ export default function BookingPage() {
     }
 
     // Validate participants
-    if (labDetail?.capacity === 0) {
+    if (labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16") {
       if (participants.trim() === "" || isNaN(parseInt(participants))) {
         errors.participants = "Number of participants is required for flexible space rooms";
       } else if (parseInt(participants) < 0) {
@@ -261,7 +264,11 @@ export default function BookingPage() {
       return;
     }
     
-    const finalParticipants = calculateParticipants();
+    const finalParticipants = labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16"
+      ? parseInt(participants) || 0
+      : bookingType === "full" 
+        ? (labDetail?.capacity || parseInt(participants) || 1)
+        : parseInt(participants) || 1;
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
 
