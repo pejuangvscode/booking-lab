@@ -130,29 +130,42 @@ export function Navbar() {
             
             {/* Desktop Navigation */}
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
-              {!isAdmin() ? (
-                <>
-                  <Link
-                    href="/lab-search"
-                    className={getLinkClasses('/lab-search')}
-                  >
-                    Lab Search
-                  </Link>
-                  <Link
-                    href="/booking-calendar"
-                    className={getLinkClasses('/booking-calendar')}
-                  >
-                    Booking Calendar
-                  </Link>
-                  <SignedIn>
+              <SignedOut>
+                <Link
+                  href="/lab-search"
+                  className={getLinkClasses('/lab-search')}
+                >
+                  Lab Search
+                </Link>
+                <Link
+                  href="/booking-calendar"
+                  className={getLinkClasses('/booking-calendar')}
+                >
+                  Booking Calendar
+                </Link>
+              </SignedOut>
+              <SignedIn>
+                {!isAdmin() ? (
+                  <>
+                    <Link
+                      href="/lab-search"
+                      className={getLinkClasses('/lab-search')}
+                    >
+                      Lab Search
+                    </Link>
+                    <Link
+                      href="/booking-calendar"
+                      className={getLinkClasses('/booking-calendar')}
+                    >
+                      Booking Calendar
+                    </Link>
                     <Link
                       href="/dashboard"
                       className={getLinkClasses('/dashboard')}
                     >
                       Dashboard
                     </Link>
-                  </SignedIn>
-                </>
+                  </>
                 ) : (
                   <>
                     <Link
@@ -189,6 +202,7 @@ export function Navbar() {
                     )}
                   </>
                 )}
+              </SignedIn>
             </div>
           </div>
           
@@ -271,23 +285,39 @@ export function Navbar() {
       {/* Mobile menu */}
       <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white border-t border-gray-200`}>
         <div className="pt-2 pb-3 space-y-1">
-          {!isAdmin() ? (
-            <>
-              <Link
-                onClick={() => setIsMenuOpen(false)}
-                href="/lab-search"
-                className={getMobileLinkClasses('/lab-search')}
-              >
-                Lab Search
-              </Link>
-              <Link
-                onClick={() => setIsMenuOpen(false)}
-                href="/booking-calendar"
-                className={getMobileLinkClasses('/booking-calendar')}
-              >
-                Booking Calendar
-              </Link>
-              <SignedIn>
+          <SignedOut>
+            <Link
+              onClick={() => setIsMenuOpen(false)}
+              href="/lab-search"
+              className={getMobileLinkClasses('/lab-search')}
+            >
+              Lab Search
+            </Link>
+            <Link
+              onClick={() => setIsMenuOpen(false)}
+              href="/booking-calendar"
+              className={getMobileLinkClasses('/booking-calendar')}
+            >
+              Booking Calendar
+            </Link>
+          </SignedOut>
+          <SignedIn>
+            {!isAdmin() ? (
+              <>
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/lab-search"
+                  className={getMobileLinkClasses('/lab-search')}
+                >
+                  Lab Search
+                </Link>
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/booking-calendar"
+                  className={getMobileLinkClasses('/booking-calendar')}
+                >
+                  Booking Calendar
+                </Link>
                 <Link
                   onClick={() => setIsMenuOpen(false)}
                   href="/dashboard"
@@ -295,49 +325,49 @@ export function Navbar() {
                 >
                   Dashboard
                 </Link>
-              </SignedIn>
-            </>
-          ) : (
-            <>
-              <Link
-                onClick={() => setIsMenuOpen(false)}
-                href="/admin/dashboard"
-                className={getMobileLinkClasses('/admin/dashboard')}
-              >
-                Admin Dashboard
-              </Link>
-              <Link
-                onClick={() => setIsMenuOpen(false)}
-                href="/admin/lab-search"
-                className={getMobileLinkClasses('/admin/lab-search')}
-              >
-                Book for Admin
-              </Link>
-              <Link
-                onClick={() => setIsMenuOpen(false)}
-                href="/admin/manage-booking"
-                className={getMobileLinkClasses('/admin/manage-booking')}
-              >
-                Manage Booking
-              </Link>
-              <Link
-                onClick={() => setIsMenuOpen(false)}
-                href="/admin/booking-calendar"
-                className={getMobileLinkClasses('/admin/booking-calendar')}
-              >
-                Booking Calendar
-              </Link>
-              {isSuperAdmin() && (
+              </>
+            ) : (
+              <>
                 <Link
                   onClick={() => setIsMenuOpen(false)}
-                  href="/admin/manage-admin"
-                  className={getMobileLinkClasses('/admin/manage-admin')}
+                  href="/admin/dashboard"
+                  className={getMobileLinkClasses('/admin/dashboard')}
                 >
-                  Manage Admin
+                  Admin Dashboard
                 </Link>
-              )}
-            </>
-          )}
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/admin/lab-search"
+                  className={getMobileLinkClasses('/admin/lab-search')}
+                >
+                  Book for Admin
+                </Link>
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/admin/manage-booking"
+                  className={getMobileLinkClasses('/admin/manage-booking')}
+                >
+                  Manage Booking
+                </Link>
+                <Link
+                  onClick={() => setIsMenuOpen(false)}
+                  href="/admin/booking-calendar"
+                  className={getMobileLinkClasses('/admin/booking-calendar')}
+                >
+                  Booking Calendar
+                </Link>
+                {isSuperAdmin() && (
+                  <Link
+                    onClick={() => setIsMenuOpen(false)}
+                    href="/admin/manage-admin"
+                    className={getMobileLinkClasses('/admin/manage-admin')}
+                  >
+                    Manage Admin
+                  </Link>
+                )}
+              </>
+            )}
+          </SignedIn>
         </div>
         
         {/* Mobile user section */}

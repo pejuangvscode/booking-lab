@@ -27,7 +27,7 @@ const carouselItems = [
   {
     id: 4,
     imageSrc: "/F209.png",
-    title: "Lab F209",
+    title: "Computer Lab F209",
     subTitle: ""
   },
   {
