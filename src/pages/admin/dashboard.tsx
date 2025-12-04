@@ -222,8 +222,8 @@ export default function AdminBookings() {
 
           {/* Tab */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "pending" | "accepted" | "rejected" | "completed" | "cancelled")} className="mb-4 sm:mb-6">
-            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-              <TabsList className="inline-flex w-full min-w-max sm:grid sm:w-full sm:grid-cols-5 bg-white shadow-sm">
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 ">
+              <TabsList className="inline-flex w-full min-w-max sm:grid sm:w-full sm:grid-cols-5 bg-white rounded-lg">
                 <TabsTrigger value="pending" className="flex items-center gap-1 sm:gap-2 hover:cursor-pointer whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm">
                   <span className="hidden sm:inline">Pending</span>
                   <span className="sm:hidden">Pending</span>

@@ -491,14 +491,16 @@ export default function BookingPage() {
                 <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700">
                   {isMultipleBooking ? "Start Date" : "Booking Date"}
                 </label>
-                <Input
-                  type="date"
-                  id="bookingDate"
-                  value={bookingDate}
-                  onChange={(e) => setBookingDate(e.target.value)}
-                  min={new Date().toISOString().split('T')[0]}
-                  className={formErrors.bookingDate ? "border-red-500" : ""}
-                />
+                <div className="hover:cursor-pointer">
+                  <Input
+                    type="date"
+                    id="bookingDate"
+                    value={bookingDate}
+                    onChange={(e) => setBookingDate(e.target.value)}
+                    min={new Date().toISOString().split('T')[0]}
+                    className={formErrors.bookingDate ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}
+                  />
+                </div>
                 {formErrors.bookingDate && (
                   <p className="text-red-500 text-xs">{formErrors.bookingDate}</p>
                 )}
@@ -510,14 +512,16 @@ export default function BookingPage() {
                   <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
                     End Date
                   </label>
-                  <Input
-                    type="date"
-                    id="endDate"
-                    value={endDate}
-                    onChange={(e) => setEndDate(e.target.value)}
-                    min={bookingDate || new Date().toISOString().split('T')[0]}
-                    className={formErrors.endDate ? "border-red-500" : ""}
-                  />
+                  <div className="hover:cursor-pointer">
+                    <Input
+                      type="date"
+                      id="endDate"
+                      value={endDate}
+                      onChange={(e) => setEndDate(e.target.value)}
+                      min={bookingDate || new Date().toISOString().split('T')[0]}
+                      className={formErrors.endDate ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}
+                    />
+                  </div>
                   {formErrors.endDate && (
                     <p className="text-red-500 text-xs">{formErrors.endDate}</p>
                   )}
@@ -530,7 +534,7 @@ export default function BookingPage() {
                   <label className="block text-sm font-medium text-gray-700">Start Time</label>
                   <div className="flex space-x-2">
                     <Select value={startHour} onValueChange={setStartHour}>
-                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
+                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
                         <SelectValue placeholder="Hour" />
                       </SelectTrigger>
                       <SelectContent>
@@ -543,7 +547,7 @@ export default function BookingPage() {
                     </Select>
 
                     <Select value={startMinute} onValueChange={setStartMinute}>
-                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
+                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
                         <SelectValue placeholder="Minute" />
                       </SelectTrigger>
                       <SelectContent>
@@ -564,7 +568,7 @@ export default function BookingPage() {
                   <label className="block text-sm font-medium text-gray-700">End Time</label>
                   <div className="flex space-x-2">
                     <Select value={endHour} onValueChange={setEndHour}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className={`w-full ${formErrors.endTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
                         <SelectValue placeholder="Hour" />
                       </SelectTrigger>
                       <SelectContent>
@@ -577,7 +581,7 @@ export default function BookingPage() {
                     </Select>
 
                     <Select value={endMinute} onValueChange={setEndMinute}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className={`w-full ${formErrors.endTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
                         <SelectValue placeholder="Minute" />
                       </SelectTrigger>
                       <SelectContent>
@@ -818,12 +822,12 @@ export default function BookingPage() {
                   Event Type
                 </label>
                 <Select value={eventType} onValueChange={setEventType}>
-                  <SelectTrigger className={formErrors.eventType ? "border-red-500" : ""}>
+                  <SelectTrigger className={formErrors.eventType ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}>
                     <SelectValue placeholder="Select event type" />
                   </SelectTrigger>
                   <SelectContent>
                     {eventTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
+                      <SelectItem key={type} value={type} className="hover:cursor-pointer">
                         {type}
                       </SelectItem>
                     ))}

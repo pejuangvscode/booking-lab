@@ -189,18 +189,7 @@ export default function Dashboard() {
               <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">My Bookings</h2>
               <p className="text-xs sm:text-sm text-blue-100 mt-2">Manage your current room bookings</p>
             </div>
-            {isAdmin && (
-              <Button
-                onClick={() => router.push('/admin/dashboard')}
-                variant="outline"
-                size="sm"
-                className="flex items-center gap-2 bg-white/10 border-white/20 text-white hover:bg-white/20 hover:cursor-pointer"
-              >
-                <ToggleLeft className="w-4 h-4" />
-                Admin View
-              </Button>
-            )}
-          </div>
+            </div>
         </div>
         
         <div className="p-4 sm:p-6">
