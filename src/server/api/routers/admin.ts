@@ -55,6 +55,23 @@ export const adminRouter = createTRPCRouter({
       }
 
       try {
+        // Auto-complete bookings that are 1 day past the booking date
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        oneDayAgo.setHours(23, 59, 59, 999); // Set to end of day
+
+        await ctx.db.bookings.updateMany({
+          where: {
+            status: "accepted",
+            bookingDate: {
+              lt: oneDayAgo,
+            },
+          },
+          data: {
+            status: "completed",
+          },
+        });
+
         const skip = (input.page - 1) * input.limit;
         
         const where: any = {
@@ -131,6 +148,23 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
+        // Auto-complete bookings that are 1 day past the booking date
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        oneDayAgo.setHours(23, 59, 59, 999); // Set to end of day
+
+        await ctx.db.bookings.updateMany({
+          where: {
+            status: "accepted",
+            bookingDate: {
+              lt: oneDayAgo,
+            },
+          },
+          data: {
+            status: "completed",
+          },
+        });
+
         // Get user with their role
         const currentUser = await ctx.db.users.findUnique({
           where: { id: userId },
@@ -199,38 +233,7 @@ export const adminRouter = createTRPCRouter({
         const where: BookingWhereClause = {};
         
         if (input.status !== "all") {
-          // Special handling for completed tab
-          if (input.status === "completed") {
-            // Show both:
-            // 1. Bookings with status "completed"
-            // 2. Accepted bookings that are more than 1 day past their booking date
-            const oneDayAgo = new Date();
-            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-            oneDayAgo.setHours(23, 59, 59, 999); // End of the day 1 day ago
-            
-            where.OR = [
-              { status: "completed" },
-              {
-                AND: [
-                  { status: "accepted" },
-                  { bookingDate: { lt: oneDayAgo } }
-                ]
-              }
-            ];
-          } else if (input.status === "accepted") {
-            // Show only accepted bookings that haven't passed the 1-day completion threshold
-            const oneDayAgo = new Date();
-            oneDayAgo.setDate(oneDayAgo.getDate() - 1);
-            oneDayAgo.setHours(23, 59, 59, 999);
-            
-            where.AND = [
-              { status: "accepted" },
-              { bookingDate: { gte: oneDayAgo } }
-            ];
-          } else {
-            // For other statuses (pending, rejected, cancelled), show as normal
-            where.status = input.status;
-          }
+          where.status = input.status;
         }
         
         if (input.search) {

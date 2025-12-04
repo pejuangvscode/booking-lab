@@ -9,6 +9,7 @@ export function Navbar() {
   const router = useRouter();
   const { user } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isAdminDropdownOpen, setIsAdminDropdownOpen] = useState(false);
   const [prevScrollPos, setPrevScrollPos] = useState(0);
   const [visible, setVisible] = useState(true);
   const [isMounted, setIsMounted] = useState(false);
@@ -51,6 +52,24 @@ export function Navbar() {
     const currentScrollPos = window.scrollY;
     setIsAtTop(currentScrollPos < 50 && router.pathname === '/');
   }, [router.pathname]); // This will run whenever the route changes
+
+  useEffect(() => {
+    // Close dropdown when clicking outside
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as HTMLElement;
+      if (!target.closest('.relative')) {
+        setIsAdminDropdownOpen(false);
+      }
+    };
+
+    if (isAdminDropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [isAdminDropdownOpen]);
 
 
   const isAdmin = () => {
@@ -145,62 +164,88 @@ export function Navbar() {
                 </Link>
               </SignedOut>
               <SignedIn>
-                {!isAdmin() ? (
-                  <>
-                    <Link
-                      href="/lab-search"
-                      className={getLinkClasses('/lab-search')}
+                <Link
+                  href="/lab-search"
+                  className={getLinkClasses('/lab-search')}
+                >
+                  Lab Search
+                </Link>
+                <Link
+                  href="/booking-calendar"
+                  className={getLinkClasses('/booking-calendar')}
+                >
+                  Booking Calendar
+                </Link>
+                <Link
+                  href="/dashboard"
+                  className={getLinkClasses('/dashboard')}
+                >
+                  Dashboard
+                </Link>
+                {isAdmin() && (
+                  <div className="relative">
+                    <button
+                      onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+                      className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium hover:cursor-pointer transition-colors duration-300 hover:cursor-pointer ${
+                        router.pathname.startsWith('/admin')
+                          ? `border-orange-500 ${isAtTop && router.pathname === '/' ? 'text-white' : 'text-orange-600'} font-semibold`
+                          : `border-transparent ${isAtTop && router.pathname === '/' ? 'text-white hover:text-white' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`
+                      }`}
                     >
-                      Lab Search
-                    </Link>
-                    <Link
-                      href="/booking-calendar"
-                      className={getLinkClasses('/booking-calendar')}
-                    >
-                      Booking Calendar
-                    </Link>
-                    <Link
-                      href="/dashboard"
-                      className={getLinkClasses('/dashboard')}
-                    >
-                      Dashboard
-                    </Link>
-                  </>
-                ) : (
-                  <>
-                    <Link
-                      href="/admin/dashboard"
-                      className={getLinkClasses('/admin/dashboard')}
-                    >
-                      Admin Dashboard
-                    </Link>
-                    <Link
-                      href="/admin/lab-search"
-                      className={getLinkClasses('/admin/lab-search')}
-                    >
-                      Book for Admin
-                    </Link>
-                    <Link
-                      href="/admin/manage-booking"
-                      className={getLinkClasses('/admin/manage-booking')}
-                    >
-                      Manage Booking
-                    </Link>
-                    <Link
-                      href="/admin/booking-calendar"
-                      className={getLinkClasses('/admin/booking-calendar')}
-                    >
-                      Booking Calendar
-                    </Link>
-                    {isSuperAdmin() && (
-                      <Link
-                        href="/admin/manage-admin"
-                        className={getLinkClasses('/admin/manage-admin')}
+                      Admin Menu
+                      <svg
+                        className={`ml-1 h-4 w-4 transition-transform duration-200 ${isAdminDropdownOpen ? 'rotate-180' : ''}`}
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
                       >
-                        Manage Admin
-                      </Link>
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                    {isAdminDropdownOpen && (
+                      <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white z-50">
+                        <div className="py-1" role="menu">
+                          <Link
+                            href="/admin/dashboard"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                            onClick={() => setIsAdminDropdownOpen(false)}
+                          >
+                            Admin Dashboard
+                          </Link>
+                          <Link
+                            href="/admin/lab-search"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                            onClick={() => setIsAdminDropdownOpen(false)}
+                          >
+                            Book for Admin
+                          </Link>
+                          <Link
+                            href="/admin/manage-booking"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                            onClick={() => setIsAdminDropdownOpen(false)}
+                          >
+                            Manage Booking
+                          </Link>
+                          <Link
+                            href="/admin/booking-calendar"
+                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                            onClick={() => setIsAdminDropdownOpen(false)}
+                          >
+                            Admin Booking Calendar
+                          </Link>
+                          {isSuperAdmin() && (
+                            <Link
+                              href="/admin/manage-admin"
+                              className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                              onClick={() => setIsAdminDropdownOpen(false)}
+                            >
+                              Manage Admin
+                            </Link>
+                          )}
+                        </div>
+                      </div>
                     )}
-                  </>
+                  </div>
                 )}
               </SignedIn>
             </div>
@@ -302,68 +347,83 @@ export function Navbar() {
             </Link>
           </SignedOut>
           <SignedIn>
-            {!isAdmin() ? (
+            <Link
+              onClick={() => setIsMenuOpen(false)}
+              href="/lab-search"
+              className={getMobileLinkClasses('/lab-search')}
+            >
+              Lab Search
+            </Link>
+            <Link
+              onClick={() => setIsMenuOpen(false)}
+              href="/booking-calendar"
+              className={getMobileLinkClasses('/booking-calendar')}
+            >
+              Booking Calendar
+            </Link>
+            <Link
+              onClick={() => setIsMenuOpen(false)}
+              href="/dashboard"
+              className={getMobileLinkClasses('/dashboard')}
+            >
+              Dashboard
+            </Link>
+            {isAdmin() && (
               <>
-                <Link
-                  onClick={() => setIsMenuOpen(false)}
-                  href="/lab-search"
-                  className={getMobileLinkClasses('/lab-search')}
+                <button
+                  onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
+                  className="w-full text-left block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 flex items-center justify-between"
                 >
-                  Lab Search
-                </Link>
-                <Link
-                  onClick={() => setIsMenuOpen(false)}
-                  href="/booking-calendar"
-                  className={getMobileLinkClasses('/booking-calendar')}
-                >
-                  Booking Calendar
-                </Link>
-                <Link
-                  onClick={() => setIsMenuOpen(false)}
-                  href="/dashboard"
-                  className={getMobileLinkClasses('/dashboard')}
-                >
-                  Dashboard
-                </Link>
-              </>
-            ) : (
-              <>
-                <Link
-                  onClick={() => setIsMenuOpen(false)}
-                  href="/admin/dashboard"
-                  className={getMobileLinkClasses('/admin/dashboard')}
-                >
-                  Admin Dashboard
-                </Link>
-                <Link
-                  onClick={() => setIsMenuOpen(false)}
-                  href="/admin/lab-search"
-                  className={getMobileLinkClasses('/admin/lab-search')}
-                >
-                  Book for Admin
-                </Link>
-                <Link
-                  onClick={() => setIsMenuOpen(false)}
-                  href="/admin/manage-booking"
-                  className={getMobileLinkClasses('/admin/manage-booking')}
-                >
-                  Manage Booking
-                </Link>
-                <Link
-                  onClick={() => setIsMenuOpen(false)}
-                  href="/admin/booking-calendar"
-                  className={getMobileLinkClasses('/admin/booking-calendar')}
-                >
-                  Booking Calendar
-                </Link>
-                {isSuperAdmin() && (
-                  <Link
-                    onClick={() => setIsMenuOpen(false)}
-                    href="/admin/manage-admin"
-                    className={getMobileLinkClasses('/admin/manage-admin')}
+                  <span>Admin Menu</span>
+                  <svg
+                    className={`h-5 w-5 transition-transform duration-200 ${isAdminDropdownOpen ? 'rotate-180' : ''}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
                   >
-                    Manage Admin
-                  </Link>
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                {isAdminDropdownOpen && (
+                  <div className="bg-gray-50 border-l-4 border-orange-200">
+                    <Link
+                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
+                      href="/admin/dashboard"
+                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    >
+                      Admin Dashboard
+                    </Link>
+                    <Link
+                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
+                      href="/admin/lab-search"
+                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    >
+                      Book for Admin
+                    </Link>
+                    <Link
+                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
+                      href="/admin/manage-booking"
+                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    >
+                      Manage Booking
+                    </Link>
+                    <Link
+                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
+                      href="/admin/booking-calendar"
+                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    >
+                      Admin Booking Calendar
+                    </Link>
+                    {isSuperAdmin() && (
+                      <Link
+                        onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
+                        href="/admin/manage-admin"
+                        className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                      >
+                        Manage Admin
+                      </Link>
+                    )}
+                  </div>
                 )}
               </>
             )}

@@ -125,7 +125,24 @@ export const bookingRouter = createTRPCRouter({
         const { limit, page, search } = input;
         const skip = (page - 1) * limit;
 
-      
+        // Auto-complete bookings that are 1 day past the booking date
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        oneDayAgo.setHours(23, 59, 59, 999); // Set to end of day
+
+        await ctx.db.bookings.updateMany({
+          where: {
+            userId: ctx.userId,
+            status: "accepted",
+            bookingDate: {
+              lt: oneDayAgo,
+            },
+          },
+          data: {
+            status: "completed",
+          },
+        });
+
         const searchFilter = search
           ? {
               OR: [
@@ -298,6 +315,24 @@ export const bookingRouter = createTRPCRouter({
       try {
         const { limit, page, search } = input;
         const skip = (page - 1) * limit;
+
+        // Auto-complete bookings that are 1 day past the booking date
+        const oneDayAgo = new Date();
+        oneDayAgo.setDate(oneDayAgo.getDate() - 1);
+        oneDayAgo.setHours(23, 59, 59, 999); // Set to end of day
+
+        await ctx.db.bookings.updateMany({
+          where: {
+            userId: ctx.userId,
+            status: "accepted",
+            bookingDate: {
+              lt: oneDayAgo,
+            },
+          },
+          data: {
+            status: "completed",
+          },
+        });
 
         const searchFilter = search
           ? {
