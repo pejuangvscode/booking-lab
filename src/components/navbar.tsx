@@ -362,10 +362,15 @@ export function Navbar() {
               Dashboard
             </Link>
             {isAdmin() && (
-              <>
+              <div className="relative">
                 <button
-                  onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
-                  className="w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 flex items-center justify-between"
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsAdminDropdownOpen(!isAdminDropdownOpen);
+                  }}
+                  className="w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 flex items-center justify-between cursor-pointer"
                 >
                   <span>Admin Menu</span>
                   <svg
@@ -379,39 +384,59 @@ export function Navbar() {
                 </button>
                 {isAdminDropdownOpen && (
                   <div className="bg-gray-50 border-l-4 border-orange-200">
-                    <Link
-                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
-                      href="/admin/dashboard"
-                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    <button
+                      onClick={(e) => { 
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMenuOpen(false); 
+                        setIsAdminDropdownOpen(false);
+                        void router.push('/admin/dashboard');
+                      }}
+                      className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
                     >
                       Admin Dashboard
-                    </Link>
-                    <Link
-                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
-                      href="/admin/lab-search"
-                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    </button>
+                    <button
+                      onClick={(e) => { 
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMenuOpen(false); 
+                        setIsAdminDropdownOpen(false);
+                        void router.push('/admin/lab-search');
+                      }}
+                      className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
                     >
                       Book as Admin
-                    </Link>
-                    <Link
-                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
-                      href="/admin/manage-booking"
-                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                    </button>
+                    <button
+                      onClick={(e) => { 
+                        e.preventDefault();
+                        e.stopPropagation();
+                        setIsMenuOpen(false); 
+                        setIsAdminDropdownOpen(false);
+                        void router.push('/admin/manage-booking');
+                      }}
+                      className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
                     >
                       Manage Booking
-                    </Link>
+                    </button>
                     {isSuperAdmin() && (
-                      <Link
-                        onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
-                        href="/admin/manage-admin"
-                        className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
+                      <button
+                        onClick={(e) => { 
+                          e.preventDefault();
+                          e.stopPropagation();
+                          setIsMenuOpen(false); 
+                          setIsAdminDropdownOpen(false);
+                          void router.push('/admin/manage-admin');
+                        }}
+                        className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
                       >
                         Manage Admin
-                      </Link>
+                      </button>
                     )}
                   </div>
                 )}
-              </>
+              </div>
             )}
           </SignedIn>
         </div>

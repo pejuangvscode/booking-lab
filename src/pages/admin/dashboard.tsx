@@ -555,7 +555,6 @@ export default function AdminBookings() {
                                             // setSelectedBooking(booking);
                                           }}
                                         >
-                                          <CheckCircle className="w-3 h-3 mr-1" />
                                           Accept
                                         </Button>
                                       </DialogTrigger>
@@ -616,7 +615,6 @@ export default function AdminBookings() {
                                             setRejectionReason(""); // Clear previous reason
                                           }}
                                         >
-                                          <XCircle className="w-3 h-3 mr-1" />
                                           Reject
                                         </Button>
                                       </DialogTrigger>
@@ -683,7 +681,6 @@ export default function AdminBookings() {
                                           setRejectionReason(""); // Clear previous reason
                                         }}
                                       >
-                                        <XCircle className="w-3 h-3 mr-1" />
                                         Cancel
                                       </Button>
                                     </DialogTrigger>
@@ -846,7 +843,6 @@ export default function AdminBookings() {
                                       className="flex-1 bg-green-600 hover:bg-green-700 text-xs font-medium hover:cursor-pointer h-8"
                                       onClick={(e) => e.stopPropagation()}
                                     >
-                                      <CheckCircle className="w-3 h-3 mr-1" />
                                       Accept
                                     </Button>
                                   </DialogTrigger>
@@ -906,7 +902,6 @@ export default function AdminBookings() {
                                         setRejectionReason("");
                                       }}
                                     >
-                                      <XCircle className="w-3 h-3 mr-1" />
                                       Reject
                                     </Button>
                                   </DialogTrigger>
@@ -971,7 +966,6 @@ export default function AdminBookings() {
                                       setRejectionReason("");
                                     }}
                                   >
-                                    <XCircle className="w-3 h-3 mr-1" />
                                     Cancel Booking
                                   </Button>
                                 </DialogTrigger>
