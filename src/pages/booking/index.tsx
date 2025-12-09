@@ -553,12 +553,12 @@ export default function BookingPage() {
                   <label className="block text-sm font-medium text-gray-700">Start Time</label>
                   <div className="flex space-x-2">
                     <Select value={startHour} onValueChange={setStartHour} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
-                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
+                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : "hover:cursor-pointer"}`}>
                         <SelectValue placeholder="Hour" />
                       </SelectTrigger>
                       <SelectContent>
                         {hourOptions.map((hour) => (
-                          <SelectItem key={`start-hour-${hour}`} value={hour}>
+                          <SelectItem className="hover:cursor-pointer" key={`start-hour-${hour}`} value={hour}>
                             {hour}
                           </SelectItem>
                         ))}
@@ -566,12 +566,12 @@ export default function BookingPage() {
                     </Select>
 
                     <Select value={startMinute} onValueChange={setStartMinute} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
-                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : ""}`}>
+                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500" : "hover:cursor-pointer"}`}>
                         <SelectValue placeholder="Minute" />
                       </SelectTrigger>
                       <SelectContent>
                         {minuteOptions.map((minute) => (
-                          <SelectItem key={`start-min-${minute}`} value={minute}>
+                          <SelectItem className="hover:cursor-pointer" key={`start-min-${minute}`} value={minute}>
                             {minute}
                           </SelectItem>
                         ))}
@@ -587,12 +587,12 @@ export default function BookingPage() {
                   <label className="block text-sm font-medium text-gray-700">End Time</label>
                   <div className="flex space-x-2">
                     <Select value={endHour} onValueChange={setEndHour} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full hover:cursor-pointer">
                         <SelectValue placeholder="Hour" />
                       </SelectTrigger>
                       <SelectContent>
                         {hourOptions.map((hour) => (
-                          <SelectItem key={`end-hour-${hour}`} value={hour}>
+                          <SelectItem key={`end-hour-${hour}`} value={hour} className="hover:cursor-pointer">
                             {hour}
                           </SelectItem>
                         ))}
@@ -600,12 +600,12 @@ export default function BookingPage() {
                     </Select>
 
                     <Select value={endMinute} onValueChange={setEndMinute} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
-                      <SelectTrigger className="w-full">
+                      <SelectTrigger className="w-full hover:cursor-pointer">
                         <SelectValue placeholder="Minute" />
                       </SelectTrigger>
                       <SelectContent>
                         {minuteOptions.map((minute) => (
-                          <SelectItem key={`end-min-${minute}`} value={minute}>
+                          <SelectItem key={`end-min-${minute}`} value={minute} className="hover:cursor-pointer">
                             {minute}
                           </SelectItem>
                         ))}
@@ -777,12 +777,12 @@ export default function BookingPage() {
                   Event Type
                 </label>
                 <Select value={eventType} onValueChange={setEventType} disabled={isSubmitting || checking || bookingMutation.status === "pending"}>
-                  <SelectTrigger className={formErrors.eventType ? "border-red-500" : ""}>
+                  <SelectTrigger className={formErrors.eventType ? "border-red-500" : "hover:cursor-pointer"}>
                     <SelectValue placeholder="Select event type" />
                   </SelectTrigger>
                   <SelectContent>
                     {eventTypes.map((type) => (
-                      <SelectItem key={type} value={type}>
+                      <SelectItem key={type} value={type} className="hover:cursor-pointer">
                         {type}
                       </SelectItem>
                     ))}

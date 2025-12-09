@@ -33,6 +33,7 @@ import {
 import { useCustomDialog } from "~/hooks/useCustomDialog";
 import { api } from "~/utils/api";
 import { format } from "date-fns";
+import { AdminProtection } from '~/components/admin-protection';
 
 interface Booking {
   id: number;
@@ -228,66 +229,65 @@ export default function ManageBookingPage() {
   }
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-20">
+    <AdminProtection>
+    <div className="min-h-screen">
       <Head>
-        <title>Manage Class Bookings | UPH Facility Booking</title>
+        <title>Manage Class Bookings</title>
       </Head>
-
-      {/* Header */}
-      <div className="mb-6">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-gray-900">Manage Class Bookings</h1>
-            <p className="text-gray-600 mt-1">
-              Manage recurring bookings grouped by class code
-            </p>
-          </div>
-        </div>
-
-        {/* Admin info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-4">
-          <div className="flex items-center justify-between text-sm">
-            <span className="text-blue-700">
-              Signed in as: <strong>{user?.firstName} {user?.lastName}</strong> (Admin)
-            </span>
-            <span className="text-blue-600">
-              {filteredGroups.length} class{filteredGroups.length !== 1 ? 'es' : ''} found
-            </span>
-          </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters & Search
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {/* Search */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Search</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-                <Input
-                  placeholder="Search by class code, instructor, or room..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-16 sm:mt-20">
+        <div className="max-w-7xl mx-auto">
+          {/* Header */}
+          <div className="mb-6 sm:mb-8">
+            <div className="flex items-center justify-between mb-2">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+                Manage Class Bookings
+              </h1>
+            </div>
+            
+            {/* Admin info */}
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
+                <span className="text-blue-700">
+                  Signed in as: <strong>{user?.firstName} {user?.lastName}</strong> (Admin)
+                </span>
+                <span className="text-blue-600">
+                  {filteredGroups.length} class{filteredGroups.length !== 1 ? 'es' : ''} found
+                </span>
               </div>
             </div>
+          </div>
 
-            {/* Status Filter */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger className="hover:cursor-pointer">
-                  <SelectValue />
-                </SelectTrigger>
+          {/* Filters */}
+          <Card className="mb-6 sm:mb-8 bg-white rounded-lg border border-gray-200 shadow-sm">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                <Filter className="h-4 w-4 sm:h-5 sm:w-5" />
+                Filters & Search
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 sm:gap-4">
+              {/* Search */}
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">Search</label>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
+                  <Input
+                    placeholder="Search by class code, instructor, or room..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    className="pl-9 sm:pl-10 bg-white shadow-sm text-sm"
+                  />
+                </div>
+              </div>
+
+              {/* Status Filter */}
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">Status</label>
+                <Select value={statusFilter} onValueChange={setStatusFilter}>
+                  <SelectTrigger className="hover:cursor-pointer bg-white shadow-sm text-sm">
+                    <SelectValue />
+                  </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All Classes</SelectItem>
                   <SelectItem value="upcoming">With Upcoming Bookings</SelectItem>
@@ -296,195 +296,195 @@ export default function ManageBookingPage() {
               </Select>
             </div>
 
-            {/* Summary */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Summary</label>
-              <div className="p-3 bg-gray-50 rounded-lg">
-                <div className="text-sm text-gray-600">
-                  Total: {filteredGroups.length} classes
-                </div>
-                <div className="text-sm text-gray-600">
-                  Bookings: {filteredGroups.reduce((sum, g) => sum + g.totalBookings, 0)}
+              {/* Summary */}
+              <div className="space-y-2">
+                <label className="text-xs sm:text-sm font-medium text-gray-700">Summary</label>
+                <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="text-xs sm:text-sm text-gray-600">
+                    Total: {filteredGroups.length} classes
+                  </div>
+                  <div className="text-xs sm:text-sm text-gray-600">
+                    Bookings: {filteredGroups.reduce((sum, g) => sum + g.totalBookings, 0)}
+                  </div>
                 </div>
               </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Loading State */}
-      {isLoadingBookings ? (
-        <div className="flex justify-center py-12">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-600"></div>
-        </div>
-      ) : filteredGroups.length === 0 ? (
-        <Card>
-          <CardContent className="text-center py-12">
-            <BookOpen className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No class bookings found
-            </h3>
-            <p className="text-gray-500">
-              {searchTerm || statusFilter !== 'all' 
-                ? "Try adjusting your search or filter criteria"
-                : "No admin bookings with class codes found"
-              }
-            </p>
           </CardContent>
         </Card>
-      ) : (
-        /* Class Groups List */
-        <div className="space-y-4">
-          {filteredGroups.map((group) => (
-            <Card key={group.classCode} className="overflow-hidden">
-              {/* Group Header */}
-              <div className="p-4 bg-gradient-to-r from-orange-50 to-orange-100 border-b">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-4">
-                    {bulkDeleteMode && (
-                      <input
-                        type="checkbox"
-                        checked={selectedClassCodes.has(group.classCode)}
-                        onChange={() => toggleClassSelection(group.classCode)}
-                        className="h-4 w-4 text-orange-600 focus:ring-orange-500 border-gray-300 rounded"
-                      />
-                    )}
-                    
-                    <div className="flex items-center space-x-3">
-                      <div>
-                        <h3 className="font-semibold text-gray-900">
-                          {group.instructor}
-                        </h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <Building className="h-3 w-3 mr-1" />
-                            {group.room}
-                          </span>
-                          <span className="flex items-center">
-                            <Clock className="h-3 w-3 mr-1" />
-                            {group.timeSlot}
-                          </span>
-                          <span className="flex items-center">
-                            <Calendar className="h-3 w-3 mr-1" />
-                            {group.days.join(', ')}
-                          </span>
+
+          {/* Loading State */}
+          {isLoadingBookings ? (
+            <div className="text-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading bookings...</p>
+            </div>
+          ) : filteredGroups.length === 0 ? (
+            <div className="text-center py-12">
+              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">
+                No class bookings found
+              </h3>
+              <p className="text-gray-500">
+                {searchTerm || statusFilter !== 'all' 
+                  ? "Try adjusting your search or filter criteria"
+                  : "No admin bookings with class codes found"
+                }
+              </p>
+            </div>
+          ) : (
+            /* Class Groups List */
+            <div className="space-y-4">
+              {filteredGroups.map((group) => (
+                <Card key={group.classCode} className="overflow-hidden bg-white rounded-lg border border-gray-200 shadow-sm">
+                  {/* Group Header */}
+                  <div className="p-3 sm:p-4 bg-gradient-to-r border-b">
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
+                        {bulkDeleteMode && (
+                          <input
+                            type="checkbox"
+                            checked={selectedClassCodes.has(group.classCode)}
+                            onChange={() => toggleClassSelection(group.classCode)}
+                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded flex-shrink-0"
+                          />
+                        )}
+                        
+                        <div className="flex-1 min-w-0">
+                          <h3 className="font-semibold text-sm sm:text-base text-gray-900 truncate">
+                            {group.instructor}
+                          </h3>
+                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                            <span className="flex items-center whitespace-nowrap">
+                              <Building className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                              <span className="truncate">{group.room}</span>
+                            </span>
+                            <span className="flex items-center whitespace-nowrap">
+                              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                              {group.timeSlot}
+                            </span>
+                            <span className="flex items-center whitespace-nowrap">
+                              <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                              {group.days.join(', ')}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-2 sm:gap-3">
+                        {/* Stats */}
+                        <div className="text-right text-xs sm:text-sm">
+                          <div className="font-medium text-gray-900">
+                            {group.totalBookings} bookings
+                          </div>
+                          <div className="text-gray-500">
+                            {group.upcomingBookings} upcoming
+                          </div>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex items-center space-x-2">
+                          {!bulkDeleteMode && (
+                            <Button
+                              onClick={() => handleDeleteClass(
+                                group.classCode, 
+                                group.totalBookings,
+                                group.upcomingBookings,
+                                group.eventName
+                              )}
+                              variant="destructive"
+                              size="sm"
+                              disabled={deleteClassBookingsMutation.isPending}
+                              className="cursor-pointer bg-red-600 hover:bg-red-700 text-xs sm:text-sm h-8"
+                            >
+                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
+                              <span className="hidden sm:inline">Delete All</span>
+                              <span className="sm:hidden">Delete</span>
+                            </Button>
+                          )}
+                          
+                          <Button
+                            onClick={() => toggleGroup(group.classCode)}
+                            variant="outline"
+                            size="sm"
+                            className="cursor-pointer bg-white text-xs sm:text-sm h-8 w-8 sm:w-auto p-0 sm:px-3"
+                          >
+                            {expandedGroups.has(group.classCode) ? (
+                              <ChevronUp className="h-4 w-4" />
+                            ) : (
+                              <ChevronDown className="h-4 w-4" />
+                            )}
+                          </Button>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  <div className="flex items-center space-x-3">
-                    {/* Stats */}
-                    <div className="text-right text-sm">
-                      <div className="font-medium text-gray-900">
-                        {group.totalBookings} bookings
-                      </div>
-                      <div className="text-gray-500">
-                        {group.upcomingBookings} upcoming
-                      </div>
-                    </div>
-
-                    {/* Actions */}
-                    <div className="flex items-center space-x-2">
-                      {!bulkDeleteMode && (
-                        <Button
-                          onClick={() => handleDeleteClass(
-                            group.classCode, 
-                            group.totalBookings,
-                            group.upcomingBookings,
-                            group.eventName
-                          )}
-                          variant="destructive"
-                          size="sm"
-                          disabled={deleteClassBookingsMutation.isPending}
-                          className="cursor-pointer"
-                        >
-                          <Trash2 className="h-4 w-4 mr-1" />
-                          Delete All
-                        </Button>
-                      )}
-                      
-                      <Button
-                        onClick={() => toggleGroup(group.classCode)}
-                        variant="outline"
-                        size="sm"
-                        className="cursor-pointer"
-                      >
-                        {expandedGroups.has(group.classCode) ? (
-                          <ChevronUp className="h-4 w-4" />
-                        ) : (
-                          <ChevronDown className="h-4 w-4" />
-                        )}
-                      </Button>
+                    {/* Date Range */}
+                    <div className="mt-2 text-xs sm:text-sm text-gray-600">
+                      Period: {group.dateRange.start} - {group.dateRange.end}
                     </div>
                   </div>
-                </div>
 
-                {/* Date Range */}
-                <div className="mt-2 text-sm text-gray-600">
-                  Period: {group.dateRange.start} - {group.dateRange.end}
-                </div>
-              </div>
-
-              {/* Expanded Details */}
-              {expandedGroups.has(group.classCode) && (
-                <div className="p-4">
-                  <h4 className="font-medium text-gray-900 mb-3">
-                    Individual Bookings ({group.bookings.length})
-                  </h4>
-                  <div className="grid gap-3">
-                    {group.bookings.map((booking, index) => (
-                      <div
-                        key={booking.id}
-                        className={`p-3 rounded-lg border ${
-                          new Date(booking.bookingDate) >= new Date()
-                            ? 'bg-green-50 border-green-200'
-                            : 'bg-gray-50 border-gray-200'
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center space-x-4">
-                            <div className="w-8 h-8 bg-orange-600 text-white rounded-full flex items-center justify-center text-xs font-medium">
-                              {index + 1}
-                            </div>
-                            <div>
-                              <div className="font-medium text-gray-900">
-                                {format(new Date(booking.bookingDate), 'EEEE, MMM d, yyyy')}
+                  {/* Expanded Details */}
+                  {expandedGroups.has(group.classCode) && (
+                    <div className="p-3 sm:p-4">
+                      <h4 className="font-medium text-sm sm:text-base text-gray-900 mb-3">
+                        Individual Bookings ({group.bookings.length})
+                      </h4>
+                      <div className="grid gap-2 sm:gap-3">
+                        {group.bookings.map((booking, index) => (
+                          <div
+                            key={booking.id}
+                            className={`p-2 sm:p-3 rounded-lg border ${
+                              new Date(booking.bookingDate) >= new Date()
+                                ? 'bg-green-50 border-green-200'
+                                : 'bg-gray-50 border-gray-200'
+                            }`}
+                          >
+                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                              <div className="flex items-center space-x-2 sm:space-x-4">
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-200 text-orange-600 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-medium flex-shrink-0">
+                                  {index + 1}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="font-medium text-xs sm:text-sm text-gray-900 truncate">
+                                    {format(new Date(booking.bookingDate), 'EEEE, MMM d, yyyy')}
+                                  </div>
+                                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
+                                    <span className="whitespace-nowrap">{booking.startTime} - {booking.endTime}</span>
+                                    <span className="flex items-center whitespace-nowrap">
+                                      <Users className="h-3 w-3 mr-1 flex-shrink-0" />
+                                      {booking.participants}
+                                    </span>
+                                    <Badge 
+                                      variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
+                                      className="text-[10px] sm:text-xs"
+                                    >
+                                      {booking.status}
+                                    </Badge>
+                                  </div>
+                                </div>
                               </div>
-                              <div className="flex items-center space-x-4 text-sm text-gray-600">
-                                <span>{booking.startTime} - {booking.endTime}</span>
-                                <span className="flex items-center">
-                                  <Users className="h-3 w-3 mr-1" />
-                                  {booking.participants}
-                                </span>
-                                <Badge 
-                                  variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
-                                  className="text-xs"
-                                >
-                                  {booking.status}
-                                </Badge>
-                              </div>
-                            </div>
-                          </div>
-                          
-                          {booking.eventName && (
-                            <div className="text-right text-sm text-gray-600">
-                              <div className="font-medium">{booking.eventName}</div>
-                              {booking.eventType && (
-                                <div className="text-xs">{booking.eventType}</div>
+                              
+                              {booking.eventName && (
+                                <div className="text-right text-xs sm:text-sm text-gray-600">
+                                  <div className="font-medium truncate">{booking.eventName}</div>
+                                  {booking.eventType && (
+                                    <div className="text-[10px] sm:text-xs truncate">{booking.eventType}</div>
+                                  )}
+                                </div>
                               )}
                             </div>
-                          )}
-                        </div>
+                          </div>
+                        ))}
                       </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </Card>
-          ))}
+                    </div>
+                  )}
+                </Card>
+              ))}
+            </div>
+          )}
         </div>
-      )}
+      </div>
 
       <CustomDialog
         isOpen={dialogState.isOpen}
@@ -497,5 +497,6 @@ export default function ManageBookingPage() {
         cancelText={dialogState.cancelText}
       />
     </div>
+    </AdminProtection>
   );
 }
