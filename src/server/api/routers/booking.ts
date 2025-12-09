@@ -42,6 +42,35 @@ export const bookingRouter = createTRPCRouter({
           }
         }
         
+        // Check if user is PIC for this lab
+        let bookingStatus = "pending";
+        let adminNote = null;
+        
+        if (userId) {
+          const lab = await ctx.db.lab.findUnique({
+            where: { id: input.labId },
+            select: { picIds: true }
+          });
+          
+          if (lab?.picIds) {
+            try {
+              const picIdsArray = typeof lab.picIds === 'string' 
+                ? (JSON.parse(lab.picIds) as string[])
+                : Array.isArray(lab.picIds) 
+                  ? lab.picIds 
+                  : [];
+              
+              // If user is PIC, auto-approve
+              if (picIdsArray.includes(userId)) {
+                bookingStatus = "accepted";
+                adminNote = "Auto-approved: Booking by lab PIC";
+              }
+            } catch {
+              // If parsing fails, keep status as pending
+            }
+          }
+        }
+        
       
         const booking = await ctx.db.bookings.create({
           data: {
@@ -55,7 +84,9 @@ export const bookingRouter = createTRPCRouter({
             eventType: input.eventType,
             phone: input.phone,
             faculty: input.faculty,
-            status: "pending",
+            status: bookingStatus,
+            adminNote: adminNote,
+            approvedAt: bookingStatus === "accepted" ? new Date() : null,
           
             requesterName: input.userData.name,
             requesterNIM: input.userData.nim
@@ -64,7 +95,8 @@ export const bookingRouter = createTRPCRouter({
         
         return {
           success: true,
-          bookingId: booking.id
+          bookingId: booking.id,
+          autoApproved: bookingStatus === "accepted"
         };
       } catch (error) {
         throw new Error("Failed to create booking. Please try again.");
@@ -702,6 +734,27 @@ export const bookingRouter = createTRPCRouter({
         const successful: any[] = [];
         const failed: Array<{ date: string; error: string }> = [];
 
+        // Check if user is PIC for this lab
+        let isPIC = false;
+        const lab = await ctx.db.lab.findUnique({
+          where: { id: labId },
+          select: { picIds: true }
+        });
+        
+        if (lab?.picIds && ctx.userId) {
+          try {
+            const picIdsArray = typeof lab.picIds === 'string' 
+              ? (JSON.parse(lab.picIds) as string[])
+              : Array.isArray(lab.picIds) 
+                ? lab.picIds 
+                : [];
+            
+            isPIC = picIdsArray.includes(ctx.userId);
+          } catch {
+            // If parsing fails, isPIC remains false
+          }
+        }
+
         for (const bookingDate of bookingDates) {
           try {
             const conflictResult = await ctx.db.bookings.findMany({
@@ -760,6 +813,8 @@ export const bookingRouter = createTRPCRouter({
                 userId: ctx.userId,
                 status: "accepted",
                 equipment: equipment,
+                adminNote: isPIC ? "Auto-approved: Booking by lab PIC (Multiple booking)" : "Admin created multiple booking",
+                approvedAt: new Date(),
               },
             });
 

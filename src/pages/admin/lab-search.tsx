@@ -24,7 +24,7 @@ type SortField = "name" | "facilityId" | "type" | "capacity";
 
 export default function LabSearch() {
   const router = useRouter();
-  const { user } = useUser();
+  const { user, isLoaded, isSignedIn } = useUser();
   const [searchTerm, setSearchTerm] = useState("");
   const [roomTypeFilter, setRoomTypeFilter] = useState("all");
   const [sortField, setSortField] = useState<SortField>("name");
@@ -33,62 +33,34 @@ export default function LabSearch() {
   const [currentPage, setCurrentPage] = useState(1);
   const [openLabId, setOpenLabId] = useState<string | null>(null);
 
+  // Debug Clerk state
+  console.log('[Lab Search] Clerk State:', {
+    isLoaded,
+    isSignedIn,
+    userId: user?.id,
+    userEmail: user?.primaryEmailAddress?.emailAddress
+  });
 
   const {
     data: labData = [],
     isLoading: isLabsLoading,
     error: labsError,
-  } = api.admin.getAccessibleLabs.useQuery();
+  } = api.admin.getAccessibleLabs.useQuery(undefined, {
+    enabled: isLoaded && isSignedIn && !!user?.id,
+  });
 
   const {
     data: currentUser,
     isLoading: isUserLoading,
-  } = api.user.getCurrentUser.useQuery();
+  } = api.user.getCurrentUser.useQuery(undefined, {
+    enabled: isLoaded && isSignedIn && !!user?.id,
+  });
 
   // Debug: Log the lab data
   console.log("Lab Data from backend:", labData);
   console.log("Lab Data length:", labData.length);
   console.log("Current user ID:", user?.id);
-
-  // Function to get appropriate icon for lab type
-  const getLabIcon = (type: string) => {
-    return <Monitor className="h-8 w-8 text-orange-400" />;
-  };
-
-  const filteredData = labData.filter((lab: Lab) => {
-    return (
-      (lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        lab.facilityId.toString().toLowerCase().includes(searchTerm.toLowerCase())) &&
-      (roomTypeFilter === "all" || lab.type === roomTypeFilter)
-    );
-  });
-
-  const sortedData = [...filteredData].sort((a: Lab, b: Lab) => {
-    let aValue = a[sortField];
-    let bValue = b[sortField];
-    
-    if (typeof aValue === "string" && typeof bValue === "string") {
-      aValue = aValue.toLowerCase();
-      bValue = bValue.toLowerCase();
-    }
-    
-    if (sortDirection === "asc") {
-      return aValue > bValue ? 1 : -1;
-    } else {
-      return aValue < bValue ? 1 : -1;
-    }
-  });
-
-  const indexOfLastItem = currentPage * itemsPerPage;
-  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
-
-  const getCapacityColor = (capacity: number) => {
-    if (capacity >= 30) return "bg-green-100 text-green-700 border-green-200";
-    if (capacity >= 20) return "bg-blue-100 text-blue-700 border-blue-200";
-    return "bg-amber-100 text-amber-700 border-amber-200";
-  };
+  console.log("Current user from DB:", currentUser);
 
   // Check if current user is PIC for a specific lab
   const isUserPICForLab = (lab: Lab) => {
@@ -132,6 +104,72 @@ export default function LabSearch() {
       userId: user.id
     });
     return false;
+  };
+
+  // Function to get appropriate icon for lab type
+  const getLabIcon = (type: string) => {
+    return <Monitor className="h-8 w-8 text-orange-400" />;
+  };
+
+  const filteredData = labData.filter((lab: Lab) => {
+    // First apply search filter
+    const matchesSearch = lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      lab.facilityId.toString().toLowerCase().includes(searchTerm.toLowerCase());
+    
+    // Then apply room type filter
+    const matchesType = roomTypeFilter === "all" || lab.type === roomTypeFilter;
+    
+    // Check if user is super admin
+    const isSuperAdmin = isUserSuperAdmin();
+    
+    // If super admin, show all labs that match search and type
+    if (isSuperAdmin) {
+      return matchesSearch && matchesType;
+    }
+    
+    // If not super admin, only show labs where user is PIC
+    const isPIC = isUserPICForLab(lab);
+    
+    return matchesSearch && matchesType && isPIC;
+  });
+
+  const sortedData = [...filteredData].sort((a: Lab, b: Lab) => {
+    let aValue = a[sortField];
+    let bValue = b[sortField];
+    
+    if (typeof aValue === "string" && typeof bValue === "string") {
+      aValue = aValue.toLowerCase();
+      bValue = bValue.toLowerCase();
+    }
+    
+    if (sortDirection === "asc") {
+      return aValue > bValue ? 1 : -1;
+    } else {
+      return aValue < bValue ? 1 : -1;
+    }
+  });
+
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = sortedData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+
+  // Show loading state while Clerk is initializing
+  if (!isLoaded || !isSignedIn) {
+    return (
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-500 mx-auto mb-4"></div>
+          <p className="text-gray-600">Loading authentication...</p>
+        </div>
+      </div>
+    );
+  }
+
+  const getCapacityColor = (capacity: number) => {
+    if (capacity >= 30) return "bg-green-100 text-green-700 border-green-200";
+    if (capacity >= 20) return "bg-blue-100 text-blue-700 border-blue-200";
+    return "bg-amber-100 text-amber-700 border-amber-200";
   };
 
   // Handle booking based on user's role and PIC status
@@ -250,13 +288,20 @@ export default function LabSearch() {
               <div className="text-center py-12">
                 <div className="bg-orange-50 rounded-2xl p-8 border border-orange-200 max-w-md mx-auto shadow-lg">
                   <Search className="h-12 w-12 text-orange-400 mx-auto mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-900 mb-2">No Results Found</h3>
-                  <p className="text-gray-600 mb-4">Try adjusting your search criteria</p>
+                  <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                    {isUserSuperAdmin() ? "No Results Found" : "No Labs Assigned"}
+                  </h3>
+                  <p className="text-gray-600 mb-4">
+                    {isUserSuperAdmin() 
+                      ? "Try adjusting your search criteria" 
+                      : "You are not assigned as PIC for any labs yet. Contact the super admin to get lab assignments."}
+                  </p>
                   <div className="text-left text-xs text-gray-500 bg-white p-4 rounded mt-4">
                     <p>Debug Info:</p>
                     <p>- Total labs from backend: {labData.length}</p>
                     <p>- After filtering: {filteredData.length}</p>
                     <p>- Your User ID: {user?.id ?? 'Not logged in'}</p>
+                    <p>- Is Super Admin: {isUserSuperAdmin() ? 'Yes' : 'No'}</p>
                     <p>- Search term: &quot;{searchTerm}&quot;</p>
                   </div>
                 </div>

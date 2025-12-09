@@ -93,9 +93,13 @@ export default function BookingPage() {
     onMutate: () => {
       setIsSubmitting(true);
     },
-    onSuccess: async () => {
+    onSuccess: async (data) => {
       setIsSubmitting(false);
-      await success("Booking successful! Redirecting to dashboard...", "Success");
+      if (data.autoApproved) {
+        await success("Booking automatically approved! You are a PIC for this lab. Redirecting to dashboard...", "Auto-Approved");
+      } else {
+        await success("Booking successful! Redirecting to dashboard...", "Success");
+      }
       await router.push("/dashboard");
     },
     onError: async (err) => {

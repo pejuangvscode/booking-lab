@@ -217,7 +217,7 @@ export function Navbar() {
                             className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                             onClick={() => setIsAdminDropdownOpen(false)}
                           >
-                            Book for Admin
+                            Book as Admin
                           </Link>
                           <Link
                             href="/admin/manage-booking"
@@ -398,7 +398,7 @@ export function Navbar() {
                       href="/admin/lab-search"
                       className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                     >
-                      Book for Admin
+                      Book as Admin
                     </Link>
                     <Link
                       onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
