@@ -43,6 +43,20 @@ export default function AdminBookings() {
 
   // const debugAuth = api.admin.debugAuth.useQuery();
 
+  // Query for user info (only once, doesn't change with tab/page)
+  const { data: userInfo } = api.admin.getAllBookings.useQuery(
+    {
+      status: "pending",
+      page: 1,
+      limit: 1,
+      search: ""
+    },
+    {
+      select: (data) => data.userInfo,
+      staleTime: Infinity // User info doesn't change
+    }
+  );
+
   const {
     data: bookingsData,
     isLoading,
@@ -181,15 +195,15 @@ export default function AdminBookings() {
             </div>
             
             {/* Lab Assignment Info */}
-            {bookingsData?.userInfo && (
+            {userInfo && (
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
                 <div className="flex items-center gap-2 mb-2">
                   <span className="font-medium text-sm sm:text-base text-blue-900">
-                    {bookingsData.userInfo.canAccessAllLabs ? 'Super Admin Access' : 'Lab Assignment'}
+                    {userInfo.canAccessAllLabs ? 'Super Admin Access' : 'Lab Assignment'}
                   </span>
                 </div>
                 
-                {bookingsData.userInfo.canAccessAllLabs ? (
+                {userInfo.canAccessAllLabs ? (
                   <p className="text-xs sm:text-sm text-blue-700">
                     You have access to manage all labs and bookings in the system.
                   </p>
@@ -198,9 +212,9 @@ export default function AdminBookings() {
                     <p className="text-xs sm:text-sm text-blue-700 mb-2">
                       You can manage bookings for the following labs:
                     </p>
-                    {bookingsData.userInfo.managedLabs.length > 0 ? (
+                    {userInfo.managedLabs.length > 0 ? (
                       <div className="flex flex-wrap gap-1 sm:gap-2">
-                        {bookingsData.userInfo.managedLabs.map((lab: { id: string; name: string; facilityId: string }) => (
+                        {userInfo.managedLabs.map((lab: { id: string; name: string; facilityId: string }) => (
                           <Badge key={lab.id} className="bg-blue-100 text-blue-800 border-blue-300">
                             {lab.name} ({lab.facilityId})
                           </Badge>
@@ -260,11 +274,105 @@ export default function AdminBookings() {
             </div>
 
             <TabsContent value={activeTab} className="mt-6">
-              {/* Loading State */}
+              {/* Loading State - Skeleton */}
               {isLoading && (
-                <div className="text-center py-12">
-                  <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading bookings...</p>
+                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                  {/* Desktop Skeleton */}
+                  <div className="hidden lg:block overflow-x-auto">
+                    <table className="w-full table-fixed">
+                      <thead className="bg-gray-50 border-b border-gray-200">
+                        <tr>
+                          <th className="w-1/4 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Event Details
+                          </th>
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Schedule
+                          </th>
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Room & Capacity
+                          </th>
+                          <th className="w-1/5 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Requester
+                          </th>
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Status
+                          </th>
+                          <th className="w-1/8 px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                            Actions
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody className="bg-white divide-y divide-gray-100">
+                        {Array.from({ length: 5 }).map((_, idx) => (
+                          <tr key={idx} className="animate-pulse">
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                                <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <div className="h-4 bg-gray-200 rounded w-24"></div>
+                                <div className="h-4 bg-gray-200 rounded w-28"></div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <div className="h-4 bg-gray-200 rounded w-20"></div>
+                                <div className="h-4 bg-gray-200 rounded w-16"></div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="space-y-2">
+                                <div className="h-4 bg-gray-200 rounded w-28"></div>
+                                <div className="h-3 bg-gray-200 rounded w-24"></div>
+                                <div className="h-3 bg-gray-200 rounded w-20"></div>
+                              </div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="h-6 bg-gray-200 rounded w-20"></div>
+                            </td>
+                            <td className="px-4 py-4">
+                              <div className="flex flex-col items-center space-y-2">
+                                <div className="h-8 bg-gray-200 rounded w-20"></div>
+                                <div className="h-8 bg-gray-200 rounded w-20"></div>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Mobile Skeleton */}
+                  <div className="lg:hidden divide-y divide-gray-200">
+                    {Array.from({ length: 3 }).map((_, idx) => (
+                      <div key={idx} className="p-4 animate-pulse">
+                        <div className="space-y-3">
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="flex-1 space-y-2">
+                              <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                              <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                            </div>
+                            <div className="h-6 bg-gray-200 rounded w-16"></div>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="h-3 bg-gray-200 rounded w-20"></div>
+                            <div className="h-3 bg-gray-200 rounded w-24"></div>
+                          </div>
+                          <div className="space-y-2">
+                            <div className="h-3 bg-gray-200 rounded w-32"></div>
+                            <div className="h-3 bg-gray-200 rounded w-28"></div>
+                          </div>
+                          <div className="flex gap-2 pt-2">
+                            <div className="h-8 bg-gray-200 rounded flex-1"></div>
+                            <div className="h-8 bg-gray-200 rounded flex-1"></div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               )}
 
@@ -274,7 +382,7 @@ export default function AdminBookings() {
                   <Calendar className="w-16 h-16 text-gray-400 mx-auto mb-4" />
                   <h3 className="text-lg font-medium text-gray-900 mb-2">No bookings found</h3>
                   <p className="text-gray-500">
-                    {bookingsData?.userInfo && !bookingsData.userInfo.canAccessAllLabs && bookingsData.userInfo.managedLabs.length === 0 
+                    {userInfo && !userInfo.canAccessAllLabs && userInfo.managedLabs.length === 0 
                       ? "You don't have access to any labs. Contact super admin to get lab assignments."
                       : `There are no ${activeTab} bookings at the moment.`
                     }

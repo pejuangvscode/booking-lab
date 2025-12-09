@@ -99,6 +99,10 @@ export default function BookingCalendar() {
 
   const [selectedRoomFilters, setSelectedRoomFilters] = useState<string[]>([]);
   const [showFilterPopover, setShowFilterPopover] = useState(false);
+  const [currentMonth, setCurrentMonth] = useState(() => {
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), 1);
+  });
 
   const form = useForm({
     resolver: zodResolver(bookingFormSchema),
@@ -126,10 +130,17 @@ export default function BookingCalendar() {
     isLoading: isLoadingBookings,
     error: bookingsError,
     refetch: refetchBookings
-  } = api.booking.getAllBookings.useQuery(undefined, {
-    enabled: isMounted,
-    refetchOnWindowFocus: false
-  });
+  } = api.booking.getAllBookings.useQuery(
+    {
+      year: currentMonth.getFullYear(),
+      month: currentMonth.getMonth() + 1, // JavaScript months are 0-indexed, backend expects 1-indexed
+    },
+    {
+      enabled: isMounted,
+      refetchOnWindowFocus: false,
+      staleTime: 1000 * 60 * 5, // Cache for 5 minutes
+    }
+  );
 
   const getFilteredEvents = (events: BookingEvent[]) => {
     if (selectedRoomFilters.length === 0) {
@@ -154,6 +165,46 @@ export default function BookingCalendar() {
 
   const selectAllRooms = () => {
     setSelectedRoomFilters(rooms.map(room => room.id));
+  };
+
+  const generateSkeletonEvents = (): BookingEvent[] => {
+    const skeletonEvents: BookingEvent[] = [];
+    const currentMonthStart = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), 1);
+    const daysInMonth = new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 0).getDate();
+    
+    // Generate skeleton for every day in the visible calendar (including prev/next month days)
+    const firstDayOfMonth = currentMonthStart.getDay(); // 0 = Sunday
+    const totalCells = Math.ceil((daysInMonth + firstDayOfMonth) / 7) * 7;
+    
+    // Start from the first visible day (may be from previous month)
+    const calendarStart = new Date(currentMonthStart);
+    calendarStart.setDate(calendarStart.getDate() - firstDayOfMonth);
+    
+    for (let i = 0; i < totalCells; i++) {
+      const currentDate = new Date(calendarStart);
+      currentDate.setDate(currentDate.getDate() + i);
+      
+      // Add 1-2 skeleton events per day
+      const eventsPerDay = Math.random() > 0.5 ? 2 : 1;
+      
+      for (let j = 0; j < eventsPerDay; j++) {
+        const randomHour = Math.floor(Math.random() * 9) + 8; // 8-16
+        const startDate = new Date(currentDate.setHours(randomHour, 0, 0, 0));
+        const endDate = new Date(startDate.getTime() + (1.5 * 60 * 60 * 1000)); // 1.5 hours
+        
+        skeletonEvents.push({
+          id: `skeleton-${i}-${j}`,
+          title: '',
+          start: startDate,
+          end: endDate,
+          roomId: '',
+          bookedBy: '',
+          status: 'skeleton',
+        });
+      }
+    }
+    
+    return skeletonEvents;
   };
 
   const limitEventsPerDay = (events: BookingEvent[], limit: number = 2) => {
@@ -306,6 +357,18 @@ export default function BookingCalendar() {
   }, []);
 
   const eventStyleGetter = (event: BookingEvent) => {
+    if (event.status === 'skeleton') {
+      return {
+        style: {
+          backgroundColor: '#e5e7eb',
+          color: 'transparent',
+          borderRadius: '4px',
+          border: '1px solid #d1d5db',
+          cursor: 'default',
+        }
+      };
+    }
+    
     if (event.status === 'overflow') {
       return {
         style: {
@@ -376,6 +439,10 @@ export default function BookingCalendar() {
         }
         setCurrentDate(newDate);
         
+        // Update current month for query
+        const newMonth = new Date(newDate.getFullYear(), newDate.getMonth(), 1);
+        setCurrentMonth(newMonth);
+        
       } catch (error) {
         console.error('Navigation error:', error);
       }
@@ -417,6 +484,13 @@ export default function BookingCalendar() {
   };
 
   const EventComponent = ({ event }: { event: BookingEvent }) => {
+    if (event.status === 'skeleton') {
+      return (
+        <div className="text-xs h-full overflow-hidden p-1 bg-gray-200 rounded animate-pulse">
+        </div>
+      );
+    }
+    
     if (event.status === 'overflow') {
       return (
         <div 
@@ -499,35 +573,26 @@ export default function BookingCalendar() {
 
   if (!isMounted || !isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 mt-16 sm:mt-20">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-16 sm:pt-20">
+        <Head>
+          <title>Laboratory Booking Calendar</title>
+          <meta name="description" content="Book laboratory rooms for your classes and events" />
+        </Head>
+        
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
           <div className="mb-6">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <div className="h-10 bg-gray-200 rounded w-80 animate-pulse mb-2"></div>
-                <div className="h-5 bg-gray-200 rounded w-64 animate-pulse"></div>
+                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Laboratory Booking Calendar</h1>
+                <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
               </div>
             </div>
           </div>
           
-          <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6">
-            <div className="lg:col-span-1 order-2 lg:order-1">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse">
-                <div className="h-5 bg-gray-200 rounded w-24 mb-4"></div>
-                <div className="space-y-3">
-                  {[1, 2, 3, 4, 5].map((i) => (
-                    <div key={i} className="flex items-center gap-2">
-                      <div className="w-4 h-4 bg-gray-200 rounded"></div>
-                      <div className="h-4 bg-gray-200 rounded flex-1"></div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            
-            <div className="lg:col-span-3 order-1 lg:order-2">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse">
-                <div className="h-[950px]">
+          <div>
+            <div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+                <div className="h-[950px] animate-pulse">
                   <div className="flex justify-between items-center mb-6">
                     <div className="h-8 bg-gray-200 rounded w-48"></div>
                     <div className="flex gap-2">
@@ -557,13 +622,13 @@ export default function BookingCalendar() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-16 sm:pt-20">
         <Head>
           <title>Laboratory Booking Calendar</title>
           <meta name="description" content="Book laboratory rooms for your classes and events" />
         </Head>
         
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 mt-16 sm:mt-20">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
         {/* Header Section */}
         <div className="mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -696,35 +761,14 @@ export default function BookingCalendar() {
           <div>
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
                 <div className="h-[950px]">
-                  {isLoadingBookings ? (
-                    <div className="h-full bg-white border rounded-lg p-6 animate-pulse">
-                      <div className="flex justify-between items-center mb-6">
-                        <div className="h-8 bg-gray-200 rounded w-48"></div>
-                        <div className="flex gap-2">
-                          <div className="h-10 bg-gray-200 rounded w-24"></div>
-                          <div className="h-10 bg-gray-200 rounded w-20"></div>
-                          <div className="h-10 bg-gray-200 rounded w-24"></div>
-                        </div>
-                      </div>
-                      <div className="grid grid-cols-7 gap-2 mb-4">
-                        {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                          <div key={i} className="h-6 bg-gray-200 rounded"></div>
-                        ))}
-                      </div>
-                      <div className="grid grid-cols-7 gap-2">
-                        {[...Array(35)].map((_, i) => (
-                          <div key={i} className="h-24 bg-gray-100 rounded border border-gray-200"></div>
-                        ))}
-                      </div>
-                    </div>
-                  ) : bookingsError ? (
+                  {bookingsError ? (
                   <div className="flex items-center justify-center h-full p-4">
                     <p className="text-red-500 text-sm text-center">Error loading bookings: {bookingsError.message}</p>
                   </div>
                 ) : (
                   <Calendar
                     localizer={localizer}
-                    events={limitEventsPerDay(events, 1)}
+                    events={isLoadingBookings ? generateSkeletonEvents() : limitEventsPerDay(events, 1)}
                     startAccessor="start"
                     endAccessor="end"
                     style={{ height: "100%" }}
@@ -739,7 +783,10 @@ export default function BookingCalendar() {
                     timeslots={1}
                     selectable
                     onSelectSlot={handleSelectSlot}
-                    onSelectEvent={(event) => {                      
+                    onSelectEvent={(event) => {
+                      if (event.status === 'skeleton') {
+                        return; // Don't handle skeleton clicks
+                      }
                       if (event.status === 'overflow') {
                         const dateKey = event.id.replace('more-', '');
                         handleMoreEventsClick(dateKey);

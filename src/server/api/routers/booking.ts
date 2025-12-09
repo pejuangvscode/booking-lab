@@ -504,9 +504,30 @@ export const bookingRouter = createTRPCRouter({
       }
     }),
 
-  getAllBookings: publicProcedure.query(async ({ ctx }) => {
+  getAllBookings: publicProcedure
+    .input(z.object({
+      year: z.number().optional(),
+      month: z.number().min(1).max(12).optional(),
+    }).optional())
+    .query(async ({ ctx, input }) => {
     try {
+      let whereClause = {};
+      
+      // If year and month are provided, filter by that month
+      if (input?.year && input?.month) {
+        const startDate = new Date(input.year, input.month - 1, 1);
+        const endDate = new Date(input.year, input.month, 0, 23, 59, 59);
+        
+        whereClause = {
+          bookingDate: {
+            gte: startDate,
+            lte: endDate,
+          }
+        };
+      }
+      
       const bookings = await ctx.db.bookings.findMany({
+        where: whereClause,
         include: {
           room: {
             select: {

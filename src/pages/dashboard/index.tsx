@@ -186,7 +186,7 @@ export default function Dashboard() {
         <div className="p-4 sm:p-6 bg-gradient-to-r from-orange-600 to-orange-700">
           <div className="flex items-center justify-between">
             <div>
-              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">My Bookings</h2>
+              <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white">My Current Bookings</h2>
               <p className="text-xs sm:text-sm text-blue-100 mt-2">Manage your current room bookings</p>
             </div>
             </div>
@@ -243,11 +243,35 @@ export default function Dashboard() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoadingCurrentBookings ? (
-                  <tr>
-                    <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                      <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-orange-600 mx-auto" />
-                    </td>
-                  </tr>
+                  <>
+                    {[...Array(currentEntriesCount)].map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-8"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-24"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-28 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-16"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-6 bg-gray-200 rounded w-20"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-36"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="flex space-x-2">
+                            <div className="h-8 bg-gray-200 rounded w-20"></div>
+                            <div className="h-8 bg-gray-200 rounded w-20"></div>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </>
                 ) : isErrorCurrentBookings ? (
                   <tr>
                     <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center text-red-500 text-xs sm:text-sm">
@@ -411,11 +435,32 @@ export default function Dashboard() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {isLoadingCompletedBookings ? (
-                  <tr>
-                    <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center">
-                      <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-blue-600 mx-auto" />
-                    </td>
-                  </tr>
+                  <>
+                    {[...Array(completedEntriesCount)].map((_, i) => (
+                      <tr key={i} className="animate-pulse">
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-8"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-24"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-28 mb-2"></div>
+                          <div className="h-3 bg-gray-200 rounded w-16"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-6 bg-gray-200 rounded w-20"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-4 bg-gray-200 rounded w-36"></div>
+                        </td>
+                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
+                          <div className="h-8 bg-gray-200 rounded w-20"></div>
+                        </td>
+                      </tr>
+                    ))}
+                  </>
                 ) : isErrorCompletedBookings ? (
                   <tr>
                     <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center text-red-500 text-xs sm:text-sm">
