@@ -254,13 +254,37 @@ export default function LabSearch() {
           </div>
         </div> */}
         
-        {/* Loading State */}
+        {/* Loading State - Skeleton */}
         {isLoading && (
-          <div className="flex justify-center items-center p-12 sm:p-16">
-            <div className="bg-white rounded-2xl p-8 border border-gray-200 shadow-lg">
-              <Loader2 className="h-8 w-8 sm:h-10 sm:w-10 animate-spin text-orange-500 mx-auto mb-4" />
-              <span className="text-lg text-gray-700 block text-center">Loading laboratories...</span>
-            </div>
+          <div className="space-y-4">
+            {[1, 2, 3, 4].map((i) => (
+              <div
+                key={i}
+                className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 sm:p-8 animate-pulse"
+              >
+                <div className="flex items-center">
+                  <div className="flex-grow">
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between">
+                      <div className="flex-grow space-y-3">
+                        {/* Title skeleton */}
+                        <div className="h-7 bg-gray-200 rounded-lg w-3/4"></div>
+                        {/* Subtitle skeleton */}
+                        <div className="h-5 bg-gray-200 rounded-lg w-1/2"></div>
+                        {/* Badges skeleton */}
+                        <div className="flex gap-3 mt-4">
+                          <div className="h-7 bg-gray-200 rounded-full w-24"></div>
+                          <div className="h-7 bg-gray-200 rounded-full w-28"></div>
+                        </div>
+                      </div>
+                      {/* Button skeleton */}
+                      <div className="mt-4 sm:mt-0 sm:ml-6">
+                        <div className="h-11 bg-gray-200 rounded-xl w-32"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
           </div>
         )}
         

@@ -499,25 +499,77 @@ export default function BookingCalendar() {
 
   if (!isMounted || !isLoaded) {
     return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 mt-16 sm:mt-20">
+          <div className="mb-6">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div>
+                <div className="h-10 bg-gray-200 rounded w-80 animate-pulse mb-2"></div>
+                <div className="h-5 bg-gray-200 rounded w-64 animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex flex-col lg:grid lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="lg:col-span-1 order-2 lg:order-1">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse">
+                <div className="h-5 bg-gray-200 rounded w-24 mb-4"></div>
+                <div className="space-y-3">
+                  {[1, 2, 3, 4, 5].map((i) => (
+                    <div key={i} className="flex items-center gap-2">
+                      <div className="w-4 h-4 bg-gray-200 rounded"></div>
+                      <div className="h-4 bg-gray-200 rounded flex-1"></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+            
+            <div className="lg:col-span-3 order-1 lg:order-2">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 animate-pulse">
+                <div className="h-[950px]">
+                  <div className="flex justify-between items-center mb-6">
+                    <div className="h-8 bg-gray-200 rounded w-48"></div>
+                    <div className="flex gap-2">
+                      <div className="h-10 bg-gray-200 rounded w-24"></div>
+                      <div className="h-10 bg-gray-200 rounded w-20"></div>
+                      <div className="h-10 bg-gray-200 rounded w-24"></div>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-7 gap-2 mb-4">
+                    {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                      <div key={i} className="h-6 bg-gray-200 rounded"></div>
+                    ))}
+                  </div>
+                  <div className="grid grid-cols-7 gap-2">
+                    {[...Array(35)].map((_, i) => (
+                      <div key={i} className="h-24 bg-gray-100 rounded border border-gray-200"></div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-8 mt-16 sm:mt-20">
-      <Head>
-        <title>Laboratory Booking Calendar</title>
-        <meta name="description" content="Book laboratory rooms for your classes and events" />
-      </Head>
-      
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden"> 
-        <div className="p-3 sm:p-6 bg-gradient-to-r from-orange-600 to-orange-700">
+    <>
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
+        <Head>
+          <title>Laboratory Booking Calendar</title>
+          <meta name="description" content="Book laboratory rooms for your classes and events" />
+        </Head>
+        
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 mt-16 sm:mt-20">
+        {/* Header Section */}
+        <div className="mb-6">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h2 className="text-xl sm:text-3xl font-bold text-white">Laboratory Booking Calendar</h2>
-              <p className="text-orange-100 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
+              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Laboratory Booking Calendar</h1>
+              <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
             </div>
             
             <div className="flex items-center gap-3">
@@ -525,14 +577,14 @@ export default function BookingCalendar() {
                 <PopoverTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="bg-white/10 hover:cursor-pointer border-white/20 text-white hover:bg-white/20 hover:text-white relative"
+                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:cursor-pointer relative shadow-sm"
                   >
                     <Filter className="h-4 w-4 mr-2" />
                     Filter Rooms
                     {selectedRoomFilters.length > 0 && (
                       <Badge 
                         variant="secondary" 
-                        className="ml-2 bg-white text-orange-600 text-xs px-1.5 py-0.5"
+                        className="ml-2 bg-orange-600 text-white text-xs px-1.5 py-0.5"
                       >
                         {selectedRoomFilters.length}
                       </Badge>
@@ -628,7 +680,7 @@ export default function BookingCalendar() {
                   variant="ghost"
                   size="sm"
                   onClick={clearAllFilters}
-                  className="text-white hover:bg-white/20 hover:text-white text-xs hover:cursor-pointer"
+                  className="text-gray-700 hover:bg-gray-100 text-xs hover:cursor-pointer"
                 >
                   <X className="h-3 w-3 mr-1" />
                   Clear Filter
@@ -638,60 +690,34 @@ export default function BookingCalendar() {
           </div>
         </div>
         
-        <div className="p-3 sm:p-6">
-          <div className="flex flex-col lg:grid lg:grid-cols-4 gap-6 lg:gap-8">
-            <div className="lg:col-span-1 order-2 lg:order-1">
-              <Card className="mb-8 lg:mb-0">
-                <CardHeader className="pb-2 sm:pb-3">
-                  <CardTitle className="text-sm sm:text-base">Room Legend</CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-2 sm:space-y-4">
-                  <div className="">
-                    {/* <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Room Legend:</div> */}
-                    <div className="grid grid-cols-2 lg:grid-cols-1 gap-1 sm:gap-2">
-                      {rooms.map((room) => (
-                        <div 
-                          key={room.id} 
-                          className={`flex items-center transition-opacity ${
-                            selectedRoomFilters.length > 0 && !selectedRoomFilters.includes(room.id)
-                              ? 'opacity-40' 
-                              : 'opacity-100'
-                          }`}
-                        >
-                          <span 
-                            className="inline-block w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 rounded-sm flex-shrink-0" 
-                            style={{ backgroundColor: roomColors[room.id] || '#3174ad' }}
-                          />
-                          <span className="text-xs sm:text-sm truncate">
-                            {room.name} 
-                            {room.capacity === 0 ? " (Flex)" : ` (${room.capacity})`}
-                          </span>
-                          {selectedRoomFilters.includes(room.id) && (
-                            <Check className="h-3 w-3 ml-1 text-green-600" />
-                          )}
+        {/* Main Content */}
+        <div>
+          {/* Calendar Section */}
+          <div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+                <div className="h-[950px]">
+                  {isLoadingBookings ? (
+                    <div className="h-full bg-white border rounded-lg p-6 animate-pulse">
+                      <div className="flex justify-between items-center mb-6">
+                        <div className="h-8 bg-gray-200 rounded w-48"></div>
+                        <div className="flex gap-2">
+                          <div className="h-10 bg-gray-200 rounded w-24"></div>
+                          <div className="h-10 bg-gray-200 rounded w-20"></div>
+                          <div className="h-10 bg-gray-200 rounded w-24"></div>
                         </div>
-                      ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-2 mb-4">
+                        {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                          <div key={i} className="h-6 bg-gray-200 rounded"></div>
+                        ))}
+                      </div>
+                      <div className="grid grid-cols-7 gap-2">
+                        {[...Array(35)].map((_, i) => (
+                          <div key={i} className="h-24 bg-gray-100 rounded border border-gray-200"></div>
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                  
-                  {/* <div className="border-t pt-2 sm:pt-3 hidden sm:block">
-                    <div className="text-xs sm:text-sm font-medium mb-1 sm:mb-2">Booking Types:</div>
-                    <div className="space-y-1 text-xs text-gray-600">
-                      <div>• <span className="font-medium text-orange-600">Full</span>: Entire room/space</div>
-                      <div>• <span className="font-medium text-blue-600">Partial</span>: Specific number of seats</div>
-                    </div>
-                  </div> */}
-                </CardContent>
-              </Card>
-            </div>
-            
-            <div className="lg:col-span-3 order-1 lg:order-2">
-              <div className="h-[950px]">
-                {isLoadingBookings ? (
-                  <div className="flex items-center justify-center h-full">
-                    <Loader2 className="h-6 w-6 sm:h-8 sm:w-8 animate-spin text-orange-600" />
-                  </div>
-                ) : bookingsError ? (
+                  ) : bookingsError ? (
                   <div className="flex items-center justify-center h-full p-4">
                     <p className="text-red-500 text-sm text-center">Error loading bookings: {bookingsError.message}</p>
                   </div>
@@ -741,6 +767,7 @@ export default function BookingCalendar() {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
 
@@ -1030,8 +1057,6 @@ export default function BookingCalendar() {
                         </div>
                       </div>
                     </div>
-                    
-                    <div className="absolute inset-0 opacity-0 transition-opacity duration-200 pointer-events-none" />
                   </Card>
                 ))}
               </div>
@@ -1056,6 +1081,6 @@ export default function BookingCalendar() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
-    </div>
+    </>
   );
 }

@@ -226,13 +226,6 @@ export function Navbar() {
                           >
                             Manage Booking
                           </Link>
-                          <Link
-                            href="/admin/booking-calendar"
-                            className="block px-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                            onClick={() => setIsAdminDropdownOpen(false)}
-                          >
-                            Admin Booking Calendar
-                          </Link>
                           {isSuperAdmin() && (
                             <Link
                               href="/admin/manage-admin"
@@ -406,13 +399,6 @@ export function Navbar() {
                       className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
                     >
                       Manage Booking
-                    </Link>
-                    <Link
-                      onClick={() => { setIsMenuOpen(false); setIsAdminDropdownOpen(false); }}
-                      href="/admin/booking-calendar"
-                      className="block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600"
-                    >
-                      Admin Booking Calendar
                     </Link>
                     {isSuperAdmin() && (
                       <Link
