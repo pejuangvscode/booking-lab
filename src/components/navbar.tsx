@@ -365,7 +365,7 @@ export function Navbar() {
               <>
                 <button
                   onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
-                  className="w-full text-left block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 flex items-center justify-between"
+                  className="w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 flex items-center justify-between"
                 >
                   <span>Admin Menu</span>
                   <svg
