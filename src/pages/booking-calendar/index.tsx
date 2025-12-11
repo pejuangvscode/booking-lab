@@ -449,14 +449,14 @@ export default function BookingCalendar() {
     };
 
     return (
-      <div className="flex flex-col sm:flex-row items-center justify-between mb-2 sm:mb-4 p-2 sm:p-4 bg-gray-50 rounded-lg gap-2 sm:gap-0">
-        <div className="text-lg sm:text-2xl font-bold text-gray-800 order-1 sm:order-1">{label}</div>
+      <div className="flex flex-col sm:flex-row items-center justify-between mb-2 sm:mb-4 p-2 sm:p-4 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 rounded-xl shadow-md gap-2 sm:gap-0 border-2 border-orange-100">
+        <div className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent order-1 sm:order-1">{label}</div>
         <div className="flex space-x-1 sm:space-x-2 order-2 sm:order-2">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('PREV')}
-            className="hover:bg-gray-100 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
+            className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-2 border-gray-200 hover:border-orange-300 transition-all duration-300"
           >
             <span className="hidden sm:inline">← Previous</span>
             <span className="sm:hidden">← Prev</span>
@@ -465,7 +465,7 @@ export default function BookingCalendar() {
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('TODAY')}
-            className="hover:bg-gray-100 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
+            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
           >
             Today
           </Button>
@@ -473,7 +473,7 @@ export default function BookingCalendar() {
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('NEXT')}
-            className="hover:bg-gray-100 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3"
+            className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-2 border-gray-200 hover:border-orange-300 transition-all duration-300"
           >
             <span className="hidden sm:inline">Next →</span>
             <span className="sm:hidden">Next →</span>
@@ -573,17 +573,24 @@ export default function BookingCalendar() {
 
   if (!isMounted || !isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-16 sm:pt-20">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden pt-16 sm:pt-20">
+        {/* Background Decorative Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
+        </div>
+
         <Head>
           <title>Laboratory Booking Calendar</title>
           <meta name="description" content="Book laboratory rooms for your classes and events" />
         </Head>
         
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
-          <div className="mb-6">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 relative z-10">
+          <div className="mb-6 animate-fadeInUp">
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div>
-                <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Laboratory Booking Calendar</h1>
+                <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm">Laboratory Booking Calendar</h1>
                 <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
               </div>
             </div>
@@ -591,7 +598,7 @@ export default function BookingCalendar() {
           
           <div>
             <div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-orange-100 p-3 sm:p-4">
                 <div className="h-[950px] animate-pulse">
                   <div className="flex justify-between items-center mb-6">
                     <div className="h-8 bg-gray-200 rounded w-48"></div>
@@ -622,18 +629,25 @@ export default function BookingCalendar() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 pt-16 sm:pt-20">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden pt-16 sm:pt-20">
+        {/* Background Decorative Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
+          <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
+          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
+        </div>
+
         <Head>
           <title>Laboratory Booking Calendar</title>
           <meta name="description" content="Book laboratory rooms for your classes and events" />
         </Head>
         
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6">
+        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 relative z-10">
         {/* Header Section */}
-        <div className="mb-6">
+        <div className="mb-6 animate-fadeInUp">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-4xl font-bold text-gray-900">Laboratory Booking Calendar</h1>
+              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm">Laboratory Booking Calendar</h1>
               <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
             </div>
             
@@ -642,14 +656,14 @@ export default function BookingCalendar() {
                 <PopoverTrigger asChild>
                   <Button 
                     variant="outline" 
-                    className="bg-white border-gray-300 text-gray-700 hover:bg-gray-50 hover:cursor-pointer relative shadow-sm"
+                    className="bg-white/80 backdrop-blur-sm border-2 border-orange-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 hover:cursor-pointer relative shadow-lg transition-all duration-300"
                   >
                     <Filter className="h-4 w-4 mr-2" />
                     Filter Rooms
                     {selectedRoomFilters.length > 0 && (
                       <Badge 
                         variant="secondary" 
-                        className="ml-2 bg-orange-600 text-white text-xs px-1.5 py-0.5"
+                        className="ml-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-xs px-1.5 py-0.5 shadow-md"
                       >
                         {selectedRoomFilters.length}
                       </Badge>
@@ -745,7 +759,7 @@ export default function BookingCalendar() {
                   variant="ghost"
                   size="sm"
                   onClick={clearAllFilters}
-                  className="text-gray-700 hover:bg-gray-100 text-xs hover:cursor-pointer"
+                  className="text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-xs hover:cursor-pointer transition-all duration-300 border border-transparent hover:border-orange-200"
                 >
                   <X className="h-3 w-3 mr-1" />
                   Clear Filter
@@ -759,7 +773,7 @@ export default function BookingCalendar() {
         <div>
           {/* Calendar Section */}
           <div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-3 sm:p-4">
+              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-orange-100 p-3 sm:p-4 hover:shadow-3xl transition-shadow duration-300">
                 <div className="h-[950px]">
                   {bookingsError ? (
                   <div className="flex items-center justify-center h-full p-4">
@@ -819,9 +833,9 @@ export default function BookingCalendar() {
       </div>
 
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0 pb-4 border-b">
-            <DialogTitle className="text-xl font-semibold text-gray-900 flex items-center gap-3">
+        <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-100">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b border-orange-100">
+            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-3">
               <div 
                 className="w-4 h-4 rounded-sm flex-shrink-0" 
                 style={{ backgroundColor: selectedEvent ? roomColors[selectedEvent.roomId] || '#3174ad' : '#3174ad' }}
@@ -836,9 +850,9 @@ export default function BookingCalendar() {
           {selectedEvent && (
             <div className="flex-1 overflow-y-auto pr-2 -mr-2">
               <div className="space-y-6 py-4">
-                <div className="bg-gray-50 rounded-lg p-4">
+                <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border-2 border-orange-100 shadow-md">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-semibold text-gray-900">
+                    <h3 className="text-lg font-bold text-gray-900">
                       {selectedEvent.title}
                     </h3>
                     {selectedEvent.status && selectedEvent.status !== 'overflow' && (
@@ -975,7 +989,7 @@ export default function BookingCalendar() {
             </div>
           )}
           
-          <DialogFooter className="flex-shrink-0 pt-4 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+          <DialogFooter className="flex-shrink-0 pt-4 border-t border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 -mx-6 -mb-6 px-6 py-4">
             <div className="flex items-center justify-between w-full">
               <div className="text-sm text-gray-500">
                 Event details
@@ -984,7 +998,7 @@ export default function BookingCalendar() {
                 <Button 
                   variant="outline"
                   onClick={() => setIsDetailsModalOpen(false)}
-                  className="hover:bg-gray-100 transition-colors hover:cursor-pointer"
+                  className="hover:bg-white hover:border-orange-300 transition-colors hover:cursor-pointer border-2 border-orange-200"
                 >
                   <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -998,10 +1012,10 @@ export default function BookingCalendar() {
       </Dialog>
 
       <Dialog open={showMoreEventsModal} onOpenChange={setShowMoreEventsModal}>
-        <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col">
-          <DialogHeader className="flex-shrink-0 pb-4 border-b">
-            <DialogTitle className="text-xl font-semibold text-gray-900 flex items-center gap-2">
-              <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+        <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-100">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b border-orange-100">
+            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-2">
+              <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full shadow-md"></div>
               Events on {moreEventsData?.date && format(moreEventsData.date, "EEEE, MMMM d, yyyy")}
             </DialogTitle>
             <p className="text-sm text-gray-500 mt-1">
@@ -1015,7 +1029,7 @@ export default function BookingCalendar() {
                 {moreEventsData.events.map((event, index) => (
                   <Card 
                     key={event.id} 
-                    className="group relative overflow-hidden border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 cursor-pointer"
+                    className="group relative overflow-hidden border-2 border-orange-100 hover:border-orange-300 hover:shadow-xl transition-all duration-300 cursor-pointer bg-white/80 backdrop-blur-sm"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -1110,14 +1124,14 @@ export default function BookingCalendar() {
             </div>
           )}
           
-          <DialogFooter className="flex-shrink-0 pt-4 border-t bg-gray-50 -mx-6 -mb-6 px-6 py-4">
+          <DialogFooter className="flex-shrink-0 pt-4 border-t border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 -mx-6 -mb-6 px-6 py-4">
             <div className="flex items-center justify-between w-full">
               <div className="text-sm text-gray-500">
               </div>
               <Button 
                 variant="outline"
                 onClick={() => setShowMoreEventsModal(false)}
-                className="hover:bg-gray-100 transition-colors hover:cursor-pointer"
+                className="hover:bg-white hover:border-orange-300 transition-colors hover:cursor-pointer border-2 border-orange-200"
               >
                 <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />

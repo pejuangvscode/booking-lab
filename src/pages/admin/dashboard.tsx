@@ -180,25 +180,32 @@ export default function AdminBookings() {
 
   return (
     <AdminProtection>
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden">
+      {/* Background Decorative Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
+      </div>
+
       <Head>
         <title>Admin Dashboard</title>
       </Head>
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-16 sm:mt-20">
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-16 sm:mt-20 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-6 sm:mb-8">
+          <div className="mb-6 sm:mb-8 animate-fadeInUp">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
+              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm">
                 Admin Dashboard
               </h1>
             </div>
             
             {/* Lab Assignment Info */}
             {userInfo && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 sm:p-4 mb-4 sm:mb-6">
+              <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border-2 border-blue-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
                 <div className="flex items-center gap-2 mb-2">
-                  <span className="font-medium text-sm sm:text-base text-blue-900">
+                  <span className="font-semibold text-sm sm:text-base text-blue-900">
                     {userInfo.canAccessAllLabs ? 'Super Admin Access' : 'Lab Assignment'}
                   </span>
                 </div>
@@ -236,8 +243,8 @@ export default function AdminBookings() {
 
           {/* Tab */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "pending" | "accepted" | "rejected" | "completed" | "cancelled")} className="mb-4 sm:mb-6">
-            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0 ">
-              <TabsList className="inline-flex w-full min-w-max sm:grid sm:w-full sm:grid-cols-5 bg-white rounded-lg">
+            <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
+              <TabsList className="inline-flex w-full min-w-max sm:grid sm:w-full sm:grid-cols-5 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-orange-100">
                 <TabsTrigger value="pending" className="flex items-center gap-1 sm:gap-2 hover:cursor-pointer whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm">
                   <span className="hidden sm:inline">Pending</span>
                   <span className="sm:hidden">Pending</span>
@@ -263,13 +270,13 @@ export default function AdminBookings() {
 
             {/* Search */}
             <div className="mt-4 sm:mt-6 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-3 h-3 sm:w-4 sm:h-4" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-4 h-4 sm:w-5 sm:h-5" />
               <Input
                 type="text"
                 placeholder="Search by event, requester, or faculty..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9 sm:pl-10 bg-white shadow-sm text-sm sm:text-base"
+                className="pl-10 sm:pl-12 bg-white/80 backdrop-blur-sm shadow-lg border-2 border-orange-100 focus:border-orange-300 focus:ring-2 focus:ring-orange-200 text-sm sm:text-base rounded-xl transition-all duration-300"
               />
             </div>
 
@@ -392,11 +399,11 @@ export default function AdminBookings() {
 
               {/* Bookings Table */}
               {bookingsData?.bookings && bookingsData.bookings.length > 0 && (
-                <div className="bg-white rounded-lg border border-gray-200 overflow-hidden shadow-sm">
+                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-orange-100 overflow-hidden shadow-2xl">
                   {/* Desktop Table View */}
                   <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full table-fixed">
-                      <thead className="bg-gray-50 border-b border-gray-200">
+                      <thead className="bg-gradient-to-r from-orange-50 to-amber-50 border-b-2 border-orange-200">
                         <tr>
                           <th className="w-1/4 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
                             Event Details
@@ -422,7 +429,7 @@ export default function AdminBookings() {
                         {bookingsData?.bookings.map((booking) => (
                           <tr 
                             key={booking.id} 
-                            className="hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                            className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-all duration-200 cursor-pointer border-b border-gray-100 last:border-0"
                             onClick={() => handleRowClick(booking)}
                           >
                             <td className="px-4 py-4">
@@ -549,7 +556,7 @@ export default function AdminBookings() {
                                       <DialogTrigger asChild>
                                         <Button 
                                           size="sm"
-                                          className="w-20 bg-green-600 hover:bg-green-700 text-xs font-medium hover:cursor-pointer"
+                                          className="w-20 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs font-medium hover:cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             // setSelectedBooking(booking);
@@ -608,7 +615,7 @@ export default function AdminBookings() {
                                         <Button 
                                           variant="destructive"
                                           size="sm"
-                                          className="w-20 bg-red-600 hover:bg-red-700 text-xs font-medium hover:cursor-pointer"
+                                          className="w-20 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-xs font-medium hover:cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             // setSelectedBooking(booking);
@@ -674,7 +681,7 @@ export default function AdminBookings() {
                                       <Button 
                                         variant="destructive"
                                         size="sm"
-                                        className="w-20 bg-orange-600 hover:bg-orange-700 text-xs font-medium hover:cursor-pointer"
+                                        className="w-20 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-xs font-medium hover:cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           // setSelectedBooking(booking);
@@ -840,7 +847,7 @@ export default function AdminBookings() {
                                   <DialogTrigger asChild>
                                     <Button
                                       size="sm"
-                                      className="flex-1 bg-green-600 hover:bg-green-700 text-xs font-medium hover:cursor-pointer h-8"
+                                      className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs font-medium hover:cursor-pointer h-8 shadow-lg hover:shadow-xl transition-all duration-300"
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       Accept
@@ -896,7 +903,7 @@ export default function AdminBookings() {
                                     <Button
                                       variant="destructive"
                                       size="sm"
-                                      className="flex-1 bg-red-600 hover:bg-red-700 text-xs font-medium hover:cursor-pointer h-8"
+                                      className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-xs font-medium hover:cursor-pointer h-8 shadow-lg hover:shadow-xl transition-all duration-300"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setRejectionReason("");
@@ -960,7 +967,7 @@ export default function AdminBookings() {
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    className="w-full bg-orange-600 hover:bg-orange-700 text-xs font-medium hover:cursor-pointer h-8"
+                                    className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-xs font-medium hover:cursor-pointer h-8 shadow-lg hover:shadow-xl transition-all duration-300"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setRejectionReason("");
@@ -1030,12 +1037,12 @@ export default function AdminBookings() {
                     variant="outline"
                     disabled={!bookingsData.pagination.hasPrev}
                     onClick={() => setPage(page - 1)}
-                    className="bg-white hover:cursor-pointer w-full sm:w-auto text-sm"
+                    className="bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer w-full sm:w-auto text-sm border-2 border-orange-100 hover:border-orange-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-300"
                   >
                     Previous
                   </Button>
-                  <div className="flex items-center px-3 sm:px-4 py-2 bg-white rounded-md shadow-sm">
-                    <span className="text-xs sm:text-sm text-gray-600">
+                  <div className="flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl shadow-lg border-2 border-orange-200">
+                    <span className="text-xs sm:text-sm font-semibold text-orange-700">
                       Page {bookingsData.pagination.currentPage} of {bookingsData.pagination.totalPages}
                     </span>
                   </div>
@@ -1043,7 +1050,7 @@ export default function AdminBookings() {
                     variant="outline"
                     disabled={!bookingsData.pagination.hasNext}
                     onClick={() => setPage(page + 1)}
-                    className="bg-white hover:cursor-pointer w-full sm:w-auto text-sm"
+                    className="bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer w-full sm:w-auto text-sm border-2 border-orange-100 hover:border-orange-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-300"
                   >
                     Next
                   </Button>
