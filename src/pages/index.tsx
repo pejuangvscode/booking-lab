@@ -61,8 +61,8 @@ const useIntersectionObserver = (options = {}) => {
       // Update state whenever intersection changes (both entering and leaving)
       setIsIntersecting(entry?.isIntersecting ?? false);
     }, {
-      threshold: 0.02,
-      rootMargin: '25px 0px -25px 0px',
+      threshold: 0.01,
+      rootMargin: '150px 0px -50px 0px',
       ...options
     });
 
@@ -94,24 +94,24 @@ const AnimatedSection: React.FC<{
   }, [isIntersecting, showByDefault]);
 
   const getAnimationClass = () => {
-    const baseClasses = "transition-all duration-200 ease-out";
+    const baseClasses = "transition-all duration-300 ease-out";
     
     if (!shouldShow) {
       switch (animation) {
         case 'fadeInUp':
-          return `${baseClasses} opacity-0 transform translate-y-12`;
+          return `${baseClasses} opacity-0 transform translate-y-8`;
         case 'fadeInDown':
-          return `${baseClasses} opacity-0 transform -translate-y-12`;
+          return `${baseClasses} opacity-0 transform -translate-y-8`;
         case 'fadeInLeft':
-          return `${baseClasses} opacity-0 transform -translate-x-12`;
+          return `${baseClasses} opacity-0 transform -translate-x-8`;
         case 'fadeInRight':
-          return `${baseClasses} opacity-0 transform translate-x-12`;
+          return `${baseClasses} opacity-0 transform translate-x-8`;
         case 'fadeIn':
           return `${baseClasses} opacity-0`;
         case 'scaleIn':
           return `${baseClasses} opacity-0 transform scale-95`;
         default:
-          return `${baseClasses} opacity-0 transform translate-y-12`;
+          return `${baseClasses} opacity-0 transform translate-y-8`;
       }
     }
     
@@ -160,6 +160,8 @@ const StaggeredAnimationContainer: React.FC<{
 export default function Home() {
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
+  const [touchStart, setTouchStart] = useState(0);
+  const [touchEnd, setTouchEnd] = useState(0);
   
   useEffect(() => {
     // Check if user has seen the notice modal
@@ -172,6 +174,27 @@ export default function Home() {
   const handleCloseNotice = () => {
     setShowNoticeModal(false);
     localStorage.setItem('hasSeenTechnicalNotice', 'true');
+  };
+  
+  // Touch swipe handlers
+  const handleTouchStart = (e: React.TouchEvent) => {
+    setTouchStart(e.targetTouches[0]?.clientX ?? 0);
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0]?.clientX ?? 0);
+  };
+
+  const handleTouchEnd = () => {
+    if (touchStart - touchEnd > 75) {
+      // Swipe left
+      nextSlide();
+    }
+
+    if (touchStart - touchEnd < -75) {
+      // Swipe right
+      prevSlide();
+    }
   };
   
   useEffect(() => {
@@ -260,15 +283,19 @@ export default function Home() {
       <div 
         id="hero-carousel"
         className="relative h-screen w-full overflow-hidden"
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
       >
         {/* Background Carousel */}
-        <div className="absolute inset-0">
+        <div 
+          className="absolute inset-0 flex transition-transform duration-700 ease-in-out"
+          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
+        >
           {carouselItems.map((item, index) => (
             <div 
               key={item.id} 
-              className={`absolute inset-0 transition-all duration-1000 ease-in-out ${
-                index === currentSlide ? "opacity-100 scale-100" : "opacity-0 scale-105"
-              }`}
+              className="relative w-full h-full flex-shrink-0"
             >
               <div className="absolute inset-0">
                 <Image 
@@ -306,8 +333,12 @@ export default function Home() {
 
         {/* Navigation Buttons */}
         <button
-          onClick={prevSlide}
-          className="absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
+          onClick={(e) => {
+            e.stopPropagation();
+            prevSlide();
+          }}
+          onTouchEnd={(e) => e.stopPropagation()}
+          className="hidden lg:block absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
           aria-label="Previous slide"
           type="button"
         >
@@ -315,8 +346,12 @@ export default function Home() {
         </button>
         
         <button
-          onClick={nextSlide}
-          className="absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
+          onClick={(e) => {
+            e.stopPropagation();
+            nextSlide();
+          }}
+          onTouchEnd={(e) => e.stopPropagation()}
+          className="hidden lg:block absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
           aria-label="Next slide"
           type="button"
         >
@@ -325,17 +360,17 @@ export default function Home() {
 
         {/* Hero Content */}
         <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="container mx-auto px-4 lg:px-8">
+          <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-20 sm:py-0">
             <div className="max-w-6xl mx-auto text-center">
               {/* Badge */}
-              <div className="inline-flex items-center gap-1.5 sm:gap-2 bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 rounded-full px-3 py-1.5 sm:px-4 sm:py-2 mb-4 sm:mb-6 animate-fadeInDown hover:bg-orange-500/30 transition-all duration-300 group cursor-default relative overflow-hidden">
+              <div className="inline-flex items-center gap-1 sm:gap-2 bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 rounded-full px-2 py-1 sm:px-4 sm:py-2 mb-6 sm:mb-6 animate-fadeInDown hover:bg-orange-500/30 transition-all duration-300 group cursor-default relative overflow-hidden">
                 <div className="absolute inset-0 animate-shimmer" />
-                <BookOpen className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-300 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-                <span className="text-xs sm:text-sm font-medium text-orange-100 relative z-10">Faculty of Information Technology</span>
+                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-orange-300 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="text-[10px] sm:text-sm font-medium text-orange-100 relative z-10">Faculty of Information Technology</span>
               </div>
 
               {/* Main Heading */}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-3 sm:mb-4 lg:mb-6 text-white animate-fadeInUp leading-tight">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 sm:mb-4 lg:mb-6 text-white animate-fadeInUp leading-tight">
                 <span className="inline-block hover:scale-105 transition-transform duration-300">Book Your Lab</span>
                 <br />
                 <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 bg-clip-text text-transparent animate-gradient inline-block hover:scale-105 transition-transform duration-300">
@@ -344,37 +379,37 @@ export default function Home() {
               </h1>
 
               {/* Subtitle */}
-              <p className="text-base sm:text-lg md:text-xl lg:text-2xl mb-6 sm:mb-8 lg:mb-12 text-gray-200 font-light max-w-3xl mx-auto animate-fadeInUp px-4" style={{ animationDelay: '0.1s' }}>
+              <p className="text-xs sm:text-base md:text-lg lg:text-xl mb-8 sm:mb-8 lg:mb-12 text-gray-200 font-light max-w-3xl mx-auto animate-fadeInUp px-2 sm:px-4" style={{ animationDelay: '0.1s' }}>
                 {carouselItems[currentSlide]?.title}
                 {carouselItems[currentSlide]?.subTitle && (
-                  <span className="block text-orange-300 font-semibold mt-2">
+                  <span className="block text-orange-300 font-semibold mt-1 text-sm sm:text-base">
                     {carouselItems[currentSlide]?.subTitle}
                   </span>
                 )}
               </p>
 
               {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fadeInUp px-4" style={{ animationDelay: '0.2s' }}>
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center items-center animate-fadeInUp px-3 sm:px-4" style={{ animationDelay: '0.2s' }}>
                 <Button 
-                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6 text-sm sm:text-base lg:text-xl font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 w-full sm:w-auto overflow-hidden animate-pulse-glow"
+                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 sm:px-8 lg:px-12 py-2 sm:py-4 lg:py-6 text-xs sm:text-base lg:text-xl font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 w-full sm:w-auto overflow-hidden animate-pulse-glow"
                   onClick={() => window.location.href = '/lab-search'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  <span className="flex items-center gap-2 sm:gap-3 justify-center relative z-10">
+                  <span className="flex items-center gap-1 sm:gap-3 justify-center relative z-10">
                     <span>Book a Lab Now</span>
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-3 w-3 sm:h-5 sm:w-5 lg:h-6 lg:w-6 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
                 
                 <Button 
                   variant="outline"
-                  className="group relative bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-6 sm:px-8 lg:px-12 py-3 sm:py-4 lg:py-6 text-sm sm:text-base lg:text-xl font-semibold rounded-full border-2 border-white/30 hover:border-white/50 cursor-pointer transition-all duration-300 hover:scale-105 w-full sm:w-auto overflow-hidden"
+                  className="group relative bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 sm:px-8 lg:px-12 py-2 sm:py-4 lg:py-6 text-xs sm:text-base lg:text-xl font-semibold rounded-full border-2 border-white/30 hover:border-white/50 cursor-pointer transition-all duration-300 hover:scale-105 w-full sm:w-auto overflow-hidden"
                   onClick={() => window.location.href = '/booking-calendar'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  <span className="flex items-center gap-2 sm:gap-3 justify-center relative z-10">
+                  <span className="flex items-center gap-1 sm:gap-3 justify-center relative z-10">
                     <span>View Calendar</span>
-                    <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 lg:h-6 lg:w-6 group-hover:rotate-12 transition-transform" />
+                    <BookOpen className="h-3 w-3 sm:h-5 sm:w-5 lg:h-6 lg:w-6 group-hover:rotate-12 transition-transform" />
                   </span>
                 </Button>
               </div>
@@ -413,7 +448,7 @@ export default function Home() {
       </div>
 
       <div className="bg-gradient-to-b from-gray-50 to-white">
-        <section className="py-12 sm:py-16 lg:py-24 overflow-hidden relative">
+        <section className="py-8 sm:py-16 lg:py-24 overflow-hidden relative">
           {/* Background Decoration */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
@@ -430,7 +465,7 @@ export default function Home() {
                   <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4 sm:mb-6">
                     About <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">FIT BookLab</span>
                   </h2>
-                  <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                  <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                     BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
                   </p>
                 </div>
@@ -444,37 +479,37 @@ export default function Home() {
                 {[
                   {
                     icon: <Users className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-blue-500 to-blue-600",
+                    gradient: "from-orange-500 to-orange-600",
                     title: "Easy Booking",
-                    description: "Sistem booking yang user-friendly dengan calendar interface yang intuitif"
+                    description: "Sistem booking yang user-friendly dengan calendar yang intuitif"
                   },
                   {
                     icon: <Shield className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-green-500 to-emerald-600",
+                    gradient: "from-orange-500 to-orange-600",
                     title: "Real-time Updates",
                     description: "Informasi ketersediaan lab yang selalu update secara real-time"
                   },
                   {
                     icon: <Code className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-purple-500 to-purple-600",
+                    gradient: "from-orange-500 to-orange-600",
                     title: "Multiple Labs",
                     description: "Akses ke berbagai laboratorium dengan spesifikasi yang berbeda"
                   }
                 ].map((feature, index) => (
-                  <div key={index} className="group relative bg-white rounded-2xl p-6 lg:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 overflow-hidden">
+                  <div key={index} className="group relative bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 overflow-hidden">
                     {/* Animated Background */}
                     <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
                     
                     {/* Icon */}
-                    <div className={`relative inline-flex p-4 rounded-xl bg-gradient-to-br ${feature.gradient} text-white mb-5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg`}>
+                    <div className={`relative inline-flex p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br ${feature.gradient} text-white mb-3 sm:mb-5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg`}>
                       {feature.icon}
                     </div>
                     
                     {/* Content */}
-                    <h3 className="text-xl font-bold text-gray-900 mb-3 group-hover:text-orange-600 transition-colors duration-300">
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-orange-600 transition-colors duration-300">
                       {feature.title}
                     </h3>
-                    <p className="text-gray-600 leading-relaxed">
+                    <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
                       {feature.description}
                     </p>
                     
@@ -488,7 +523,7 @@ export default function Home() {
         </section>
 
         
-        <section className="py-12 sm:py-16 lg:py-24 bg-gradient-to-br from-orange-50 via-white to-orange-50 overflow-hidden relative">
+        <section className="py-8 sm:py-16 lg:py-24 bg-gradient-to-br from-orange-50 via-white to-orange-50 overflow-hidden relative">
           {/* Background Pattern */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0" style={{
@@ -499,14 +534,14 @@ export default function Home() {
 
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-5xl mx-auto">
-              <AnimatedSection animation="fadeInUp" className="text-center mb-12 sm:mb-16">
-                <div className="inline-block mb-4">
-                  <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider bg-white px-4 py-2 rounded-full shadow-md">How It Works</span>
+              <AnimatedSection animation="fadeInUp" className="text-center mb-8 sm:mb-16">
+                <div className="inline-block mb-3">
+                  <span className="text-orange-600 font-semibold text-xs sm:text-sm uppercase tracking-wider bg-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-md">How It Works</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-4 sm:mb-6">
                   Cara Menggunakan <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">BookLab</span>
                 </h2>
-                <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
+                <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
                   Ikuti 6 langkah mudah untuk melakukan booking laboratorium
                 </p>
               </AnimatedSection>
@@ -567,10 +602,10 @@ export default function Home() {
                     
                     {/* Content Card */}
                     <div className="flex-1 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-md hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1 border border-gray-100 group-hover:border-orange-200">
-                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-1.5 sm:mb-2 group-hover:text-orange-600 transition-colors duration-300">
+                      <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 sm:mb-2 group-hover:text-orange-600 transition-colors duration-300">
                         {step.title}
                       </h3>
-                      <p className="text-sm sm:text-base text-gray-600 leading-relaxed">
+                      <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
                         {step.description}
                       </p>
                     </div>
@@ -578,15 +613,15 @@ export default function Home() {
                 ))}
               </StaggeredAnimationContainer>
               
-              <AnimatedSection animation="scaleIn" delay={800} className="mt-12 sm:mt-16 text-center">
+              <AnimatedSection animation="scaleIn" delay={800} className="mt-8 sm:mt-16 text-center">
                 <Button 
-                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 sm:px-12 py-4 sm:py-5 text-base sm:text-lg font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 overflow-hidden"
+                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 sm:px-12 py-3 sm:py-5 text-sm sm:text-base md:text-lg font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 overflow-hidden"
                   onClick={() => window.location.href = '/lab-search'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  <span className="flex items-center gap-3 relative z-10">
+                  <span className="flex items-center gap-2 relative z-10">
                     Start Booking Now
-                    <ChevronRight className="h-5 w-5 group-hover:translate-x-1 transition-transform" />
+                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
               </AnimatedSection>
@@ -595,22 +630,22 @@ export default function Home() {
         </section>
 
         
-        <AnimatedSection animation="fadeInUp" className="py-12 sm:py-16 lg:py-20 bg-white">
-          <div className="container mx-auto px-4">
+        <AnimatedSection animation="fadeInUp" className="py-8 sm:py-16 lg:py-20 bg-white">
+          <div className="container mx-auto px-3 sm:px-4">
             <div className="max-w-5xl mx-auto">
-              <div className="text-center mb-10 sm:mb-14">
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-4 sm:mb-5">
+              <div className="text-center mb-6 sm:mb-10 md:mb-14">
+                <h2 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900 mb-3 sm:mb-4 md:mb-5">
                   Tata Tertib Penggunaan Laboratorium FIT
                 </h2>
-                <p className="text-base sm:text-lg text-gray-600 max-w-5xl mx-auto">
+                <p className="text-sm sm:text-base md:text-lg text-gray-600 max-w-5xl mx-auto">
                   Harap patuhi aturan berikut untuk menjaga kelancaran dan keamanan penggunaan laboratorium
                 </p>
               </div>
               
               
               <AnimatedSection animation="fadeIn" delay={200}>
-                <div className="bg-white p-5 rounded-xl shadow-md mb-8 sm:mb-10">
-                  <h3 className="font-semibold text-gray-900 mb-3 text-lg">Daftar Isi:</h3>
+                <div className="bg-white p-4 sm:p-5 rounded-lg sm:rounded-xl shadow-md mb-6 sm:mb-8 md:mb-10">
+                  <h3 className="font-semibold text-gray-900 mb-2 sm:mb-3 text-base sm:text-lg">Daftar Isi:</h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                     {[
                       { href: "#larangan", number: 1, title: "Larangan", color: "orange" },
@@ -620,9 +655,9 @@ export default function Home() {
                       { href: "#sanksi", number: 5, title: "Sanksi Pelanggaran", color: "orange" },
                       { href: "#kontak", number: 6, title: "Kontak Penanggung Jawab", color: "orange" }
                     ].map((item) => (
-                      <a key={item.number} href={item.href} className={`flex items-center p-2 hover:bg-gray-50 rounded-md group transition-all duration-300 hover:scale-105`}>
-                        <span className={`w-6 h-6 flex items-center justify-center bg-${item.color}-100 text-${item.color}-600 rounded-full mr-2 font-medium transition-all duration-300 group-hover:scale-110`}>{item.number}</span>
-                        <span className={`text-gray-700 group-hover:text-${item.color}-600 transition-colors duration-300`}>{item.title}</span>
+                      <a key={item.number} href={item.href} className={`flex items-center p-1.5 sm:p-2 hover:bg-gray-50 rounded-md group transition-all duration-300 hover:scale-105`}>
+                        <span className={`w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center bg-${item.color}-100 text-${item.color}-600 rounded-full mr-1.5 sm:mr-2 text-xs sm:text-sm font-medium transition-all duration-300 group-hover:scale-110`}>{item.number}</span>
+                        <span className={`text-xs sm:text-sm text-gray-700 group-hover:text-${item.color}-600 transition-colors duration-300`}>{item.title}</span>
                       </a>
                     ))}
                   </div>
@@ -638,63 +673,63 @@ export default function Home() {
                 
                 <div className="space-y-6 sm:space-y-8">
                   
-                  <div id="larangan" className="bg-white p-6 sm:p-8 rounded-xl shadow-md border-l-4 border-orange-500 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
+                  <div id="larangan" className="bg-white p-4 sm:p-6 md:p-8 rounded-lg sm:rounded-xl shadow-md border-l-4 border-orange-500 transform transition-all duration-300 hover:shadow-lg hover:-translate-y-1">
                     
-                    <div className="flex items-center mb-5">
-                      <div className="w-10 h-10 rounded-full bg-orange-100 flex items-center justify-center mr-3 flex-shrink-0">
-                        <span className="text-orange-600 font-bold">1</span>
+                    <div className="flex items-center mb-3 sm:mb-5">
+                      <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-orange-100 flex items-center justify-center mr-2 sm:mr-3 flex-shrink-0">
+                        <span className="text-orange-600 font-bold text-sm sm:text-base">1</span>
                       </div>
-                      <h3 className="text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, DILARANG:</h3>
+                      <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900">Semua pengunjung atau pengguna Laboratorium FIT, DILARANG:</h3>
                     </div>
                     
-                    <ul className="space-y-3 text-sm sm:text-base text-gray-700 ml-2">
+                    <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm md:text-base text-gray-700 ml-1 sm:ml-2">
                       
-                      <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                        <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">a</span>
+                      <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                        <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">a</span>
                         <span>Merokok atau melakukan <i>vaping</i></span>
                       </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">b</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">b</span>
                       <span>Membuang sampah sembarangan dan mengotori area Laboratorium (Lab)</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">c</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">c</span>
                       <span>Membawa makanan dan minuman ke dalam Laboratorium</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">d</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">d</span>
                       <span>Makan atau minum dalam Laboratorium FIT tanpa se-izin Laboran (kecuali pengajar)</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">e</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">e</span>
                       <span>Membuat keributan</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">f</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">f</span>
                       <span>Melakukan perjudian dalam bentuk apapun</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg sm:col-span-2">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">g</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">g</span>
                       <span>Merusak (melakukan vandalisme) dan mengotori fasilitas (meja, kursi, papan tulis, pintu, tembok, komputer dan seluruh peralatan dalam Laboratorium)</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg sm:col-span-2">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">h</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">h</span>
                       <span>Melakukan kegiatan yang melanggar etika, moral, atau hukum yang berlaku</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">i</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">i</span>
                       <span>Menciptakan atau menyebarkan virus komputer</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">j</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">j</span>
                       <span>Melakukan <i>cracking</i> atau <i>hacking</i></span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg sm:col-span-2">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">k</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg sm:col-span-2">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">k</span>
                       <span>Menginstall atau menyimpan program dalam bentuk apapun ke dalam fasilitas yang ada di Laboratorium</span>
                     </li>
-                    <li className="flex items-start bg-orange-50 p-3 rounded-lg">
-                      <span className="flex-shrink-0 w-5 h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-2 mt-0.5 text-xs font-bold">l</span>
+                    <li className="flex items-start bg-orange-50 p-2 sm:p-3 rounded-md sm:rounded-lg">
+                      <span className="flex-shrink-0 w-4 h-4 sm:w-5 sm:h-5 bg-orange-500 text-white rounded-full flex items-center justify-center mr-1.5 sm:mr-2 mt-0.5 text-[10px] sm:text-xs font-bold">l</span>
                       <span>Mencuri fasilitas, peralatan, atau benda apapun yang merupakan milik Lab</span>
                     </li>
                     <li className="flex items-start bg-orange-50 p-3 rounded-lg">
