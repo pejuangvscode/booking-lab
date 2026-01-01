@@ -151,10 +151,10 @@ export function Navbar() {
             <div className="hidden sm:ml-6 sm:flex sm:space-x-8">
               <SignedOut>
                 <Link
-                  href="/lab-search"
-                  className={getLinkClasses('/lab-search')}
+                  href="/book-room"
+                  className={getLinkClasses('/book-room')}
                 >
-                  Lab Search
+                  Book Room
                 </Link>
                 <Link
                   href="/booking-calendar"
@@ -165,10 +165,10 @@ export function Navbar() {
               </SignedOut>
               <SignedIn>
                 <Link
-                  href="/lab-search"
-                  className={getLinkClasses('/lab-search')}
+                  href="/book-room"
+                  className={getLinkClasses('/book-room')}
                 >
-                  Lab Search
+                  Book Room
                 </Link>
                 <Link
                   href="/booking-calendar"
@@ -326,10 +326,10 @@ export function Navbar() {
           <SignedOut>
             <Link
               onClick={() => setIsMenuOpen(false)}
-              href="/lab-search"
-              className={getMobileLinkClasses('/lab-search')}
+              href="/book-room"
+              className={getMobileLinkClasses('/book-room')}
             >
-              Lab Search
+              Book Room
             </Link>
             <Link
               onClick={() => setIsMenuOpen(false)}
@@ -342,10 +342,10 @@ export function Navbar() {
           <SignedIn>
             <Link
               onClick={() => setIsMenuOpen(false)}
-              href="/lab-search"
-              className={getMobileLinkClasses('/lab-search')}
+              href="/book-room"
+              className={getMobileLinkClasses('/book-room')}
             >
-              Lab Search
+              Book Room
             </Link>
             <Link
               onClick={() => setIsMenuOpen(false)}

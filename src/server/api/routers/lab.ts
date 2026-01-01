@@ -16,10 +16,61 @@ export const labRouter = createTRPCRouter({
         type: room.type || "Unknown",
         capacity: room.capacity || 0,
         image: room.image || "",
+        roomType: room.roomType || "student_lab",
       }));
     } catch (error) {
       console.error("Error fetching labs:", error);
       throw new Error("Failed to fetch laboratories");
+    }
+  }),
+
+  getStudentLabs: publicProcedure.query(async ({ ctx }) => {
+    try {
+      const labs = await ctx.db.lab.findMany({
+        where: {
+          roomType: "student_lab"
+        },
+        orderBy: { name: "asc" },
+      });
+      
+      return labs.map(room => ({
+        id: room.id,
+        name: room.name || '',
+        facilityId: room.facilityId,
+        department: "Faculty of Information & Technology",
+        type: room.type || "Unknown",
+        capacity: room.capacity || 0,
+        image: room.image || "",
+        roomType: room.roomType || "student_lab",
+      }));
+    } catch (error) {
+      console.error("Error fetching student labs:", error);
+      throw new Error("Failed to fetch student laboratories");
+    }
+  }),
+
+  getStaffRooms: publicProcedure.query(async ({ ctx }) => {
+    try {
+      const rooms = await ctx.db.lab.findMany({
+        where: {
+          roomType: "staff_room"
+        },
+        orderBy: { name: "asc" },
+      });
+      
+      return rooms.map(room => ({
+        id: room.id,
+        name: room.name || '',
+        facilityId: room.facilityId,
+        department: "Faculty of Information & Technology",
+        type: room.type || "Unknown",
+        capacity: room.capacity || 0,
+        image: room.image || "",
+        roomType: room.roomType || "staff_room",
+      }));
+    } catch (error) {
+      console.error("Error fetching staff rooms:", error);
+      throw new Error("Failed to fetch staff rooms");
     }
   }),
   

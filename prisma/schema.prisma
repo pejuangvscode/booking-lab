@@ -26,7 +26,8 @@ model Lab {
   department String
   createdAt  DateTime   @default(now())
   image      String?
-  picIds     Json?     // JSON array of PIC user IDs
+  picIds     Json?      // JSON array of PIC user IDs
+  roomType   String     @default("student_lab") @map("room_type") // student_lab or staff_room
   bookings   Bookings[]
 
   @@map("rooms")
