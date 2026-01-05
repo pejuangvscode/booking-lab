@@ -457,7 +457,7 @@ export default function Home() {
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center items-center animate-fadeInUp px-3 sm:px-4" style={{ animationDelay: '0.2s' }}>
                 <Button 
                   className="group relative bg-gradient-to-r from-red-600 via-red-500 to-green-600 hover:from-red-700 hover:via-red-600 hover:to-green-700 text-white px-4 sm:px-8 lg:px-12 py-2 sm:py-4 lg:py-6 text-xs sm:text-base lg:text-xl font-bold rounded-full shadow-2xl hover:shadow-red-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-white/50 w-full sm:w-auto overflow-hidden"
-                  onClick={() => window.location.href = '/lab-search'}
+                  onClick={() => window.location.href = '/book-room'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                   <span className="flex items-center gap-1 sm:gap-3 justify-center relative z-10">
