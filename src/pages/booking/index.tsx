@@ -113,13 +113,11 @@ export default function BookingPage() {
       setBookingType("full");
       setParticipants("0");
     }
-    else if (labId === "MM16") {
+    else if (labDetail?.type === "staff_room") {
       setBookingType("full");
-      setParticipants("14");
-    }
-    else if (labId === "MH16") {
-      setBookingType("full");
-      setParticipants("50");
+      // Set participants ke capacity penuh (contoh: 50 untuk MH16, 14 untuk MM16)
+      const maxCapacity = labDetail?.capacity || 0;
+      setParticipants(maxCapacity.toString());
     }
   }, [labDetail]);
 
@@ -156,7 +154,7 @@ export default function BookingPage() {
         }
         
         try {
-          const finalParticipants = labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16"
+          const finalParticipants = labDetail?.capacity === 0 || labDetail?.type === "staff_room"
             ? parseInt(participants) || 1
             : bookingType === "full" 
               ? (labDetail?.capacity || parseInt(participants) || 1)
@@ -325,10 +323,10 @@ export default function BookingPage() {
     if (!endHour || !endMinute) errors.endTime = "End time is required";
     if (!eventName) errors.eventName = "Event name is required";
     if (!eventType) errors.eventType = "Event type is required";
-    if (!phone && labId !== "MM16" && labId !== "MH16") errors.phone = "Phone number is required";
+    if (!phone && labDetail?.type !== "staff_room") errors.phone = "Phone number is required";
     if (!requestorName) errors.requestorName = "Requestor name is required";
-    if (!requestorNIM && labId !== "MM16" && labId !== "MH16") errors.requestorNIM = "Requestor NIM is required";
-    if (!faculty && labId !== "MM16") errors.faculty = "Faculty is required";
+    if (!requestorNIM && labDetail?.type !== "staff_room") errors.requestorNIM = "Requestor NIM is required";
+    if (!faculty && labDetail?.type !== "staff_room") errors.faculty = "Faculty is required";
 
     const startTimeValue = `${startHour}:${startMinute}`;
     const endTimeValue = `${endHour}:${endMinute}`;
@@ -349,7 +347,7 @@ export default function BookingPage() {
       }
     }
 
-    if (labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16") {
+    if (labDetail?.capacity === 0 || labDetail?.type === "staff_room") {
       if (participants.trim() === "" || isNaN(parseInt(participants))) {
         errors.participants = "Number of participants is required for flexible space rooms";
       } else if (parseInt(participants) < 0) {
@@ -371,7 +369,7 @@ export default function BookingPage() {
       return;
     }
     
-    const finalParticipants = labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16"
+    const finalParticipants = labDetail?.capacity === 0 || labDetail?.type === "staff_room"
       ? parseInt(participants) || 0
       : bookingType === "full" 
         ? (labDetail?.capacity || parseInt(participants) || 1)
@@ -454,52 +452,75 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-20">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden pt-20">
+      {/* Background Decorative Elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
+        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
+      </div>
+      
       <Head>
         <title>Book a Lab | UPH Facility Booking</title>
       </Head>
       
+      <div className="container mx-auto px-4 py-8 relative z-10">
       {/* User Info Bar */}
-      <div className="max-w-4xl mx-auto mb-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+      <div className="max-w-4xl mx-auto mb-6">
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300">
           <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-blue-700">
-                Signed in as: <span className="font-medium">{user?.firstName} {user?.lastName}</span>
+            <div className="flex items-center space-x-3">
+              <div className="relative">
+                <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
+                <div className="absolute inset-0 h-3 w-3 bg-green-400 rounded-full animate-ping"></div>
+              </div>
+              <span className="text-sm font-medium text-blue-800">
+                Signed in as: <span className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{user?.firstName} {user?.lastName}</span>
               </span>
             </div>
-            <span className="text-xs text-blue-600">
+            <span className="text-xs text-blue-600 bg-white/50 px-3 py-1 rounded-full">
               {user?.emailAddresses[0]?.emailAddress}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-orange-100 overflow-hidden hover:shadow-3xl transition-all duration-300">
         {/* Header section */}
-        <div className="p-6 bg-gradient-to-r from-orange-600 to-orange-700">
-          <h2 className="text-3xl font-bold text-white">
+        <div className="p-8 bg-gradient-to-br from-orange-600 via-orange-500 to-orange-700 relative overflow-hidden">
+          <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-transparent"></div>
+          <div className="relative z-10">
+          <h2 className="text-4xl font-bold text-white drop-shadow-lg">
             {labDetail?.name ? `Book ${labDetail.name}` : "Book Laboratory"}
           </h2>
           {labDetail && (
-            <p className="text-orange-100 mt-2">
-              {labDetail.type} • {
-                labDetail.capacity && labDetail.capacity > 0 
+            <p className="text-orange-50 mt-3 text-lg font-medium">
+              <span className="inline-flex items-center bg-white/20 px-3 py-1 rounded-full text-sm">
+                {labDetail.type}
+              </span>
+              <span className="mx-2">•</span>
+              <span className="inline-flex items-center bg-white/20 px-3 py-1 rounded-full text-sm">
+                {labDetail.capacity && labDetail.capacity > 0 
                   ? `${labDetail.capacity} seats` 
-                  : "Flexible space"
-              } • {labDetail.department}
+                  : "Flexible space"}
+              </span>
+              <span className="mx-2">•</span>
+              <span className="inline-flex items-center bg-white/20 px-3 py-1 rounded-full text-sm">
+                {labDetail.department}
+              </span>
             </p>
           )}
-          <div className="mt-2 flex space-x-2">
+          <div className="mt-4 flex flex-wrap gap-2">
             {labDetail?.facilityId && (
-              <span className="bg-white/20 text-white px-2 py-1 rounded text-sm">
-                ID: {labDetail.facilityId}
+              <span className="bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg border border-white/20">
+                <span className="opacity-80">ID:</span> {labDetail.facilityId}
               </span>
             )}
-            <span className="bg-green-500/80 text-white px-2 py-1 rounded text-sm">
+            <span className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg flex items-center gap-2 border border-green-400">
+              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
               Available
             </span>
+          </div>
           </div>
         </div>
 
@@ -526,11 +547,14 @@ export default function BookingPage() {
             </div>
           </div>
         ) : (
-          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
+          <form onSubmit={handleSubmit} className="p-6 sm:p-8 space-y-6 sm:space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Booking Date */}
-              <div className="space-y-2">
-                <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700">
+              <div className="space-y-3">
+                <label htmlFor="bookingDate" className="block text-sm font-semibold text-gray-800 flex items-center gap-2">
+                  <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
                   Booking Date
                 </label>
                 <Input
@@ -620,29 +644,32 @@ export default function BookingPage() {
             </div>
 
             {/* Booking Type Selection */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
+            <div className="space-y-4 bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl border-2 border-orange-200">
+              <label className="block text-sm font-semibold text-gray-800 flex items-center gap-2">
+                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                </svg>
                 Booking Type
               </label>
 
               <RadioGroup 
                 value={bookingType} 
                 onValueChange={handleBookingTypeChange}
-                className={`grid gap-4 ${labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16" ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
+                className={`grid gap-4 ${labDetail?.capacity === 0 || labDetail?.type === "staff_room" ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
                 disabled={isSubmitting || checking || bookingMutation.status === "pending"}
               >
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem 
                     value="full" 
                     id="full" 
-                    disabled={labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16"}
+                    disabled={labDetail?.capacity === 0 || labDetail?.type === "staff_room"}
                   />
                   <Label htmlFor="full" className="flex-1 cursor-pointer">
-                    <Card className={`p-4 border-2 transition-all duration-200 ${
+                    <Card className={`p-5 border-2 transition-all duration-300 shadow-md hover:shadow-xl ${
                       bookingType === "full" 
-                        ? "border-orange-500 bg-orange-50" 
-                        : "border-gray-200 hover:border-gray-300"
-                    } ${labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16" ? 'opacity-100' : ''}`}>
+                        ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 ring-2 ring-orange-200 scale-105" 
+                        : "border-gray-200 hover:border-orange-300 bg-white hover:bg-orange-50/50"
+                    } ${labDetail?.capacity === 0 || labDetail?.type === "staff_room" ? 'opacity-100' : ''}`}>
                       <CardContent className="p-0">
                         <div className="flex items-center space-x-3">
                           <Building className={`h-5 w-5 ${
@@ -650,10 +677,10 @@ export default function BookingPage() {
                           }`} />
                           <div>
                             <div className="font-medium text-sm">
-                              {labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16" ? "Book Entire Space" : "Book Full Room"}
+                              {labDetail?.capacity === 0 || labDetail?.type === "staff_room" ? "Book Entire Space" : "Book Full Room"}
                             </div>
                             <div className="text-xs text-gray-500">
-                              {labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16"
+                              {labDetail?.capacity === 0 || labDetail?.type === "staff_room"
                                 ? "Flexible space, no capacity limit"
                                 : labDetail?.capacity && labDetail.capacity > 0 
                                   ? `${labDetail.capacity} seats` 
@@ -668,14 +695,14 @@ export default function BookingPage() {
                 </div>
 
                 {/* Partial Room Option */}
-                {labDetail?.capacity !== 0 && labId !== "MM16" && labId !== "MH16" && (
+                {labDetail?.capacity !== 0 && labDetail?.type !== "staff_room" && (
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="partial" id="partial" />
                     <Label htmlFor="partial" className="flex-1 cursor-pointer">
-                      <Card className={`p-4 border-2 transition-all duration-200 ${
+                      <Card className={`p-5 border-2 transition-all duration-300 shadow-md hover:shadow-xl ${
                         bookingType === "partial" 
-                          ? "border-orange-500 bg-orange-50" 
-                          : "border-gray-200 hover:border-gray-300"
+                          ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 ring-2 ring-orange-200 scale-105" 
+                          : "border-gray-200 hover:border-orange-300 bg-white hover:bg-orange-50/50"
                       }`}>
                         <CardContent className="p-0">
                           <div className="flex items-center space-x-3">
@@ -700,7 +727,7 @@ export default function BookingPage() {
             {(bookingType === "partial") && (
               <div className="space-y-2">
                 <label htmlFor="participants" className="block text-sm font-medium text-gray-700">
-                  Number of Participants {labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16" && <span className="text-red-500">*</span>}
+                  Number of Participants {labDetail?.capacity === 0 || labDetail?.type === "staff_room" && <span className="text-red-500">*</span>}
                 </label>
                 <Input
                   type="number"
@@ -710,14 +737,14 @@ export default function BookingPage() {
                   min="1"
                   max={labDetail?.capacity && labDetail.capacity > 0 ? labDetail.capacity : 999}
                   placeholder={
-                    labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16"
+                    labDetail?.capacity === 0 || labDetail?.type === "staff_room"
                       ? "Enter number of participants (required)"
                       : labDetail?.capacity && labDetail.capacity > 0 
                         ? `Enter number (max: ${labDetail.capacity})`
                         : "Enter number of participants"
                   }
                   className={formErrors.participants ? "border-red-500" : ""}
-                  required={labDetail?.capacity === 0 || labId === "MM16" || labId === "MH16"}
+                  required={labDetail?.capacity === 0 || labDetail?.type === "staff_room"}
                   disabled={isSubmitting || checking || bookingMutation.status === "pending"}
                 />
                 {formErrors.participants && (
@@ -794,7 +821,7 @@ export default function BookingPage() {
               </div>
 
               {/* Faculty */}
-              {(labId !== "MM16" && labId !== "MH16") && (<div className="space-y-2">
+              {labDetail?.type !== "staff_room" && (<div className="space-y-2">
                 <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">
                   Faculty
                 </label>
@@ -814,7 +841,7 @@ export default function BookingPage() {
               
 
               {/* Requestor Phone */}
-              {(labId !== "MM16" && labId !== "MH16") && (<div className="space-y-2">
+              {labDetail?.type !== "staff_room" && (<div className="space-y-2">
                 <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
                   Requestor Phone
                 </label>
@@ -853,7 +880,7 @@ export default function BookingPage() {
               </div>
 
               {/* Requestor NIM */}
-              {(labId !== "MM16" && labId !== "MH16") && (<div className="space-y-2">
+              {labDetail?.type !== "staff_room" && (<div className="space-y-2">
                 <label htmlFor="requestorNIM" className="block text-sm font-medium text-gray-700">
                   Requestor NIM
                 </label>
@@ -882,8 +909,8 @@ export default function BookingPage() {
             </div>
 
             {bookingDate && startHour && startMinute && endHour && endMinute && (
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
+              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-5 shadow-lg">
+                <div className="flex items-center space-x-3">
                   {checking ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
@@ -935,10 +962,10 @@ export default function BookingPage() {
             )}
             
             {/* Submit Button */}
-            <div className="flex justify-center pt-4">
+            <div className="flex justify-center pt-6">
               <Button 
                 type="submit" 
-                className="w-full py-4 sm:py-6 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg hover:cursor-pointer"
+                className="w-full py-5 sm:py-7 bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 hover:from-orange-700 hover:via-orange-600 hover:to-orange-700 text-white text-base sm:text-xl font-semibold hover:cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl border-2 border-orange-400"
                 disabled={bookingMutation.status === "pending" || checking || isSubmitting}
               >
                 {bookingMutation.status === "pending" || isSubmitting ? (
@@ -958,6 +985,7 @@ export default function BookingPage() {
             </div>
           </form>
         )}
+      </div>
       </div>
       <CustomDialog
         isOpen={dialogState.isOpen}

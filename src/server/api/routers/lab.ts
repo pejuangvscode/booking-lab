@@ -104,7 +104,16 @@ export const labRouter = createTRPCRouter({
           throw new Error("Lab not found");
         }
         
-        return lab;
+        return {
+          id: lab.id,
+          name: lab.name || '',
+          facilityId: lab.facilityId,
+          department: "Faculty of Information & Technology",
+          type: lab.roomType || lab.type || "student_lab", // Return roomType as type
+          capacity: lab.capacity || 0,
+          image: lab.image || "",
+          roomType: lab.roomType || "student_lab",
+        };
       } catch (error) {
         console.error("Error fetching lab by ID:", error);
         throw new Error("Failed to fetch laboratory");
