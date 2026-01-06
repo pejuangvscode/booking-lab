@@ -6,24 +6,6 @@ import { ChevronLeft, ChevronRight, BookOpen, Shield, Users, Code } from "lucide
 import React from "react";
 import { api } from "~/utils/api";
 
-// Christmas Snowflake Component
-const Snowflake: React.FC<{ delay: number; left: string; duration: number; size: number; startPosition: number }> = ({ left, duration, size, startPosition }) => (
-  <div
-    className="absolute pointer-events-none"
-    style={{
-      left,
-      top: `${startPosition}%`,
-      animation: `snowfall ${duration}s linear infinite`,
-      animationDelay: `-${Math.random() * duration}s`,
-    }}
-  >
-    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" opacity="0.8">
-      <path d="M12 2L12 22M2 12L22 12M6 6L18 18M18 6L6 18" />
-      <circle cx="12" cy="12" r="2" fill="white" opacity="0.3" />
-    </svg>
-  </div>
-);
-
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
   const [ref, setRef] = useState<Element | null>(null);
@@ -319,10 +301,9 @@ export default function Home() {
                   priority={index === 0}
                 />
               </div>
-              {/* Christmas Gradient Overlays with animation */}
-              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-red-900/30 to-green-900/30 animate-gradient" />
+              {/* Gradient Overlays with animation */}
+              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-orange-900/40 animate-gradient" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-              <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-transparent to-green-500/5" />
             </div>
           ))}
         </div>
@@ -335,54 +316,13 @@ export default function Home() {
           }} />
         </div>
 
-        {/* Christmas Snowfall Effect */}
+        {/* Floating Particles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {[...Array(80)].map((_, i) => (
-            <Snowflake
-              key={i}
-              delay={0}
-              left={`${Math.random() * 100}%`}
-              duration={15 + Math.random() * 15}
-              size={10 + Math.random() * 15}
-              startPosition={Math.random() * 120 - 20}
-            />
-          ))}
-        </div>
-
-        {/* Christmas Trees Decoration */}
-        <div className="absolute bottom-0 left-0 right-0 pointer-events-none overflow-hidden z-5">
-          <div className="container mx-auto px-4 relative">
-            {/* Left Tree */}
-            <div className="absolute bottom-0 left-4 sm:left-8 opacity-40 animate-fadeIn">
-              <svg width="80" height="100" viewBox="0 0 80 100" fill="none" className="drop-shadow-2xl">
-                <path d="M40 0L50 25H30L40 0Z" fill="#22c55e" />
-                <path d="M40 18L55 48H25L40 18Z" fill="#16a34a" />
-                <path d="M40 38L60 75H20L40 38Z" fill="#15803d" />
-                <rect x="35" y="75" width="10" height="25" fill="#78350f" />
-                <circle cx="40" cy="10" r="4" fill="#fbbf24" className="animate-pulse" />
-                <circle cx="32" cy="30" r="3" fill="#ef4444" className="animate-pulse" style={{animationDelay: '0.2s'}} />
-                <circle cx="48" cy="35" r="3" fill="#3b82f6" className="animate-pulse" style={{animationDelay: '0.4s'}} />
-                <circle cx="28" cy="52" r="3" fill="#f59e0b" className="animate-pulse" style={{animationDelay: '0.6s'}} />
-                <circle cx="52" cy="56" r="3" fill="#ec4899" className="animate-pulse" style={{animationDelay: '0.8s'}} />
-                <circle cx="40" cy="60" r="3" fill="#8b5cf6" className="animate-pulse" style={{animationDelay: '1s'}} />
-              </svg>
-            </div>
-            {/* Right Tree */}
-            <div className="absolute bottom-0 right-4 sm:right-8 opacity-40 animate-fadeIn" style={{animationDelay: '0.3s'}}>
-              <svg width="80" height="100" viewBox="0 0 80 100" fill="none" className="drop-shadow-2xl">
-                <path d="M40 0L50 25H30L40 0Z" fill="#22c55e" />
-                <path d="M40 18L55 48H25L40 18Z" fill="#16a34a" />
-                <path d="M40 38L60 75H20L40 38Z" fill="#15803d" />
-                <rect x="35" y="75" width="10" height="25" fill="#78350f" />
-                <circle cx="40" cy="10" r="4" fill="#fbbf24" className="animate-pulse" />
-                <circle cx="48" cy="30" r="3" fill="#ef4444" className="animate-pulse" style={{animationDelay: '0.2s'}} />
-                <circle cx="32" cy="35" r="3" fill="#3b82f6" className="animate-pulse" style={{animationDelay: '0.4s'}} />
-                <circle cx="52" cy="52" r="3" fill="#f59e0b" className="animate-pulse" style={{animationDelay: '0.6s'}} />
-                <circle cx="28" cy="56" r="3" fill="#ec4899" className="animate-pulse" style={{animationDelay: '0.8s'}} />
-                <circle cx="40" cy="60" r="3" fill="#8b5cf6" className="animate-pulse" style={{animationDelay: '1s'}} />
-              </svg>
-            </div>
-          </div>
+          <div className="absolute top-20 left-10 w-2 h-2 bg-orange-400/30 rounded-full animate-float" style={{ animationDelay: '0s' }} />
+          <div className="absolute top-40 right-20 w-3 h-3 bg-orange-500/20 rounded-full animate-float" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-40 left-1/4 w-2 h-2 bg-white/20 rounded-full animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute bottom-60 right-1/3 w-4 h-4 bg-orange-300/10 rounded-full animate-float" style={{ animationDelay: '1.5s' }} />
+          <div className="absolute top-1/3 left-2/3 w-3 h-3 bg-white/10 rounded-full animate-float" style={{ animationDelay: '0.5s' }} />
         </div>
 
         {/* Navigation Buttons */}
@@ -416,23 +356,18 @@ export default function Home() {
         <div className="absolute inset-0 flex items-center justify-center z-10">
           <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-20 sm:py-0">
             <div className="max-w-6xl mx-auto text-center">
-              {/* Christmas Badge */}
-              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-red-500/20 via-white/20 to-green-500/20 backdrop-blur-md border-2 border-white/30 rounded-full px-4 py-2 mb-6 animate-fadeInDown hover:from-red-500/30 hover:via-white/30 hover:to-green-500/30 transition-all duration-300 group cursor-default relative overflow-hidden shadow-xl">
-                <div className="absolute inset-0 bg-gradient-to-r from-red-500/10 via-transparent to-green-500/10 animate-shimmer" />
-                <svg className="h-4 w-4 text-red-400 relative z-10 animate-pulse" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0L13.5 6H18L14 9.5L16 15L12 12L8 15L10 9.5L6 6H10.5L12 0Z" />
-                </svg>
-                <span className="text-sm font-bold text-white relative z-10 tracking-wide">Merry Christmas from FIT</span>
-                <svg className="h-4 w-4 text-green-400 relative z-10 animate-pulse" viewBox="0 0 24 24" fill="currentColor" style={{animationDelay: '0.5s'}}>
-                  <path d="M12 0L13.5 6H18L14 9.5L16 15L12 12L8 15L10 9.5L6 6H10.5L12 0Z" />
-                </svg>
+              {/* Badge */}
+              <div className="inline-flex items-center gap-1 sm:gap-2 bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 rounded-full px-2 py-1 sm:px-4 sm:py-2 mb-6 sm:mb-6 animate-fadeInDown hover:bg-orange-500/30 transition-all duration-300 group cursor-default relative overflow-hidden">
+                <div className="absolute inset-0 animate-shimmer" />
+                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-orange-300 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="text-[10px] sm:text-sm font-medium text-orange-100 relative z-10">Faculty of Information Technology</span>
               </div>
 
-              {/* Main Heading with Christmas Theme */}
+              {/* Main Heading */}
               <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 sm:mb-4 lg:mb-6 text-white animate-fadeInUp leading-tight">
-                <span className="inline-block hover:scale-105 transition-transform duration-300 drop-shadow-2xl">Book Your Lab</span>
+                <span className="inline-block hover:scale-105 transition-transform duration-300">Book Your Lab</span>
                 <br />
-                <span className="bg-gradient-to-r from-red-400 via-green-400 to-red-400 bg-clip-text text-transparent animate-gradient inline-block hover:scale-105 transition-transform duration-300 drop-shadow-2xl">
+                <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 bg-clip-text text-transparent animate-gradient inline-block hover:scale-105 transition-transform duration-300">
                   Anytime, Anywhere
                 </span>
               </h1>
@@ -441,17 +376,17 @@ export default function Home() {
               <p className="text-xs sm:text-base md:text-lg lg:text-xl mb-8 sm:mb-8 lg:mb-12 text-gray-200 font-light max-w-3xl mx-auto animate-fadeInUp px-2 sm:px-4" style={{ animationDelay: '0.1s' }}>
                 {carouselItems[currentSlide]?.title}
                 {carouselItems[currentSlide]?.subTitle && (
-                  <span className="block text-green-300 font-semibold mt-1 text-sm sm:text-base">
+                  <span className="block text-orange-300 font-semibold mt-1 text-sm sm:text-base">
                     {carouselItems[currentSlide]?.subTitle}
                   </span>
                 )}
               </p>
 
-              {/* CTA Buttons with Christmas Theme */}
+              {/* CTA Buttons */}
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center items-center animate-fadeInUp px-3 sm:px-4" style={{ animationDelay: '0.2s' }}>
                 <Button 
-                  className="group relative bg-gradient-to-r from-red-600 via-red-500 to-green-600 hover:from-red-700 hover:via-red-600 hover:to-green-700 text-white px-4 sm:px-8 lg:px-12 py-2 sm:py-4 lg:py-6 text-xs sm:text-base lg:text-xl font-bold rounded-full shadow-2xl hover:shadow-red-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-white/50 w-full sm:w-auto overflow-hidden"
-                  onClick={() => window.location.href = '/book-room'}
+                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 sm:px-8 lg:px-12 py-2 sm:py-4 lg:py-6 text-xs sm:text-base lg:text-xl font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 w-full sm:w-auto overflow-hidden animate-pulse-glow"
+                  onClick={() => window.location.href = '/lab-search'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                   <span className="flex items-center gap-1 sm:gap-3 justify-center relative z-10">
@@ -484,7 +419,7 @@ export default function Home() {
                 key={index}
                 className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${
                   index === currentSlide 
-                    ? "w-12 bg-gradient-to-r from-red-500 to-green-500 shadow-lg shadow-red-500/50" 
+                    ? "w-12 bg-orange-500 shadow-lg shadow-orange-500/50" 
                     : "w-2 bg-white/40 hover:bg-white/60 hover:w-8"
                 }`}
                 onClick={() => setCurrentSlide(index)}
@@ -508,22 +443,10 @@ export default function Home() {
 
       <div className="bg-gradient-to-b from-gray-50 to-white">
         <section className="py-8 sm:py-16 lg:py-24 overflow-hidden relative">
-          {/* Christmas Background Decoration */}
+          {/* Background Decoration */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-red-500/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-green-500/10 rounded-full blur-3xl" />
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-white/5 rounded-full blur-3xl" />
-            {/* Gentle Snowfall */}
-            {[...Array(40)].map((_, i) => (
-              <Snowflake
-                key={i}
-                delay={0}
-                left={`${Math.random() * 100}%`}
-                duration={20 + Math.random() * 15}
-                size={8 + Math.random() * 10}
-                startPosition={Math.random() * 120 - 20}
-              />
-            ))}
+            <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
+            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -531,10 +454,10 @@ export default function Home() {
               <AnimatedSection animation="fadeInUp" delay={200}>
                 <div className="text-center mb-12 sm:mb-16">
                   <div className="inline-block mb-4">
-                    <span className="text-red-600 font-semibold text-sm uppercase tracking-wider bg-gradient-to-r from-red-100 to-green-100 px-4 py-2 rounded-full">About Us</span>
+                    <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider bg-orange-100 px-4 py-2 rounded-full">About Us</span>
                   </div>
                   <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4 sm:mb-6">
-                    About <span className="bg-gradient-to-r from-red-600 via-green-600 to-red-600 bg-clip-text text-transparent">FIT BookLab</span>
+                    About <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">FIT BookLab</span>
                   </h2>
                   <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                     BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
@@ -550,19 +473,19 @@ export default function Home() {
                 {[
                   {
                     icon: <Users className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-red-600 to-red-700",
+                    gradient: "from-orange-500 to-orange-600",
                     title: "Easy Booking",
                     description: "Sistem booking yang user-friendly dengan calendar yang intuitif"
                   },
                   {
                     icon: <Shield className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-green-600 to-green-700",
+                    gradient: "from-orange-500 to-orange-600",
                     title: "Real-time Updates",
                     description: "Informasi ketersediaan lab yang selalu update secara real-time"
                   },
                   {
                     icon: <Code className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-red-600 to-green-600",
+                    gradient: "from-orange-500 to-orange-600",
                     title: "Multiple Labs",
                     description: "Akses ke berbagai laboratorium dengan spesifikasi yang berbeda"
                   }
@@ -577,7 +500,7 @@ export default function Home() {
                     </div>
                     
                     {/* Content */}
-                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-red-600 transition-colors duration-300">
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-orange-600 transition-colors duration-300">
                       {feature.title}
                     </h3>
                     <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
@@ -594,36 +517,23 @@ export default function Home() {
         </section>
 
         
-        <section className="py-8 sm:py-16 lg:py-24 bg-gradient-to-br from-red-50 via-white to-green-50 overflow-hidden relative">
-          {/* Christmas Snowflake Pattern */}
+        <section className="py-8 sm:py-16 lg:py-24 bg-gradient-to-br from-orange-50 via-white to-orange-50 overflow-hidden relative">
+          {/* Background Pattern */}
           <div className="absolute inset-0 opacity-5">
             <div className="absolute inset-0" style={{
-              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg stroke='%23dc2626' stroke-width='2' fill='none'%3E%3Cpath d='M30 20L30 40M20 30L40 30M24 24L36 36M36 24L24 36'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
+              backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
               backgroundSize: '60px 60px'
             }} />
-          </div>
-          {/* Snowfall Effect */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            {[...Array(50)].map((_, i) => (
-              <Snowflake
-                key={i}
-                delay={0}
-                left={`${Math.random() * 100}%`}
-                duration={18 + Math.random() * 12}
-                size={10 + Math.random() * 12}
-                startPosition={Math.random() * 120 - 20}
-              />
-            ))}
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection animation="fadeInUp" className="text-center mb-8 sm:mb-16">
                 <div className="inline-block mb-3">
-                  <span className="text-red-600 font-semibold text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-green-100 to-red-100 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-md">How It Works</span>
+                  <span className="text-orange-600 font-semibold text-xs sm:text-sm uppercase tracking-wider bg-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-md">How It Works</span>
                 </div>
                 <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-4 sm:mb-6">
-                  Cara Menggunakan <span className="bg-gradient-to-r from-red-600 via-green-600 to-red-600 bg-clip-text text-transparent">BookLab</span>
+                  Cara Menggunakan <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">BookLab</span>
                 </h2>
                 <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
                   Ikuti 6 langkah mudah untuk melakukan booking laboratorium
@@ -635,8 +545,8 @@ export default function Home() {
                 animation="fadeInLeft"
                 className="relative space-y-6 sm:space-y-8"
               >
-                {/* Christmas Vertical Line */}
-                <div className="absolute left-5 sm:left-7 top-8 bottom-8 w-0.5 bg-gradient-to-b from-red-500 via-green-500 to-red-500 hidden sm:block" />
+                {/* Vertical Line */}
+                <div className="absolute left-5 sm:left-7 top-8 bottom-8 w-0.5 bg-gradient-to-b from-orange-500 via-orange-400 to-orange-300 hidden sm:block" />
                 
                 {[
                   {
@@ -677,16 +587,16 @@ export default function Home() {
                   }
                 ].map((step) => (
                   <div key={step.number} className="relative flex items-start gap-3 sm:gap-4 md:gap-6 group">
-                    {/* Number Badge with Christmas Colors */}
+                    {/* Number Badge */}
                     <div className="flex-shrink-0 relative z-10">
-                      <div className={`w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br ${step.number % 2 === 0 ? 'from-green-600 to-green-700' : 'from-red-600 to-red-700'} text-white rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-base sm:text-lg md:text-xl shadow-lg group-hover:shadow-2xl transition-all duration-500 group-hover:scale-110 group-hover:rotate-6`}>
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-base sm:text-lg md:text-xl shadow-lg group-hover:shadow-2xl group-hover:shadow-orange-500/50 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
                         {step.number}
                       </div>
                     </div>
                     
                     {/* Content Card */}
-                    <div className={`flex-1 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-md hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1 border-2 border-gray-100 ${step.number % 2 === 0 ? 'group-hover:border-green-300' : 'group-hover:border-red-300'}`}>
-                      <h3 className={`text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 sm:mb-2 transition-colors duration-300 ${step.number % 2 === 0 ? 'group-hover:text-green-600' : 'group-hover:text-red-600'}`}>
+                    <div className="flex-1 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-md hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1 border border-gray-100 group-hover:border-orange-200">
+                      <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 sm:mb-2 group-hover:text-orange-600 transition-colors duration-300">
                         {step.title}
                       </h3>
                       <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
@@ -699,7 +609,7 @@ export default function Home() {
               
               <AnimatedSection animation="scaleIn" delay={800} className="mt-8 sm:mt-16 text-center">
                 <Button 
-                  className="group relative bg-gradient-to-r from-red-600 via-green-600 to-red-600 hover:from-red-700 hover:via-green-700 hover:to-red-700 text-white px-6 sm:px-12 py-3 sm:py-5 text-sm sm:text-base md:text-lg font-bold rounded-full shadow-2xl hover:shadow-red-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-white/50 overflow-hidden"
+                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 sm:px-12 py-3 sm:py-5 text-sm sm:text-base md:text-lg font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 overflow-hidden"
                   onClick={() => window.location.href = '/lab-search'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
@@ -1319,54 +1229,6 @@ export default function Home() {
             opacity: 1;
             transform: scale(1);
           }
-        }
-        
-        @keyframes snowfall {
-          0% {
-            transform: translateY(-10vh) rotate(0deg);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(110vh) rotate(360deg);
-            opacity: 0.3;
-          }
-        }
-        
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        
-        .animate-shimmer {
-          animation: shimmer 3s infinite;
-        }
-        
-        @keyframes snowfall {
-          0% {
-            transform: translateY(-10vh) rotate(0deg);
-            opacity: 1;
-          }
-          100% {
-            transform: translateY(110vh) rotate(360deg);
-            opacity: 0.3;
-          }
-        }
-        
-        @keyframes shimmer {
-          0% {
-            transform: translateX(-100%);
-          }
-          100% {
-            transform: translateX(100%);
-          }
-        }
-        
-        .animate-shimmer {
-          animation: shimmer 3s infinite;
         }
         
         .animate-fadeInUp {
