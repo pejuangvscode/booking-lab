@@ -290,6 +290,10 @@ export default function BookingPage() {
     );
   }
 
+  const formatLabType = (type: string) => {
+    return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   const hourOptions = Array.from({ length: 13 }, (_, i) => (i + 7).toString().padStart(2, '0'));
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
   const eventTypes = ["Class", "Seminar", "Workshop", "Meeting", "Exam", "Other"];
@@ -431,11 +435,10 @@ export default function BookingPage() {
         participants: finalParticipants,
         eventName,
         eventType,
-        phone,
-        faculty,
+        ...(labDetail?.type !== "staff_room" && { phone, faculty }),
         userData: {
           name: requestorName,
-          nim: requestorNIM
+          ...(labDetail?.type !== "staff_room" && { nim: requestorNIM })
         }
       };
       
@@ -494,21 +497,19 @@ export default function BookingPage() {
             {labDetail?.name ? `Book ${labDetail.name}` : "Book Laboratory"}
           </h2>
           {labDetail && (
-            <p className="text-orange-50 mt-3 text-lg font-medium">
-              <span className="inline-flex items-center bg-white/20 px-3 py-1 rounded-full text-sm">
-                {labDetail.type}
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span className="inline-flex items-center bg-white/20 px-3 py-1.5 rounded-full text-sm font-medium text-white">
+                {formatLabType(labDetail.type)}
               </span>
-              <span className="mx-2">•</span>
-              <span className="inline-flex items-center bg-white/20 px-3 py-1 rounded-full text-sm">
+              <span className="inline-flex items-center bg-white/20 px-3 py-1.5 rounded-full text-sm font-medium text-white">
                 {labDetail.capacity && labDetail.capacity > 0 
                   ? `${labDetail.capacity} seats` 
                   : "Flexible space"}
               </span>
-              <span className="mx-2">•</span>
-              <span className="inline-flex items-center bg-white/20 px-3 py-1 rounded-full text-sm">
+              <span className="inline-flex items-center bg-white/20 px-3 py-1.5 rounded-full text-sm font-medium text-white">
                 {labDetail.department}
               </span>
-            </p>
+            </div>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
             {labDetail?.facilityId && (
@@ -663,8 +664,9 @@ export default function BookingPage() {
                     value="full" 
                     id="full" 
                     disabled={labDetail?.capacity === 0 || labDetail?.type === "staff_room"}
+                    className="sr-only"
                   />
-                  <Label htmlFor="full" className="flex-1 cursor-pointer">
+                  <Label htmlFor="full" className="flex-1 cursor-pointer w-full">
                     <Card className={`p-5 border-2 transition-all duration-300 shadow-md hover:shadow-xl ${
                       bookingType === "full" 
                         ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 ring-2 ring-orange-200 scale-105" 
@@ -697,8 +699,8 @@ export default function BookingPage() {
                 {/* Partial Room Option */}
                 {labDetail?.capacity !== 0 && labDetail?.type !== "staff_room" && (
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="partial" id="partial" />
-                    <Label htmlFor="partial" className="flex-1 cursor-pointer">
+                    <RadioGroupItem value="partial" id="partial" className="sr-only" />
+                    <Label htmlFor="partial" className="flex-1 cursor-pointer w-full">
                       <Card className={`p-5 border-2 transition-all duration-300 shadow-md hover:shadow-xl ${
                         bookingType === "partial" 
                           ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 ring-2 ring-orange-200 scale-105" 
@@ -880,23 +882,25 @@ export default function BookingPage() {
               </div>
 
               {/* Requestor NIM */}
-              {labDetail?.type !== "staff_room" && (<div className="space-y-2">
-                <label htmlFor="requestorNIM" className="block text-sm font-medium text-gray-700">
-                  Requestor NIM
-                </label>
-                <Input
-                  type="text"
-                  id="requestorNIM"
-                  value={requestorNIM}
-                  onChange={(e) => setRequestorNIM(e.target.value)}
-                  placeholder="Your student ID number"
-                  className={formErrors.requestorNIM ? "border-red-500" : ""}
-                  disabled={isSubmitting || checking || bookingMutation.status === "pending"}
-                />
-                {formErrors.requestorNIM && (
-                  <p className="text-red-500 text-xs">{formErrors.requestorNIM}</p>
-                )}
-              </div>)}
+              {labDetail?.type !== "staff_room" && (
+                <div className="space-y-2">
+                  <label htmlFor="requestorNIM" className="block text-sm font-medium text-gray-700">
+                    Requestor NIM
+                  </label>
+                  <Input
+                    type="text"
+                    id="requestorNIM"
+                    value={requestorNIM}
+                    onChange={(e) => setRequestorNIM(e.target.value)}
+                    placeholder="Your student ID number"
+                    className={formErrors.requestorNIM ? "border-red-500" : ""}
+                    disabled={isSubmitting || checking || bookingMutation.status === "pending"}
+                  />
+                  {formErrors.requestorNIM && (
+                    <p className="text-red-500 text-xs">{formErrors.requestorNIM}</p>
+                  )}
+                </div>
+              )}
               
             </div>
 

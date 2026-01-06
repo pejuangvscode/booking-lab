@@ -2,7 +2,7 @@ import { useAuth } from '@clerk/nextjs';
 import { format, parse } from 'date-fns';
 import { enUS } from 'date-fns/locale';
 import { useRouter } from 'next/router';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useUser } from '@clerk/nextjs';
@@ -58,14 +58,9 @@ const bookingFormSchema = z.object({
 });
 
 
-const roomColors: Record<string, string> = {
-  "F205": "#4285F4",
-  "B338": "#3C7A0C",
-  "B357": "#5E35B1",
-  "F209": "#F25022",
-  "MM16": "#E81123",
-  "MH16": "#FFB900",
-  "PD208": "#008272",
+// Single color per room type
+const getColorForRoom = (roomType: string): string => {
+  return roomType === 'staff_room' ? '#F97316' : '#3B82F6'; // Orange for staff, Blue for students
 };
 
 type BookingEvent = {
@@ -115,15 +110,43 @@ export default function BookingCalendar() {
     }
   });
   
-  const [rooms] = useState([
-    { id: "F205", name: "FIT Showcase Lab", capacity: 0 },
-    { id: "B338", name: "Informatics Studio", capacity: 20 },
-    { id: "B357", name: "Information System Lab", capacity: 20 },
-    { id: "F209", name: "Lab F209", capacity: 30 },
-    { id: "MM16", name: "Meeting Room MM Fl.16", capacity: 14 },
-    { id: "MH16", name: "Multifunction Room MH Fl.16", capacity: 50 },
-    { id: "PD208", name: "Lab Paddock 208", capacity: 30 },
-  ]);
+  // Fetch labs from database
+  const { data: labsData, isLoading: isLoadingLabs } = api.lab.getAll.useQuery(
+    undefined,
+    {
+      enabled: isMounted,
+      refetchOnWindowFocus: false,
+    }
+  );
+
+  // Transform labs data for use in calendar
+  const rooms = useMemo(() => {
+    return labsData?.map(lab => ({
+      id: lab.facilityId,
+      name: lab.name,
+      capacity: lab.capacity,
+      roomType: lab.roomType,
+    })) ?? [];
+  }, [labsData]);
+
+  // Separate rooms by type
+  const studentLabs = useMemo(() => 
+    rooms.filter(room => room.roomType === 'student_lab'),
+    [rooms]
+  );
+  const staffRooms = useMemo(() => 
+    rooms.filter(room => room.roomType === 'staff_room'),
+    [rooms]
+  );
+
+  // Memoize room colors to prevent infinite loop
+  const roomColors = useMemo(() => {
+    const colors: Record<string, string> = {};
+    rooms.forEach(room => {
+      colors[room.id] = getColorForRoom(room.roomType ?? 'student_lab');
+    });
+    return colors;
+  }, [rooms]);
 
   const { 
     data: bookingsData, 
@@ -382,8 +405,10 @@ export default function BookingCalendar() {
       };
     }
 
+    const color = roomColors[event.roomId] || '#3B82F6';
+
     const baseStyle = {
-      backgroundColor: (roomColors as Record<string, string>)[event.roomId] || '#3174ad',
+      backgroundColor: color,
       color: 'white',
       borderRadius: '4px',
       border: 'none',
@@ -494,13 +519,13 @@ export default function BookingCalendar() {
     if (event.status === 'overflow') {
       return (
         <div 
-          className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer bg-gray-500 rounded border border-gray-400"
+          className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer"
           style={{ fontSize: '10px' }}
         >
           <div className="font-bold text-center leading-tight">
             {event.title}
           </div>
-          <div className="text-center opacity-90 text-xs">
+          <div className="text-center text-xs">
             Click to see all
           </div>
         </div>
@@ -695,35 +720,106 @@ export default function BookingCalendar() {
                     </div>
                   </div>
                   
-                  <div className="p-4 space-y-3">
-                    {rooms.map((room) => (
-                      <div key={room.id} className="flex items-center space-x-3">
-                        <Checkbox
-                          id={`filter-${room.id}`}
-                          checked={selectedRoomFilters.includes(room.id)}
-                          onCheckedChange={(checked) => 
-                            handleRoomFilterChange(room.id, checked as boolean)
-                          }
-                          className="data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600 hover:cursor-pointer"
-                        />
-                        <div className="flex items-center space-x-2 flex-1">
-                          <span 
-                            className="inline-block w-3 h-3 rounded-sm flex-shrink-0" 
-                            style={{ backgroundColor: roomColors[room.id] || '#3174ad' }}
-                          />
-                          <label 
-                            htmlFor={`filter-${room.id}`}
-                            className="text-sm font-medium text-gray-700 cursor-pointer flex-1"
-                          >
-                            {room.name}
-                          </label>
-                          <span className="text-xs text-gray-500">
-                            {room.capacity === 0 ? "Flex" : room.capacity}
-                          </span>
+                  {isLoadingLabs ? (
+                    <div className="p-4 space-y-3">
+                      {[1, 2, 3, 4].map((i) => (
+                        <div key={i} className="flex items-center space-x-3 animate-pulse">
+                          <div className="w-4 h-4 bg-gray-200 rounded"></div>
+                          <div className="w-3 h-3 bg-gray-200 rounded-sm"></div>
+                          <div className="flex-1 h-4 bg-gray-200 rounded"></div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="max-h-[400px] overflow-y-auto">
+                      {/* Student Labs Section */}
+                      {studentLabs.length > 0 && (
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                            <h5 className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Student Labs</h5>
+                          </div>
+                          {studentLabs.map((room) => {
+                            const color = roomColors[room.id];
+                            
+                            return (
+                              <div key={room.id} className="flex items-center space-x-3">
+                                <Checkbox
+                                  id={`filter-${room.id}`}
+                                  checked={selectedRoomFilters.includes(room.id)}
+                                  onCheckedChange={(checked) => 
+                                    handleRoomFilterChange(room.id, checked as boolean)
+                                  }
+                                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 hover:cursor-pointer"
+                                />
+                                <div className="flex items-center space-x-2 flex-1">
+                                  <span 
+                                    className="inline-block w-3 h-3 rounded-sm flex-shrink-0" 
+                                    style={{ backgroundColor: color }}
+                                  />
+                                  <label 
+                                    htmlFor={`filter-${room.id}`}
+                                    className="text-sm font-medium text-gray-700 cursor-pointer flex-1"
+                                  >
+                                    {room.name}
+                                  </label>
+                                  <span className="text-xs text-gray-500">
+                                    {room.capacity === 0 ? "Flex" : room.capacity}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                      
+                      {/* Divider */}
+                      {studentLabs.length > 0 && staffRooms.length > 0 && (
+                        <div className="border-t border-gray-200 my-2"></div>
+                      )}
+                      
+                      {/* Staff Rooms Section */}
+                      {staffRooms.length > 0 && (
+                        <div className="p-4 space-y-3">
+                          <div className="flex items-center gap-2 mb-2">
+                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                            <h5 className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Staff Rooms</h5>
+                          </div>
+                          {staffRooms.map((room) => {
+                            const color = roomColors[room.id];
+                            
+                            return (
+                              <div key={room.id} className="flex items-center space-x-3">
+                                <Checkbox
+                                  id={`filter-${room.id}`}
+                                  checked={selectedRoomFilters.includes(room.id)}
+                                  onCheckedChange={(checked) => 
+                                    handleRoomFilterChange(room.id, checked as boolean)
+                                  }
+                                  className="data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600 hover:cursor-pointer"
+                                />
+                                <div className="flex items-center space-x-2 flex-1">
+                                  <span 
+                                    className="inline-block w-3 h-3 rounded-sm flex-shrink-0" 
+                                    style={{ backgroundColor: color }}
+                                  />
+                                  <label 
+                                    htmlFor={`filter-${room.id}`}
+                                    className="text-sm font-medium text-gray-700 cursor-pointer flex-1"
+                                  >
+                                    {room.name}
+                                  </label>
+                                  <span className="text-xs text-gray-500">
+                                    {room.capacity === 0 ? "Flex" : room.capacity}
+                                  </span>
+                                </div>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  )}
                   
                   {selectedRoomFilters.length > 0 && (
                     <div className="p-4 border-t bg-gray-50">
@@ -733,15 +829,16 @@ export default function BookingCalendar() {
                       <div className="flex flex-wrap gap-1">
                         {selectedRoomFilters.map(roomId => {
                           const room = rooms.find(r => r.id === roomId);
+                          const color = roomColors[roomId] || '#3B82F6';
                           return (
                             <Badge 
                               key={roomId} 
                               variant="secondary" 
                               className="text-xs"
                               style={{ 
-                                backgroundColor: `${roomColors[roomId] || '#3174ad'}20`,
-                                color: roomColors[roomId] || '#3174ad',
-                                border: `1px solid ${roomColors[roomId] || '#3174ad'}40`
+                                backgroundColor: `${color}20`,
+                                color: color,
+                                border: `1px solid ${color}40`
                               }}
                             >
                               {room?.id || roomId}
@@ -995,7 +1092,7 @@ export default function BookingCalendar() {
       </Dialog>
 
       <Dialog open={showMoreEventsModal} onOpenChange={setShowMoreEventsModal}>
-        <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-100">
+        <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-white border-2 border-orange-100">
           <DialogHeader className="flex-shrink-0 pb-4 border-b border-orange-100">
             <DialogTitle className="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-2">
               <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full shadow-md"></div>
@@ -1012,7 +1109,7 @@ export default function BookingCalendar() {
                 {moreEventsData.events.map((event, index) => (
                   <Card 
                     key={event.id} 
-                    className="group relative overflow-hidden border-2 border-orange-100 hover:border-orange-300 hover:shadow-xl transition-all duration-300 cursor-pointer bg-white/80 backdrop-blur-sm"
+                    className="group relative overflow-hidden border-2 border-orange-100 hover:border-orange-300 transition-all duration-300 cursor-pointer bg-white"
                     onClick={(e) => {
                       e.preventDefault();
                       e.stopPropagation();
@@ -1025,7 +1122,7 @@ export default function BookingCalendar() {
                   >
                     <div 
                       className="absolute left-0 top-0 bottom-0 w-1"
-                      style={{ backgroundColor: roomColors[event.roomId] || '#3174ad' }}
+                      style={{ backgroundColor: roomColors[event.roomId] || '#3B82F6' }}
                     />
                     
                     <div className="p-4 pl-6">
@@ -1044,7 +1141,7 @@ export default function BookingCalendar() {
                             <div className="flex items-center gap-2">
                               <span 
                                 className="w-3 h-3 rounded-sm flex-shrink-0" 
-                                style={{ backgroundColor: roomColors[event.roomId] || '#3174ad' }}
+                                style={{ backgroundColor: roomColors[event.roomId] || '#3B82F6' }}
                               />
                               <span className="font-medium">{event.roomId}</span>
                             </div>

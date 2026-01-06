@@ -253,6 +253,10 @@ export default function BookingPage() {
     }
   };
 
+  const formatLabType = (type: string) => {
+    return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+  };
+
   const hourOptions = Array.from({ length: 13 }, (_, i) => (i + 7).toString().padStart(2, '0'));
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
   const eventTypes = ["Class", "Seminar", "Workshop", "Meeting", "Exam", "Other"];
@@ -407,13 +411,19 @@ export default function BookingPage() {
             {labDetail?.name ? `Book ${labDetail.name}` : "Book Laboratory"}
           </h2>
           {labDetail && (
-            <p className="text-orange-100 mt-2">
-              {labDetail.type} • {
-                labDetail.capacity && labDetail.capacity > 0 
+            <div className="flex flex-wrap gap-2 mt-2">
+              <span className="inline-flex items-center bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                {formatLabType(labDetail.type)}
+              </span>
+              <span className="inline-flex items-center bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                {labDetail.capacity && labDetail.capacity > 0 
                   ? `${labDetail.capacity} seats` 
-                  : "Flexible space"
-              } • {labDetail.department}
-            </p>
+                  : "Flexible space"}
+              </span>
+              <span className="inline-flex items-center bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+                {labDetail.department}
+              </span>
+            </div>
           )}
           <div className="mt-2 flex space-x-2">
             {labDetail?.facilityId && (
@@ -688,8 +698,9 @@ export default function BookingPage() {
                     value="full" 
                     id="full" 
                     disabled={labDetail?.capacity === 0}
+                    className="sr-only"
                   />
-                  <Label htmlFor="full" className="flex-1 cursor-pointer">
+                  <Label htmlFor="full" className="flex-1 cursor-pointer w-full">
                     <Card className={`p-4 border-2 transition-all duration-200 ${
                       bookingType === "full" 
                         ? "border-orange-500 bg-orange-50" 
@@ -722,8 +733,8 @@ export default function BookingPage() {
                 {/* Partial Room Option */}
                 {labDetail?.capacity !== 0 && (
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="partial" id="partial" />
-                    <Label htmlFor="partial" className="flex-1 cursor-pointer">
+                    <RadioGroupItem value="partial" id="partial" className="sr-only" />
+                    <Label htmlFor="partial" className="flex-1 cursor-pointer w-full">
                       <Card className={`p-4 border-2 transition-all duration-200 ${
                         bookingType === "partial" 
                           ? "border-orange-500 bg-orange-50" 

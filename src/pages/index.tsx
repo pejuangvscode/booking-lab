@@ -332,7 +332,7 @@ export default function Home() {
             prevSlide();
           }}
           onTouchEnd={(e) => e.stopPropagation()}
-          className="hidden lg:block absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
+          className="hidden hover:cursor-pointer lg:block absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
           aria-label="Previous slide"
           type="button"
         >
@@ -345,7 +345,7 @@ export default function Home() {
             nextSlide();
           }}
           onTouchEnd={(e) => e.stopPropagation()}
-          className="hidden lg:block absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
+          className="hidden hover:cursor-pointer lg:block absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
           aria-label="Next slide"
           type="button"
         >
@@ -610,7 +610,7 @@ export default function Home() {
               <AnimatedSection animation="scaleIn" delay={800} className="mt-8 sm:mt-16 text-center">
                 <Button 
                   className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 sm:px-12 py-3 sm:py-5 text-sm sm:text-base md:text-lg font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 overflow-hidden"
-                  onClick={() => window.location.href = '/lab-search'}
+                  onClick={() => window.location.href = '/book-room'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                   <span className="flex items-center gap-2 relative z-10">
