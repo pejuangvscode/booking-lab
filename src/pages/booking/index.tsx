@@ -435,10 +435,11 @@ export default function BookingPage() {
         participants: finalParticipants,
         eventName,
         eventType,
-        ...(labDetail?.type !== "staff_room" && { phone, faculty }),
+        phone: labDetail?.type !== "staff_room" ? phone : "",
+        faculty: labDetail?.type !== "staff_room" ? faculty : "",
         userData: {
           name: requestorName,
-          ...(labDetail?.type !== "staff_room" && { nim: requestorNIM })
+          nim: labDetail?.type !== "staff_room" ? requestorNIM : ""
         }
       };
       

@@ -292,8 +292,8 @@ export default function BookingPage() {
         participants: finalParticipants,
         eventName,
         eventType,
-        phone,
-        faculty,
+        phone: labDetail?.type !== "staff_room" ? phone : "",
+        faculty: labDetail?.type !== "staff_room" ? faculty : "",
         userData: {
           name: requestorName,
         },
@@ -361,8 +361,8 @@ export default function BookingPage() {
           participants: finalParticipants,
           eventName,
           eventType,
-          phone,
-          faculty,
+          phone: labDetail?.type !== "staff_room" ? phone : "",
+          faculty: labDetail?.type !== "staff_room" ? faculty : "",
           userData: {
             name: requestorName,
             nim: ""
