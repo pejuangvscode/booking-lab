@@ -833,86 +833,80 @@ export default function BookingCalendar() {
       </div>
 
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-gradient-to-br from-white to-orange-50/30 border-2 border-orange-100">
-          <DialogHeader className="flex-shrink-0 pb-4 border-b border-orange-100">
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-3">
-              <div 
-                className="w-4 h-4 rounded-sm flex-shrink-0" 
-                style={{ backgroundColor: selectedEvent ? roomColors[selectedEvent.roomId] || '#3174ad' : '#3174ad' }}
-              />
+        <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-white border border-gray-200 shadow-xl">
+          <DialogHeader className="flex-shrink-0 pb-4 border-b border-gray-100">
+            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-3">
+                {/* <div 
+                  className="w-1 h-8 rounded-full flex-shrink-0" 
+                  style={{ backgroundColor: selectedEvent ? roomColors[selectedEvent.roomId] || '#3174ad' : '#3174ad' }}
+                /> */}
               {selectedEvent?.title || 'Event Details'}
             </DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">
-              Event information and booking details
-            </p>
           </DialogHeader>
           
           {selectedEvent && (
             <div className="flex-1 overflow-y-auto pr-2 -mr-2">
-              <div className="space-y-6 py-4">
-                <div className="bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl p-4 border-2 border-orange-100 shadow-md">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-lg font-bold text-gray-900">
-                      {selectedEvent.title}
-                    </h3>
-                    {selectedEvent.status && selectedEvent.status !== 'overflow' && (
-                      <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
+              <div className="space-y-4 py-4">
+                {selectedEvent.status && selectedEvent.status !== 'overflow' && (
+                  <div className="flex items-center justify-between">
+                    <span className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium ${
+                      selectedEvent.status.toLowerCase() === 'confirmed' || selectedEvent.status.toLowerCase() === 'accepted' || selectedEvent.status.toLowerCase() === 'approved'
+                        ? 'bg-green-50 text-green-700 border border-green-200' 
+                        : selectedEvent.status.toLowerCase() === 'pending'
+                        ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
+                        : selectedEvent.status.toLowerCase() === 'completed'
+                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
+                        : 'bg-gray-50 text-gray-700 border border-gray-200'
+                    }`}>
+                      <div className={`w-2 h-2 rounded-full mr-2 ${
                         selectedEvent.status.toLowerCase() === 'confirmed' || selectedEvent.status.toLowerCase() === 'accepted' || selectedEvent.status.toLowerCase() === 'approved'
-                          ? 'bg-green-100 text-green-800' 
+                          ? 'bg-green-500' 
                           : selectedEvent.status.toLowerCase() === 'pending'
-                          ? 'bg-yellow-100 text-yellow-800'
+                          ? 'bg-yellow-500'
                           : selectedEvent.status.toLowerCase() === 'completed'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-gray-100 text-gray-800'
-                      }`}>
-                        <div className={`w-2 h-2 rounded-full mr-2 ${
-                          selectedEvent.status.toLowerCase() === 'confirmed' || selectedEvent.status.toLowerCase() === 'accepted' || selectedEvent.status.toLowerCase() === 'approved'
-                            ? 'bg-green-400' 
-                            : selectedEvent.status.toLowerCase() === 'pending'
-                            ? 'bg-yellow-400'
-                            : selectedEvent.status.toLowerCase() === 'completed'
-                            ? 'bg-blue-400'
-                            : 'bg-gray-400'
-                        }`}></div>
-                        {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
-                      </span>
-                    )}
+                          ? 'bg-blue-500'
+                          : 'bg-gray-500'
+                      }`}></div>
+                      {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
+                    </span>
                   </div>
-                  
-                  {selectedEvent.description && (
-                    <p className="text-gray-700 text-sm mb-3">
+                )}
+                
+                {selectedEvent.description && (
+                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
+                    <p className="text-gray-700 text-sm leading-relaxed">
                       {selectedEvent.description}
                     </p>
-                  )}
-                </div>
+                  </div>
+                )}
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-white border rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-blue-100 rounded-lg">
-                        <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
                         </svg>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Date</h4>
-                        <p className="text-sm text-gray-600">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Date</h4>
+                        <p className="text-sm text-gray-600 leading-relaxed">
                           {safeFormat(selectedEvent.start, 'EEEE, MMMM d, yyyy')}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white border rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-green-100 rounded-lg">
-                        <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Time</h4>
-                        <p className="text-sm text-gray-600">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Time</h4>
+                        <p className="text-sm text-gray-600 leading-relaxed">
                           {safeFormat(selectedEvent.start, 'HH:mm')} - {safeFormat(selectedEvent.end, 'HH:mm')}
                         </p>
                       </div>
@@ -920,48 +914,48 @@ export default function BookingCalendar() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="bg-white border rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
                         </svg>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Laboratory</h4>
-                        <p className="text-sm text-gray-600">{selectedEvent.roomId}</p>
-                        <p className="text-xs text-gray-500">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Laboratory</h4>
+                        <p className="text-sm font-medium text-gray-700">{selectedEvent.roomId}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
                           {rooms.find(r => r.id === selectedEvent.roomId)?.name || 'Room details not found'}
                         </p>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-white border rounded-lg p-4">
-                    <div className="flex items-center gap-3 mb-2">
-                      <div className="p-2 bg-orange-100 rounded-lg">
-                        <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
+                    <div className="flex items-start gap-3">
+                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
+                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
                         </svg>
                       </div>
-                      <div>
-                        <h4 className="font-medium text-gray-900">Booking Type</h4>
-                        <div className="mt-1">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Booking Type</h4>
+                        <div className="mt-1.5">
                           {selectedEvent.bookingType === 'full' ? (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                              <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-1.5"></div>
+                            <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
+                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-1.5"></div>
                               Full {selectedEvent.roomCapacity === 0 ? 'Space' : 'Room'}
                             </span>
                           ) : (
-                            <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                              <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5"></div>
+                            <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
+                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5"></div>
                               Partial Booking
                             </span>
                           )}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 mt-2">
                           {selectedEvent.participants} participant{selectedEvent.participants !== 1 ? 's' : ''}
                           {selectedEvent.roomCapacity && selectedEvent.roomCapacity > 0 && (
                             ` of ${selectedEvent.roomCapacity} capacity`
@@ -972,16 +966,16 @@ export default function BookingCalendar() {
                   </div>
                 </div>
 
-                <div className="bg-white border rounded-lg p-4">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-gray-100 rounded-lg">
+                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
+                  <div className="flex items-start gap-3">
+                    <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
                       <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
-                    <div>
-                      <h4 className="font-medium text-gray-900">Booked By</h4>
-                      <p className="text-sm text-gray-600">{selectedEvent.bookedBy}</p>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Booked By</h4>
+                      <p className="text-sm text-gray-600 leading-relaxed">{selectedEvent.bookedBy}</p>
                     </div>
                   </div>
                 </div>
@@ -989,24 +983,13 @@ export default function BookingCalendar() {
             </div>
           )}
           
-          <DialogFooter className="flex-shrink-0 pt-4 border-t border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 -mx-6 -mb-6 px-6 py-4">
-            <div className="flex items-center justify-between w-full">
-              <div className="text-sm text-gray-500">
-                Event details
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline"
-                  onClick={() => setIsDetailsModalOpen(false)}
-                  className="hover:bg-white hover:border-orange-300 transition-colors hover:cursor-pointer border-2 border-orange-200"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                  Close
-                </Button>
-              </div>
-            </div>
+          <DialogFooter className="flex-shrink-0 pt-4 border-t border-gray-100 bg-white -mx-6 -mb-6 px-6 py-4">
+            <Button 
+              onClick={() => setIsDetailsModalOpen(false)}
+              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white transition-all shadow-lg hover:shadow-xl hover:cursor-pointer"
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
