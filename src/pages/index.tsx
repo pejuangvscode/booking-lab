@@ -4,54 +4,10 @@ import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { ChevronLeft, ChevronRight, BookOpen, Shield, Users, Code } from "lucide-react";
 import React from "react";
-
-const carouselItems = [
-  {
-    id: 1,
-    imageSrc: "/B338.png",
-    title: "Informatics Studio",
-    subTitle: "B338"
-  },
-  { 
-    id: 2,
-    imageSrc: "/B357.png", 
-    title: "Information System Lab",
-    subTitle: "B357"
-  },
-  {
-    id: 3,
-    imageSrc: "/F205.png",
-    title: "FIT Showcase Room",
-    subTitle: "F205"
-  },  
-  {
-    id: 4,
-    imageSrc: "/F209.png",
-    title: "Computer Lab",
-    subTitle: "F209"
-  },
-  {
-    id: 5,
-    imageSrc: "/MM16.jpg",
-    title: "Meeting Room MM Fl.16",
-    subTitle: "MM16"
-  },
-  {
-    id: 6,
-    imageSrc: "/MH16.jpg",
-    title: "Multifunction Room MM Fl.16",
-    subTitle: "MH16"
-  },
-  {
-    id: 7,
-    imageSrc: "/PD208.jpg",
-    title: "Lab PD208",
-    subTitle: "PD208"
-  }
-];
+import { api } from "~/utils/api";
 
 // Christmas Snowflake Component
-const Snowflake: React.FC<{ delay: number; left: string; duration: number; size: number; startPosition: number }> = ({ delay, left, duration, size, startPosition }) => (
+const Snowflake: React.FC<{ delay: number; left: string; duration: number; size: number; startPosition: number }> = ({ left, duration, size, startPosition }) => (
   <div
     className="absolute pointer-events-none"
     style={{
@@ -176,18 +132,64 @@ const StaggeredAnimationContainer: React.FC<{
 };
 
 export default function Home() {
+  // Fetch labs from database
+  const { data: labs, isLoading: labsLoading } = api.lab.getAll.useQuery();
+  
+  // Transform labs data into carousel format
+  const carouselItems = labs?.map((lab, index) => ({
+    id: index + 1,
+    imageSrc: lab.image ?? "/placeholder-lab.jpg",
+    title: lab.name,
+    subTitle: lab.facilityId
+  })) ?? [];
+  
   const [currentSlide, setCurrentSlide] = useState(0);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [touchStart, setTouchStart] = useState(0);
   const [touchEnd, setTouchEnd] = useState(0);
   
+  // Check if user has seen the notice modal
   useEffect(() => {
-    // Check if user has seen the notice modal
     const hasSeenNotice = localStorage.getItem('hasSeenTechnicalNotice');
     if (!hasSeenNotice) {
       setShowNoticeModal(true);
     }
   }, []);
+  
+  // Auto-advance carousel
+  useEffect(() => {
+    if (carouselItems.length === 0) return;
+    
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
+    }, 8000);
+    
+    return () => clearInterval(interval);
+  }, [currentSlide, carouselItems.length]);
+
+  // Show loading state while fetching data
+  if (labsLoading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mb-4"></div>
+          <p className="text-white text-xl font-semibold">Loading Labs...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show message if no labs found
+  if (!labs || labs.length === 0) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
+        <div className="text-center">
+          <p className="text-white text-xl font-semibold">No labs available</p>
+          <p className="text-gray-400 mt-2">Please check back later</p>
+        </div>
+      </div>
+    );
+  }
 
   const handleCloseNotice = () => {
     setShowNoticeModal(false);
@@ -214,14 +216,6 @@ export default function Home() {
       prevSlide();
     }
   };
-  
-  useEffect(() => {
-  const interval = setInterval(() => {
-    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-  }, 8000);
-  
-  return () => clearInterval(interval);
-}, [currentSlide]);
 
   const nextSlide = () => {
     setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
