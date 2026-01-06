@@ -672,8 +672,8 @@ export default function BookingCalendar() {
         <div className="mb-6 animate-fadeInUp">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm">Laboratory Booking Calendar</h1>
-              <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
+              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm leading-tight pb-1">Laboratory Booking Calendar</h1>
+              <p className="text-gray-600 mt-2 sm:mt-3 text-sm sm:text-base">View and book available laboratory time slots</p>
             </div>
             
             <div className="flex items-center gap-3">
