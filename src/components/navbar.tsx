@@ -92,10 +92,10 @@ export function Navbar() {
     const baseClasses = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-300";
     
     if (isActive(path)) {
-      return `${baseClasses} border-orange-500 ${isAtTop && router.pathname === '/' ? 'text-white' : 'text-orange-600'} font-semibold`;
+      return `${baseClasses} border-orange-500 text-orange-600 font-semibold`;
     }
     
-    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-white hover:text-white' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`;
+    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-gray-700 hover:text-orange-600' : 'text-gray-600 hover:text-orange-600'} hover:border-orange-300`;
   };
 
   const getMobileLinkClasses = (path: string) => {
@@ -113,9 +113,9 @@ export function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isMounted && !visible ? '-translate-y-full' : 'transform-none'
       } ${isAtTop && router.pathname === '/' 
-          ? 'bg-transparent' 
-          : 'bg-white shadow-sm'
-      } ${isMenuOpen && 'bg-white'}`}
+          ? 'bg-white/5 backdrop-blur-md border-b border-white/10' 
+          : 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100'
+      } ${isMenuOpen && 'bg-white/95 backdrop-blur-md shadow-lg'}`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -127,20 +127,18 @@ export function Navbar() {
                   alt="BookLab Logo"
                   width={40}
                   height={40}
-                  className={`h-10 w-12 mr-2 border-r-2 pr-2 transition-colors duration-300 ${
-                    isAtTop && router.pathname === '/' ? 'text-white drop-shadow-lg' : 'text-orange-500'
-                  }`}
+                  className="h-10 w-12 mr-2 border-r-2 pr-2 transition-colors duration-300 border-gray-300"
                 />
               </div>
               <div className="flex-shrink-0 flex flex-col items-left">
                 <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
-                  isMenuOpen ? 'text-orange-500' :
-                  isAtTop && router.pathname === '/' ? 'text-white drop-shadow-lg' : 'text-orange-500'
+                  isMenuOpen ? 'text-orange-600' :
+                  isAtTop && router.pathname === '/' ? 'text-orange-500 drop-shadow-lg' : 'text-orange-500'
                 }`}>
                   Book
                 </span>
                 <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
-                  isMenuOpen ? 'text-orange-500' : isAtTop && router.pathname === '/' ? 'text-white drop-shadow-lg' : 'text-orange-500'
+                  isMenuOpen ? 'text-orange-600' : isAtTop && router.pathname === '/' ? 'text-orange-500 drop-shadow-lg' : 'text-orange-500'
                 }`}>
                   Lab
                 </span>
@@ -186,10 +184,10 @@ export function Navbar() {
                   <div className="relative">
                     <button
                       onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
-                      className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium hover:cursor-pointer transition-colors duration-300 hover:cursor-pointer ${
+                      className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium hover:cursor-pointer transition-colors duration-300 ${
                         router.pathname.startsWith('/admin')
-                          ? `border-orange-500 ${isAtTop && router.pathname === '/' ? 'text-white' : 'text-orange-600'} font-semibold`
-                          : `border-transparent ${isAtTop && router.pathname === '/' ? 'text-white hover:text-white' : 'text-gray-500 hover:text-gray-700'} hover:border-gray-300`
+                          ? 'border-orange-500 text-orange-600 font-semibold'
+                          : 'border-transparent text-gray-700 hover:text-orange-600 hover:border-orange-300'
                       }`}
                     >
                       Admin Menu
@@ -203,7 +201,7 @@ export function Navbar() {
                       </svg>
                     </button>
                     {isAdminDropdownOpen && (
-                      <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white z-50">
+                      <div className="absolute left-0 mt-2 w-56 rounded-md shadow-lg bg-white/95 backdrop-blur-md border border-gray-200 z-50">
                         <div className="py-1" role="menu">
                           <Link
                             href="/admin/dashboard"

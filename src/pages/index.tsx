@@ -1,10 +1,8 @@
 import Head from "next/head";
-import Image from "next/legacy/image";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { ChevronLeft, ChevronRight, BookOpen, Shield, Users, Code } from "lucide-react";
+import { Home as HomeIcon, BookOpen, Users, Calendar, FileText, Phone, Menu, X, Layers, Timer, Info } from "lucide-react";
 import React from "react";
-import { api } from "~/utils/api";
 
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -114,21 +112,9 @@ const StaggeredAnimationContainer: React.FC<{
 };
 
 export default function Home() {
-  // Fetch labs from database
-  const { data: labs, isLoading: labsLoading } = api.lab.getAll.useQuery();
-  
-  // Transform labs data into carousel format
-  const carouselItems = labs?.map((lab, index) => ({
-    id: index + 1,
-    imageSrc: lab.image ?? "/placeholder-lab.jpg",
-    title: lab.name,
-    subTitle: lab.facilityId
-  })) ?? [];
-  
-  const [currentSlide, setCurrentSlide] = useState(0);
   const [showNoticeModal, setShowNoticeModal] = useState(false);
-  const [touchStart, setTouchStart] = useState(0);
-  const [touchEnd, setTouchEnd] = useState(0);
+  const [activeSection, setActiveSection] = useState('home');
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   
   // Check if user has seen the notice modal
   useEffect(() => {
@@ -137,83 +123,134 @@ export default function Home() {
       setShowNoticeModal(true);
     }
   }, []);
-  
-  // Auto-advance carousel
-  useEffect(() => {
-    if (carouselItems.length === 0) return;
-    
-    const interval = setInterval(() => {
-      setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-    }, 8000);
-    
-    return () => clearInterval(interval);
-  }, [currentSlide, carouselItems.length]);
-
-  // Show loading state while fetching data
-  if (labsLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-white mb-4"></div>
-          <p className="text-white text-xl font-semibold">Loading Labs...</p>
-        </div>
-      </div>
-    );
-  }
-
-  // Show message if no labs found
-  if (!labs || labs.length === 0) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-900 to-gray-800">
-        <div className="text-center">
-          <p className="text-white text-xl font-semibold">No labs available</p>
-          <p className="text-gray-400 mt-2">Please check back later</p>
-        </div>
-      </div>
-    );
-  }
 
   const handleCloseNotice = () => {
     setShowNoticeModal(false);
     localStorage.setItem('hasSeenTechnicalNotice', 'true');
   };
   
-  // Touch swipe handlers
-  const handleTouchStart = (e: React.TouchEvent) => {
-    setTouchStart(e.targetTouches[0]?.clientX ?? 0);
-  };
-
-  const handleTouchMove = (e: React.TouchEvent) => {
-    setTouchEnd(e.targetTouches[0]?.clientX ?? 0);
-  };
-
-  const handleTouchEnd = () => {
-    if (touchStart - touchEnd > 75) {
-      // Swipe left
-      nextSlide();
+  // Scroll spy to update active section
+  useEffect(() => {
+    const handleScroll = () => {
+      const sections = ['home', 'about', 'how-to-use', 'rules', 'contact'];
+      const scrollPosition = window.scrollY + 100;
+      
+      for (const section of sections) {
+        const element = document.getElementById(section);
+        if (element) {
+          const { offsetTop, offsetHeight } = element;
+          if (scrollPosition >= offsetTop && scrollPosition < offsetTop + offsetHeight) {
+            setActiveSection(section);
+            break;
+          }
+        }
+      }
+    };
+    
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+  
+  const scrollToSection = (sectionId: string) => {
+    const element = document.getElementById(sectionId);
+    if (element) {
+      const offset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
     }
-
-    if (touchStart - touchEnd < -75) {
-      // Swipe right
-      prevSlide();
-    }
+    setIsMobileMenuOpen(false);
   };
-
-  const nextSlide = () => {
-    setCurrentSlide((prev) => (prev + 1) % carouselItems.length);
-  };
-
-  const prevSlide = () => {
-    setCurrentSlide((prev) => (prev - 1 + carouselItems.length) % carouselItems.length);
-  };
+  
+  const navItems = [
+    { id: 'home', label: 'Home', icon: <HomeIcon className="w-4 h-4" /> },
+    { id: 'about', label: 'About', icon: <Info className="w-4 h-4" /> },
+    { id: 'how-to-use', label: 'How to Use', icon: <BookOpen className="w-4 h-4" /> },
+    { id: 'rules', label: 'Rules', icon: <FileText className="w-4 h-4" /> },
+    { id: 'contact', label: 'Contact', icon: <Phone className="w-4 h-4" /> },
+  ];
 
   return (
-    <div className="">
+    <div className="relative">
       <Head>
         <title>BookLab | FIT Lab Booking</title>
         <meta name="description" content="UPH Lab Room Booking Portal" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
+
+      {/* Floating Navigation - Desktop */}
+      <nav className="hidden lg:block fixed top-1/2 right-8 transform -translate-y-1/2 z-40">
+        <div className="bg-white/90 backdrop-blur-md rounded-full shadow-2xl border border-gray-200 py-4 px-2">
+          <div className="flex flex-col space-y-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => scrollToSection(item.id)}
+                className={`group relative p-3 rounded-full transition-all duration-300 ${
+                  activeSection === item.id
+                    ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg'
+                    : 'text-gray-600 hover:bg-gray-100'
+                }`}
+                title={item.label}
+              >
+                {item.icon}
+                <span className={`absolute right-full mr-4 px-3 py-2 bg-gray-900 text-white text-sm rounded-lg whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none ${
+                  activeSection === item.id ? 'font-semibold' : ''
+                }`}>
+                  {item.label}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Mobile Navigation Button */}
+      <button
+        onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+        className="lg:hidden fixed bottom-6 right-6 z-50 bg-gradient-to-r from-orange-500 to-orange-600 text-white p-4 rounded-full shadow-2xl hover:shadow-orange-500/50 transition-all duration-300 hover:scale-110"
+      >
+        {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+      </button>
+
+      {/* Mobile Navigation Menu */}
+      {isMobileMenuOpen && (
+        <div className="lg:hidden fixed inset-0 z-40 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setIsMobileMenuOpen(false)}>
+          <div className="absolute bottom-24 left-4 right-4 bg-white rounded-3xl shadow-2xl p-6 transform transition-all duration-300 animate-slideUp" onClick={(e) => e.stopPropagation()}>
+            <div className="mb-4 text-center">
+              <h3 className="text-lg font-bold text-gray-900">Navigation</h3>
+              <p className="text-xs text-gray-500 mt-1">Jump to section</p>
+            </div>
+            <div className="flex flex-col space-y-3">
+              {navItems.map((item) => (
+                <button
+                  key={item.id}
+                  onClick={() => scrollToSection(item.id)}
+                  className={`flex items-center space-x-4 p-4 rounded-xl transition-all duration-300 ${
+                    activeSection === item.id
+                      ? 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-lg scale-105'
+                      : 'text-gray-700 bg-gray-50 hover:bg-gray-100 active:scale-95'
+                  }`}
+                >
+                  <div className={`flex-shrink-0 ${activeSection === item.id ? 'text-white' : 'text-orange-600'}`}>
+                    {item.icon}
+                  </div>
+                  <span className="font-semibold text-base">{item.label}</span>
+                  {activeSection === item.id && (
+                    <div className="ml-auto">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" />
+                    </div>
+                  )}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Technical Notice Modal */}
       {showNoticeModal && (
@@ -273,197 +310,142 @@ export default function Home() {
         </div>
       )}
 
-      
-      <div 
-        id="hero-carousel"
-        className="relative h-screen w-full overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-      >
-        {/* Background Carousel */}
-        <div 
-          className="absolute inset-0 flex transition-transform duration-700 ease-in-out"
-          style={{ transform: `translateX(-${currentSlide * 100}%)` }}
-        >
-          {carouselItems.map((item, index) => (
-            <div 
-              key={item.id} 
-              className="relative w-full h-full flex-shrink-0"
-            >
-              <div className="absolute inset-0">
-                <Image 
-                  src={item.imageSrc} 
-                  alt={item.title} 
-                  layout="fill" 
-                  objectFit="cover" 
-                  className="object-cover"
-                  priority={index === 0}
-                />
-              </div>
-              {/* Gradient Overlays with animation */}
-              <div className="absolute inset-0 bg-gradient-to-br from-black/70 via-black/50 to-orange-900/40 animate-gradient" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-            </div>
-          ))}
-        </div>
-
-        {/* Animated Background Pattern */}
-        <div className="absolute inset-0 opacity-10">
+      {/* Hero Section - Minimalist Design */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-50/80 via-white to-blue-50/60">
+        {/* Subtle Gradient Overlay */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-orange-100/20 via-transparent to-blue-100/20" />
+        
+        {/* Soft Pattern Background */}
+        <div className="absolute inset-0 opacity-[0.03]">
           <div className="absolute inset-0" style={{
-            backgroundImage: `radial-gradient(circle at 2px 2px, white 1px, transparent 0)`,
+            backgroundImage: `radial-gradient(circle at 1px 1px, rgba(249, 115, 22, 0.3) 1px, transparent 0)`,
             backgroundSize: '40px 40px'
           }} />
         </div>
 
-        {/* Floating Particles */}
+        {/* Minimal Floating Shapes */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 left-10 w-2 h-2 bg-orange-400/30 rounded-full animate-float" style={{ animationDelay: '0s' }} />
-          <div className="absolute top-40 right-20 w-3 h-3 bg-orange-500/20 rounded-full animate-float" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-40 left-1/4 w-2 h-2 bg-white/20 rounded-full animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute bottom-60 right-1/3 w-4 h-4 bg-orange-300/10 rounded-full animate-float" style={{ animationDelay: '1.5s' }} />
-          <div className="absolute top-1/3 left-2/3 w-3 h-3 bg-white/10 rounded-full animate-float" style={{ animationDelay: '0.5s' }} />
+          {/* Main Gradient Orbs - Larger and softer */}
+          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-orange-200/30 to-amber-200/20 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-200/25 to-purple-200/20 rounded-full blur-3xl" />
+          <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-pink-200/20 to-orange-200/15 rounded-full blur-3xl" />
         </div>
 
-        {/* Navigation Buttons */}
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            prevSlide();
-          }}
-          onTouchEnd={(e) => e.stopPropagation()}
-          className="hidden hover:cursor-pointer lg:block absolute left-4 lg:left-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
-          aria-label="Previous slide"
-          type="button"
-        >
-          <ChevronLeft className="h-6 w-6 lg:h-8 lg:w-8" />
-        </button>
-        
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            nextSlide();
-          }}
-          onTouchEnd={(e) => e.stopPropagation()}
-          className="hidden hover:cursor-pointer lg:block absolute right-4 lg:right-8 top-1/2 transform -translate-y-1/2 z-20 bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white p-3 lg:p-4 rounded-full transition-all duration-300 hover:scale-110 focus:outline-none border border-white/20 shadow-xl"
-          aria-label="Next slide"
-          type="button"
-        >
-          <ChevronRight className="h-6 w-6 lg:h-8 lg:w-8" />
-        </button>
-
-        {/* Hero Content */}
-        <div className="absolute inset-0 flex items-center justify-center z-10">
-          <div className="container mx-auto px-2 sm:px-4 lg:px-8 py-20 sm:py-0">
-            <div className="max-w-6xl mx-auto text-center">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-1 sm:gap-2 bg-orange-500/20 backdrop-blur-sm border border-orange-500/30 rounded-full px-2 py-1 sm:px-4 sm:py-2 mb-6 sm:mb-6 animate-fadeInDown hover:bg-orange-500/30 transition-all duration-300 group cursor-default relative overflow-hidden">
-                <div className="absolute inset-0 animate-shimmer" />
-                <BookOpen className="h-3 w-3 sm:h-4 sm:w-4 text-orange-300 relative z-10 group-hover:rotate-12 transition-transform duration-300" />
-                <span className="text-[10px] sm:text-sm font-medium text-orange-100 relative z-10">Faculty of Information Technology</span>
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
+          <div className="max-w-5xl mx-auto text-center">
+            {/* Badge */}
+            <AnimatedSection animation="fadeInDown" showByDefault>
+              <div className="inline-flex items-center gap-2 bg-white border border-orange-200 rounded-full px-4 py-2 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 group">
+                <BookOpen className="h-4 w-4 text-orange-600 group-hover:rotate-12 transition-transform duration-300" />
+                <span className="text-sm font-semibold text-gray-700">Faculty of Information Technology</span>
               </div>
+            </AnimatedSection>
 
-              {/* Main Heading */}
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-4 sm:mb-4 lg:mb-6 text-white animate-fadeInUp leading-tight">
-                <span className="inline-block hover:scale-105 transition-transform duration-300">Book Your Lab</span>
+            {/* Main Heading */}
+            <AnimatedSection animation="fadeInUp" delay={100} showByDefault>
+              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 text-gray-900 leading-tight">
+                Book Your{' '}
+                <span className="relative inline-block">
+                  <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 bg-clip-text text-transparent">
+                    Laboratory
+                  </span>
+                  <div className="absolute -bottom-2 left-0 right-0 h-3 bg-orange-200/50 -rotate-1 -z-10" />
+                </span>
                 <br />
-                <span className="bg-gradient-to-r from-orange-400 via-orange-500 to-red-500 bg-clip-text text-transparent animate-gradient inline-block hover:scale-105 transition-transform duration-300">
+                <span className="text-gray-600 text-3xl sm:text-4xl md:text-5xl font-bold">
                   Anytime, Anywhere
                 </span>
               </h1>
+            </AnimatedSection>
 
-              {/* Subtitle */}
-              <p className="text-xs sm:text-base md:text-lg lg:text-xl mb-8 sm:mb-8 lg:mb-12 text-gray-200 font-light max-w-3xl mx-auto animate-fadeInUp px-2 sm:px-4" style={{ animationDelay: '0.1s' }}>
-                {carouselItems[currentSlide]?.title}
-                {carouselItems[currentSlide]?.subTitle && (
-                  <span className="block text-orange-300 font-semibold mt-1 text-sm sm:text-base">
-                    {carouselItems[currentSlide]?.subTitle}
-                  </span>
-                )}
+            {/* Subtitle */}
+            <AnimatedSection animation="fadeInUp" delay={200} showByDefault>
+              <p className="text-lg sm:text-xl md:text-2xl mb-12 text-gray-600 font-light max-w-3xl mx-auto leading-relaxed">
+                Sistem booking laboratorium <span className="font-semibold text-orange-600">FIT UPH</span> yang memudahkan mahasiswa dan dosen untuk reservasi ruang lab dengan cepat dan efisien.
               </p>
+            </AnimatedSection>
 
-              {/* CTA Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 justify-center items-center animate-fadeInUp px-3 sm:px-4" style={{ animationDelay: '0.2s' }}>
+            {/* CTA Buttons */}
+            <AnimatedSection animation="scaleIn" delay={300} showByDefault>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-16">
                 <Button 
-                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-4 sm:px-8 lg:px-12 py-2 sm:py-4 lg:py-6 text-xs sm:text-base lg:text-xl font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 w-full sm:w-auto overflow-hidden animate-pulse-glow"
+                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-6 text-lg font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 w-full sm:w-auto"
                   onClick={() => window.location.href = '/book-room'}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
-                  <span className="flex items-center gap-1 sm:gap-3 justify-center relative z-10">
+                  <span className="flex items-center gap-3 justify-center">
+                    <Calendar className="h-5 w-5" />
                     <span>Book a Lab Now</span>
-                    <ChevronRight className="h-3 w-3 sm:h-5 sm:w-5 lg:h-6 lg:w-6 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
                 
                 <Button 
                   variant="outline"
-                  className="group relative bg-white/10 backdrop-blur-sm hover:bg-white/20 text-white px-4 sm:px-8 lg:px-12 py-2 sm:py-4 lg:py-6 text-xs sm:text-base lg:text-xl font-semibold rounded-full border-2 border-white/30 hover:border-white/50 cursor-pointer transition-all duration-300 hover:scale-105 w-full sm:w-auto overflow-hidden"
+                  className="group relative bg-white hover:bg-gray-50 text-gray-700 px-8 py-6 text-lg font-semibold rounded-full border-2 border-gray-300 hover:border-orange-400 cursor-pointer transition-all duration-300 hover:scale-105 w-full sm:w-auto"
                   onClick={() => window.location.href = '/booking-calendar'}
                 >
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/10 to-transparent translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
-                  <span className="flex items-center gap-1 sm:gap-3 justify-center relative z-10">
+                  <span className="flex items-center gap-3 justify-center">
+                    <BookOpen className="h-5 w-5 group-hover:rotate-12 transition-transform" />
                     <span>View Calendar</span>
-                    <BookOpen className="h-3 w-3 sm:h-5 sm:w-5 lg:h-6 lg:w-6 group-hover:rotate-12 transition-transform" />
                   </span>
                 </Button>
               </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Carousel Indicators */}
-        <div className="absolute bottom-8 lg:bottom-12 left-0 right-0 z-10">
-          <div className="flex justify-center space-x-3">
-            {carouselItems.map((_, index) => (
-              <button
-                key={index}
-                className={`h-2 rounded-full transition-all duration-500 cursor-pointer ${
-                  index === currentSlide 
-                    ? "w-12 bg-orange-500 shadow-lg shadow-orange-500/50" 
-                    : "w-2 bg-white/40 hover:bg-white/60 hover:w-8"
-                }`}
-                onClick={() => setCurrentSlide(index)}
-                aria-label={`Go to slide ${index + 1}`}
-                type="button"
-              />
-            ))}
+            </AnimatedSection>
           </div>
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-20 lg:bottom-24 left-1/2 transform -translate-x-1/2 z-10 animate-bounce hidden lg:block">
-          <div className="flex flex-col items-center gap-2">
-            <span className="text-white/60 text-xs font-medium uppercase tracking-wider">Scroll Down</span>
-            <svg className="w-6 h-6 text-white/60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
+        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+          <button 
+            onClick={() => scrollToSection('about')}
+            className="group flex flex-col items-center gap-3 transition-all duration-300 hover:scale-110"
+          >
+            <span className="text-xs font-semibold uppercase tracking-widest text-gray-500 group-hover:text-orange-600 transition-colors duration-300">Scroll Down</span>
+            <div className="relative">
+              {/* Mouse Icon */}
+              <div className="w-6 h-10 border-2 border-gray-400 group-hover:border-orange-600 rounded-full flex justify-center pt-2 transition-colors duration-300">
+                <div className="w-1.5 h-2.5 bg-gray-400 group-hover:bg-orange-600 rounded-full animate-scroll transition-colors duration-300" />
+              </div>
+            </div>
+            {/* Arrow */}
+            <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-600 animate-bounceArrow transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
-          </div>
+          </button>
         </div>
-      </div>
+      </section>
 
-      <div className="bg-gradient-to-b from-gray-50 to-white">
-        <section className="py-8 sm:py-16 lg:py-24 overflow-hidden relative">
-          {/* Background Decoration */}
-          <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl" />
-            <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
-          </div>
+      {/* About Section */}
+      <section id="about" className="py-16 sm:py-24 bg-gradient-to-br from-orange-50/50 via-white to-blue-50/30 overflow-hidden relative">
+        {/* Background Decoration */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-300/5 rounded-full blur-3xl" />
+        </div>
+        
+        {/* Animated Grid Pattern */}
+        <div className="absolute inset-0 opacity-[0.015]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `linear-gradient(to right, #f97316 1px, transparent 1px), linear-gradient(to bottom, #f97316 1px, transparent 1px)`,
+            backgroundSize: '80px 80px'
+          }} />
+        </div>
 
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="max-w-6xl mx-auto">
-              <AnimatedSection animation="fadeInUp" delay={200}>
-                <div className="text-center mb-12 sm:mb-16">
-                  <div className="inline-block mb-4">
-                    <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider bg-orange-100 px-4 py-2 rounded-full">About Us</span>
-                  </div>
-                  <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4 sm:mb-6">
-                    About <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">FIT BookLab</span>
-                  </h2>
-                  <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-                    BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
-                  </p>
+        <div className="container mx-auto px-4 relative z-10">
+          <div className="max-w-6xl mx-auto">
+            <AnimatedSection animation="fadeInUp" delay={200}>
+              <div className="text-center mb-12 sm:mb-16">
+                <div className="inline-block mb-4">
+                  <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider bg-orange-100 px-4 py-2 rounded-full">About Us</span>
                 </div>
-              </AnimatedSection>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4 sm:mb-6">
+                  About <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">FIT BookLab</span>
+                </h2>
+                <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
+                  BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
+                </p>
+              </div>
+            </AnimatedSection>
               
               <StaggeredAnimationContainer
                 staggerDelay={150}
@@ -478,13 +460,13 @@ export default function Home() {
                     description: "Sistem booking yang user-friendly dengan calendar yang intuitif"
                   },
                   {
-                    icon: <Shield className="h-7 w-7 sm:h-8 sm:w-8" />,
+                    icon: <Timer className="h-7 w-7 sm:h-8 sm:w-8" />,
                     gradient: "from-orange-500 to-orange-600",
                     title: "Real-time Updates",
                     description: "Informasi ketersediaan lab yang selalu update secara real-time"
                   },
                   {
-                    icon: <Code className="h-7 w-7 sm:h-8 sm:w-8" />,
+                    icon: <Layers className="h-7 w-7 sm:h-8 sm:w-8" />,
                     gradient: "from-orange-500 to-orange-600",
                     title: "Multiple Labs",
                     description: "Akses ke berbagai laboratorium dengan spesifikasi yang berbeda"
@@ -516,14 +498,20 @@ export default function Home() {
           </div>
         </section>
 
-        
-        <section className="py-8 sm:py-16 lg:py-24 bg-gradient-to-br from-orange-50 via-white to-orange-50 overflow-hidden relative">
+        {/* How to Use Section */}
+        <section id="how-to-use" className="py-16 sm:py-24 bg-gradient-to-br from-orange-100/40 via-amber-50/30 to-orange-50/50 overflow-hidden relative">
           {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-5">
+          <div className="absolute inset-0 opacity-10">
             <div className="absolute inset-0" style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
               backgroundSize: '60px 60px'
             }} />
+          </div>
+          
+          {/* Floating Orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-20 right-20 w-72 h-72 bg-orange-300/20 rounded-full blur-3xl animate-float" />
+            <div className="absolute bottom-20 left-20 w-96 h-96 bg-amber-300/15 rounded-full blur-3xl" style={{ animationDelay: '2s' }} />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -615,7 +603,7 @@ export default function Home() {
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
                   <span className="flex items-center gap-2 relative z-10">
                     Start Booking Now
-                    <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
+                    <Calendar className="h-4 w-4 sm:h-5 sm:w-5 group-hover:translate-x-1 transition-transform" />
                   </span>
                 </Button>
               </AnimatedSection>
@@ -623,8 +611,21 @@ export default function Home() {
           </div>
         </section>
 
-        
-        <AnimatedSection animation="fadeInUp" className="py-8 sm:py-16 lg:py-20 bg-white">
+        {/* Rules Section */}
+        <section id="rules" className="py-16 sm:py-24 bg-gradient-to-br from-gray-50 via-orange-50/20 to-blue-50/30 relative overflow-hidden">
+          {/* Subtle Grid Background */}
+          <div className="absolute inset-0 opacity-[0.02]">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `radial-gradient(circle at 1px 1px, #f97316 1px, transparent 0)`,
+              backgroundSize: '40px 40px'
+            }} />
+          </div>
+          
+          {/* Gradient Orbs */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-40 right-10 w-80 h-80 bg-orange-200/15 rounded-full blur-3xl" />
+            <div className="absolute bottom-40 left-10 w-80 h-80 bg-blue-200/15 rounded-full blur-3xl" />
+          </div>
           <div className="container mx-auto px-3 sm:px-4">
             <div className="max-w-5xl mx-auto">
               <div className="text-center mb-6 sm:mb-10 md:mb-14">
@@ -1131,10 +1132,17 @@ export default function Home() {
               </StaggeredAnimationContainer>
             </div>
           </div>
-        </AnimatedSection>
+        </section>
         
 
-        <AnimatedSection animation="fadeInUp" className="py-8 sm:py-12 lg:py-16 bg-gray-100">
+        {/* Footer/Contact Section */}
+        <section id="contact" className="py-16 sm:py-24 bg-gradient-to-br from-gray-100 via-orange-50/30 to-gray-100 relative overflow-hidden">
+          {/* Background Decoration */}
+          <div className="absolute inset-0 overflow-hidden pointer-events-none">
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-orange-100/20 via-transparent to-blue-100/20" />
+            <div className="absolute -top-20 left-1/4 w-96 h-96 bg-orange-300/10 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 right-1/4 w-96 h-96 bg-blue-300/10 rounded-full blur-3xl" />
+          </div>
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
               <div className="bg-transparent p-6 sm:p-8 rounded-x overflow-hidden">
@@ -1197,9 +1205,22 @@ export default function Home() {
               </div>
             </div>
           </div>
-        </AnimatedSection>
-      </div>
-    <style jsx global>{`
+        </section>
+      
+      <style jsx global>{`
+        @keyframes float {
+          0%, 100% {
+            transform: translateY(0px);
+          }
+          50% {
+            transform: translateY(-20px);
+          }
+        }
+        
+        .animate-float {
+          animation: float 6s ease-in-out infinite;
+        }
+        
         @keyframes fadeInUp {
           from {
             opacity: 0;
@@ -1243,8 +1264,47 @@ export default function Home() {
           animation: scaleIn 0.3s ease-out forwards;
         }
         
-        .text-shadow-lg {
-          text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        @keyframes slideUp {
+          from {
+            opacity: 0;
+            transform: translateY(100px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+        
+        .animate-slideUp {
+          animation: slideUp 0.3s ease-out forwards;
+        }
+        
+        @keyframes scroll {
+          0% {
+            opacity: 1;
+            transform: translateY(0);
+          }
+          100% {
+            opacity: 0;
+            transform: translateY(8px);
+          }
+        }
+        
+        .animate-scroll {
+          animation: scroll 1.5s ease-in-out infinite;
+        }
+        
+        @keyframes bounceArrow {
+          0%, 100% {
+            transform: translateY(0);
+          }
+          50% {
+            transform: translateY(4px);
+          }
+        }
+        
+        .animate-bounceArrow {
+          animation: bounceArrow 2s ease-in-out infinite;
         }
         
         /* Smooth scrolling */
