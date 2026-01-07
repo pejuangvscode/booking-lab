@@ -270,19 +270,13 @@ export function Navbar() {
           <div className={`-mr-2 flex items-center sm:hidden`}>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-inset ${
-                isAtTop && router.pathname === '/'
-                  ? 'text-white hover:text-gray-200 hover:bg-white/10 focus:ring-white/50' 
-                  : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:ring-blue-500'
-              }`}
+              className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-orange-500 transition-colors duration-300"
               aria-expanded={isMenuOpen}
             >
               <span className="sr-only">Open main menu</span>
               {isMenuOpen ? (
                 <svg
-                  className={`block h-6 w-6 ${
-                    isAtTop && router.pathname === '/' ? 'text-gray-400' : ''
-                  }`}
+                  className="block h-6 w-6"
                   xmlns="http://www.w3.org/2000/svg"
                   fill="none"
                   viewBox="0 0 24 24"
