@@ -394,7 +394,7 @@ export default function Home() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2">
+        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
           <button 
             onClick={() => scrollToSection('about')}
             className="group flex flex-col items-center gap-3 transition-all duration-300 hover:scale-110"
