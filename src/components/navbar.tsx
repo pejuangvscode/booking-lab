@@ -248,7 +248,7 @@ export function Navbar() {
               <SignInButton mode="modal">
                 <button className={`hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   isAtTop && router.pathname === '/'
-                    ? 'text-white bg-transparent outline-white outline-2 hover:bg-orange-700 hover:outline-orange-700' 
+                    ? 'text-gray-400 bg-transparent outline-gray-400 outline-2 hover:bg-orange-500 hover:outline-orange-500 hover:text-white focus:ring-gray-500' 
                     : 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
                 }`}>
                   Sign in

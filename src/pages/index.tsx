@@ -303,7 +303,7 @@ export default function Home() {
                   <div className="absolute -bottom-2 left-0 right-0 h-3 bg-orange-200/50 -rotate-1 -z-10" />
                 </span>
                 <br />
-                <span className="text-gray-600 text-3xl sm:text-4xl md:text-5xl font-bold">
+                <span className="text-gray-600 text-2xl sm:text-3xl md:text-4xl font-bold">
                   Anytime, Anywhere
                 </span>
               </h1>
