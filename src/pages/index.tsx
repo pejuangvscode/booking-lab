@@ -252,64 +252,6 @@ export default function Home() {
         </div>
       )}
 
-      {/* Technical Notice Modal */}
-      {showNoticeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-3 sm:p-4 animate-fadeIn overflow-y-auto">
-          <div className="bg-white rounded-xl sm:rounded-2xl shadow-2xl max-w-md w-full my-auto transform transition-all duration-300 animate-scaleIn max-h-[95vh] overflow-y-auto">
-            {/* Header */}
-            <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4 sm:p-6 rounded-t-xl sm:rounded-t-2xl">
-              <div className="flex items-center justify-center mb-2 sm:mb-3">
-                <div className="w-12 h-12 sm:w-16 sm:h-16 bg-white rounded-full flex items-center justify-center shadow-lg">
-                  <svg className="w-8 h-8 sm:w-10 sm:h-10 text-orange-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
-                  </svg>
-                </div>
-              </div>
-              <h2 className="text-lg sm:text-2xl font-bold text-white text-center">Important Notice</h2>
-            </div>
-
-            {/* Content */}
-            <div className="p-4 sm:p-6">
-              <div className="mb-4 sm:mb-6">
-                <h3 className="text-base sm:text-xl font-semibold text-gray-900 mb-3 sm:mb-4 text-center">
-                  We Apologize for the Inconvenience
-                </h3>
-                
-                <div className="bg-orange-50 border-l-4 border-orange-500 p-3 sm:p-4 rounded-r-lg mb-3 sm:mb-4">
-                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                    Due to a <strong className="text-orange-600">technical issue</strong>, all bookings made on or after <strong className="text-orange-600">October 30, 2025</strong> have been affected.
-                  </p>
-                </div>
-
-                <div className="bg-blue-50 border-l-4 border-blue-500 p-3 sm:p-4 rounded-r-lg mb-3 sm:mb-4">
-                  <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
-                    <strong className="text-blue-600">Action Required:</strong> If you made a booking on or after this date, please <strong>rebook your laboratory reservation</strong> through the system.
-                  </p>
-                </div>
-
-                <div className="bg-gray-50 p-3 sm:p-4 rounded-lg">
-                  <p className="text-xs sm:text-sm text-gray-600 text-center italic">
-                    We sincerely apologize for any inconvenience this may have caused and appreciate your understanding and cooperation.
-                  </p>
-                </div>
-              </div>
-
-              {/* Button */}
-              <button
-                onClick={handleCloseNotice}
-                className="w-full bg-gradient-to-r from-orange-500 to-red-500 hover:from-orange-600 hover:to-red-600 text-white font-semibold py-2.5 sm:py-3 px-4 sm:px-6 rounded-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 cursor-pointer text-sm sm:text-base"
-              >
-                I Understand
-              </button>
-
-              <p className="text-xs text-gray-500 text-center mt-3 sm:mt-4">
-                This notice will only appear once
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Hero Section - Enhanced Design */}
       <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-50/80 via-white to-blue-50/70">
         {/* Layered Gradient Overlays */}
