@@ -310,25 +310,34 @@ export default function Home() {
         </div>
       )}
 
-      {/* Hero Section - Minimalist Design */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-50/80 via-white to-blue-50/60">
-        {/* Subtle Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-tr from-orange-100/20 via-transparent to-blue-100/20" />
+      {/* Hero Section - Enhanced Design */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-50/80 via-white to-blue-50/70">
+        {/* Layered Gradient Overlays */}
+        <div className="absolute inset-0 bg-gradient-to-tr from-orange-100/15 via-transparent to-blue-100/15" />
         
-        {/* Soft Pattern Background */}
-        <div className="absolute inset-0 opacity-[0.03]">
+        {/* Multiple Pattern Layers */}
+        <div className="absolute inset-0 opacity-[0.025]">
           <div className="absolute inset-0" style={{
             backgroundImage: `radial-gradient(circle at 1px 1px, rgba(249, 115, 22, 0.3) 1px, transparent 0)`,
             backgroundSize: '40px 40px'
           }} />
         </div>
+        <div className="absolute inset-0 opacity-[0.015]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `linear-gradient(45deg, rgba(249, 115, 22, 0.05) 25%, transparent 25%, transparent 75%, rgba(249, 115, 22, 0.05) 75%), linear-gradient(-45deg, rgba(249, 115, 22, 0.05) 25%, transparent 25%, transparent 75%, rgba(249, 115, 22, 0.05) 75%)`,
+            backgroundSize: '60px 60px'
+          }} />
+        </div>
 
-        {/* Minimal Floating Shapes */}
+        {/* Enhanced Floating Shapes with Animation */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          {/* Main Gradient Orbs - Larger and softer */}
-          <div className="absolute top-0 left-0 w-[500px] h-[500px] bg-gradient-to-br from-orange-200/30 to-amber-200/20 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-0 w-[600px] h-[600px] bg-gradient-to-br from-blue-200/25 to-purple-200/20 rounded-full blur-3xl" />
-          <div className="absolute top-1/3 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-pink-200/20 to-orange-200/15 rounded-full blur-3xl" />
+          {/* Main Gradient Orbs */}
+          <div className="absolute top-0 left-0 w-[600px] h-[600px] bg-gradient-to-br from-orange-200/25 to-amber-200/20 rounded-full blur-3xl animate-float" />
+          <div className="absolute bottom-0 right-0 w-[700px] h-[700px] bg-gradient-to-br from-blue-200/20 to-purple-200/15 rounded-full blur-3xl" style={{ animationDelay: '2s' }} />
+          <div className="absolute top-1/3 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-pink-200/18 to-orange-200/15 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+          {/* Additional smaller orbs */}
+          <div className="absolute top-1/2 left-1/3 w-[300px] h-[300px] bg-gradient-to-br from-yellow-200/12 to-orange-200/10 rounded-full blur-2xl animate-float" style={{ animationDelay: '3s' }} />
+          <div className="absolute bottom-1/4 left-1/4 w-[350px] h-[350px] bg-gradient-to-br from-teal-200/12 to-blue-200/10 rounded-full blur-2xl" style={{ animationDelay: '1.5s' }} />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
@@ -359,11 +368,11 @@ export default function Home() {
             </AnimatedSection>
 
             {/* Subtitle */}
-            <AnimatedSection animation="fadeInUp" delay={200} showByDefault>
+            {/* <AnimatedSection animation="fadeInUp" delay={200} showByDefault>
               <p className="text-lg sm:text-xl md:text-2xl mb-12 text-gray-600 font-light max-w-3xl mx-auto leading-relaxed">
                 Sistem booking laboratorium <span className="font-semibold text-orange-600">FIT UPH</span> yang memudahkan mahasiswa dan dosen untuk reservasi ruang lab dengan cepat dan efisien.
               </p>
-            </AnimatedSection>
+            </AnimatedSection> */}
 
             {/* CTA Buttons */}
             <AnimatedSection animation="scaleIn" delay={300} showByDefault>
@@ -415,19 +424,27 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 sm:py-24 bg-gradient-to-br from-orange-50/50 via-white to-blue-50/30 overflow-hidden relative">
-        {/* Background Decoration */}
+      <section id="about" className="py-16 sm:py-24 bg-gradient-to-br from-orange-50/60 via-white to-blue-50/40 overflow-hidden relative">
+        {/* Enhanced Background Decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-24 w-96 h-96 bg-orange-400/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-24 -left-24 w-96 h-96 bg-blue-400/10 rounded-full blur-3xl" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-300/5 rounded-full blur-3xl" />
+          <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-gradient-to-br from-orange-300/12 to-red-300/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] bg-gradient-to-br from-blue-300/12 to-cyan-300/10 rounded-full blur-3xl animate-float" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-to-br from-purple-200/8 to-pink-200/8 rounded-full blur-3xl" />
+          <div className="absolute top-20 left-1/4 w-[350px] h-[350px] bg-gradient-to-br from-amber-300/10 to-yellow-300/8 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-indigo-300/10 to-purple-300/8 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
         </div>
         
-        {/* Animated Grid Pattern */}
+        {/* Multiple Pattern Layers */}
         <div className="absolute inset-0 opacity-[0.015]">
           <div className="absolute inset-0" style={{
             backgroundImage: `linear-gradient(to right, #f97316 1px, transparent 1px), linear-gradient(to bottom, #f97316 1px, transparent 1px)`,
             backgroundSize: '80px 80px'
+          }} />
+        </div>
+        <div className="absolute inset-0 opacity-[0.01]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `radial-gradient(circle, #f97316 1px, transparent 1px)`,
+            backgroundSize: '50px 50px'
           }} />
         </div>
 
@@ -499,19 +516,26 @@ export default function Home() {
         </section>
 
         {/* How to Use Section */}
-        <section id="how-to-use" className="py-16 sm:py-24 bg-gradient-to-br from-orange-100/40 via-amber-50/30 to-orange-50/50 overflow-hidden relative">
-          {/* Background Pattern */}
-          <div className="absolute inset-0 opacity-10">
+        <section id="how-to-use" className="py-16 sm:py-24 bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-orange-50/40 overflow-hidden relative">
+          {/* Enhanced Background Pattern */}
+          <div className="absolute inset-0 opacity-[0.06]">
             <div className="absolute inset-0" style={{
               backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
               backgroundSize: '60px 60px'
             }} />
           </div>
+          <div className="absolute inset-0 opacity-[0.025]">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `linear-gradient(30deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(150deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316)`,
+              backgroundSize: '80px 80px'
+            }} />
+          </div>
           
-          {/* Floating Orbs */}
+          {/* Enhanced Floating Orbs */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 right-20 w-72 h-72 bg-orange-300/20 rounded-full blur-3xl animate-float" />
-            <div className="absolute bottom-20 left-20 w-96 h-96 bg-amber-300/15 rounded-full blur-3xl" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-20 right-20 w-[400px] h-[400px] bg-gradient-to-br from-orange-300/18 to-red-300/12 rounded-full blur-3xl animate-float" />
+            <div className="absolute bottom-20 left-20 w-[500px] h-[500px] bg-gradient-to-br from-amber-300/15 to-yellow-300/12 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/2 left-1/2 w-[350px] h-[350px] bg-gradient-to-br from-orange-200/12 to-pink-200/10 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
@@ -612,19 +636,26 @@ export default function Home() {
         </section>
 
         {/* Rules Section */}
-        <section id="rules" className="py-16 sm:py-24 bg-gradient-to-br from-gray-50 via-orange-50/20 to-blue-50/30 relative overflow-hidden">
-          {/* Subtle Grid Background */}
+        <section id="rules" className="py-16 sm:py-24 bg-gradient-to-br from-gray-50 via-orange-50/30 to-blue-50/30 relative overflow-hidden">
+          {/* Multiple Grid Patterns */}
           <div className="absolute inset-0 opacity-[0.02]">
             <div className="absolute inset-0" style={{
               backgroundImage: `radial-gradient(circle at 1px 1px, #f97316 1px, transparent 0)`,
               backgroundSize: '40px 40px'
             }} />
           </div>
+          <div className="absolute inset-0 opacity-[0.015]">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `linear-gradient(90deg, rgba(249, 115, 22, 0.05) 1px, transparent 1px), linear-gradient(rgba(249, 115, 22, 0.05) 1px, transparent 1px)`,
+              backgroundSize: '80px 80px'
+            }} />
+          </div>
           
-          {/* Gradient Orbs */}
+          {/* Enhanced Gradient Orbs */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-40 right-10 w-80 h-80 bg-orange-200/15 rounded-full blur-3xl" />
-            <div className="absolute bottom-40 left-10 w-80 h-80 bg-blue-200/15 rounded-full blur-3xl" />
+            <div className="absolute top-40 right-10 w-[450px] h-[450px] bg-gradient-to-br from-orange-200/15 to-red-200/12 rounded-full blur-3xl animate-float" />
+            <div className="absolute bottom-40 left-10 w-[450px] h-[450px] bg-gradient-to-br from-blue-200/15 to-cyan-200/12 rounded-full blur-3xl" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-br from-purple-200/10 to-pink-200/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
           </div>
           <div className="container mx-auto px-3 sm:px-4">
             <div className="max-w-5xl mx-auto">
@@ -1136,12 +1167,21 @@ export default function Home() {
         
 
         {/* Footer/Contact Section */}
-        <section id="contact" className="py-16 sm:py-24 bg-gradient-to-br from-gray-100 via-orange-50/30 to-gray-100 relative overflow-hidden">
-          {/* Background Decoration */}
+        <section id="contact" className="py-16 sm:py-24 bg-gradient-to-br from-gray-100 via-orange-50/30 to-blue-50/30 relative overflow-hidden">
+          {/* Enhanced Background Decoration */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-orange-100/20 via-transparent to-blue-100/20" />
-            <div className="absolute -top-20 left-1/4 w-96 h-96 bg-orange-300/10 rounded-full blur-3xl" />
-            <div className="absolute -bottom-20 right-1/4 w-96 h-96 bg-blue-300/10 rounded-full blur-3xl" />
+            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-br from-orange-100/15 via-transparent to-blue-100/15" />
+            <div className="absolute top-0 right-0 w-full h-full bg-gradient-to-bl from-pink-100/10 via-transparent to-purple-100/10" />
+            <div className="absolute -top-20 left-1/4 w-[500px] h-[500px] bg-gradient-to-br from-orange-200/12 to-amber-200/10 rounded-full blur-3xl animate-float" />
+            <div className="absolute -bottom-20 right-1/4 w-[500px] h-[500px] bg-gradient-to-br from-blue-200/12 to-cyan-200/10 rounded-full blur-3xl" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/2 right-1/3 w-[400px] h-[400px] bg-gradient-to-br from-purple-200/10 to-pink-200/10 rounded-full blur-3xl animate-float" style={{ animationDelay: '1s' }} />
+          </div>
+          {/* Pattern Overlay */}
+          <div className="absolute inset-0 opacity-[0.015]">
+            <div className="absolute inset-0" style={{
+              backgroundImage: `radial-gradient(circle at 2px 2px, rgba(249, 115, 22, 0.3) 1px, transparent 0)`,
+              backgroundSize: '50px 50px'
+            }} />
           </div>
           <div className="container mx-auto px-4">
             <div className="max-w-5xl mx-auto">
