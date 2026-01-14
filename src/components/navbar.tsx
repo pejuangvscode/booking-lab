@@ -92,10 +92,10 @@ export function Navbar() {
     const baseClasses = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-300";
     
     if (isActive(path)) {
-      return `${baseClasses} border-orange-500 text-orange-600 font-semibold`;
+      return `${baseClasses} ${isAtTop && router.pathname === '/' ? 'border-yellow-400 text-yellow-400' : 'border-orange-500 text-orange-600'} font-semibold`;
     }
     
-    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-gray-700 hover:text-orange-600' : 'text-gray-600 hover:text-orange-600'} hover:border-orange-300`;
+    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-yellow-300 hover:text-yellow-400' : 'text-gray-600 hover:text-orange-600'} ${isAtTop && router.pathname === '/' ? 'hover:border-yellow-300' : 'hover:border-orange-300'}`;
   };
 
   const getMobileLinkClasses = (path: string) => {
@@ -113,7 +113,7 @@ export function Navbar() {
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isMounted && !visible ? '-translate-y-full' : 'transform-none'
       } ${isAtTop && router.pathname === '/' 
-          ? 'bg-white/5 backdrop-blur-md border-b border-white/10' 
+          ? 'bg-transparent' 
           : 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100'
       } ${isMenuOpen && 'bg-white/95 backdrop-blur-md shadow-lg'}`}
     >
@@ -186,8 +186,8 @@ export function Navbar() {
                       onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
                       className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium hover:cursor-pointer transition-colors duration-300 ${
                         router.pathname.startsWith('/admin')
-                          ? 'border-orange-500 text-orange-600 font-semibold'
-                          : 'border-transparent text-gray-700 hover:text-orange-600 hover:border-orange-300'
+                          ? isAtTop && router.pathname === '/' ? 'border-yellow-400 text-yellow-400 font-semibold' : 'border-orange-500 text-orange-600 font-semibold'
+                          : isAtTop && router.pathname === '/' ? 'border-transparent text-yellow-300 hover:text-yellow-400 hover:border-yellow-300' : 'border-transparent text-gray-700 hover:text-orange-600 hover:border-orange-300'
                       }`}
                     >
                       Admin Menu
@@ -246,10 +246,10 @@ export function Navbar() {
           <div className="hidden sm:ml-6 sm:flex sm:items-center">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className={`hover:cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
+                <button className={`hover:cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   isAtTop && router.pathname === '/'
-                    ? 'text-gray-400 bg-transparent outline-gray-400 outline-2 hover:bg-orange-500 hover:outline-orange-500 hover:text-white focus:ring-gray-500' 
-                    : 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
+                    ? 'text-yellow-400 bg-transparent border-2 border-yellow-400 hover:bg-yellow-400 hover:text-red-900 focus:ring-yellow-500' 
+                    : 'text-white bg-orange-600 border border-transparent hover:bg-orange-700 focus:ring-orange-500'
                 }`}>
                   Sign in
                 </button>

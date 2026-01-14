@@ -1,4 +1,4 @@
-import Head from "next/head";
+﻿import Head from "next/head";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Home as HomeIcon, BookOpen, Users, Calendar, FileText, Phone, Menu, X, Layers, Timer, Info } from "lucide-react";
@@ -252,54 +252,125 @@ export default function Home() {
         </div>
       )}
 
-      {/* Hero Section - Enhanced Design */}
-      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-orange-50/40">
-        {/* Enhanced Background Pattern */}
-        <div className="absolute inset-0 opacity-[0.06]">
-          <div className="absolute inset-0" style={{
-            backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='1'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`,
-            backgroundSize: '60px 60px'
-          }} />
+      {/* Hero Section - Chinese New Year 2026 Theme */}
+      <section id="home" className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-red-900 via-red-800 to-red-950">
+        {/* Chinese New Year Decorative Elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {/* Chinese Clouds - Red with Yellow Border - Different Speeds, Directions & Sizes */}
+          <img 
+            src="/chinese_event/1.png" 
+            alt="Chinese Cloud" 
+            className="absolute top-16 w-32 lg:w-48 h-auto opacity-70 animate-float-left"
+            style={{ animationDuration: '30s' }}
+          />
+          <img 
+            src="/chinese_event/1.png" 
+            alt="Chinese Cloud" 
+            className="absolute bottom-20 w-48 lg:w-80 h-auto opacity-60 animate-float-right"
+            style={{ animationDuration: '40s' }}
+          />
+          <img 
+            src="/chinese_event/1.png" 
+            alt="Chinese Cloud" 
+            className="absolute top-1/3 w-40 lg:w-120 h-auto opacity-50 animate-float-right"
+            style={{ animationDuration: '25s' }}
+          />
+          
+          {/* Red Lanterns - Hanging and Swinging from Top - Desktop Only */}
+          <img 
+            src="/chinese_event/2.png" 
+            alt="Red Lantern" 
+            className="hidden lg:block absolute top-0 left-20 w-75 h-auto opacity-95 animate-swing"
+            style={{ 
+              filter: 'drop-shadow(0 25px 40px rgba(0, 0, 0, 0.2)) drop-shadow(0 10px 20px rgba(139, 0, 0, 0.6))'
+            }}
+          />
+          <img 
+            src="/chinese_event/2.png" 
+            alt="Red Lantern" 
+            className="hidden lg:block absolute top-0 right-20 w-56 h-auto opacity-95 animate-swing"
+            style={{ 
+              animationDelay: '1s',
+              filter: 'drop-shadow(0 25px 40px rgba(0, 0, 0, 0.2)) drop-shadow(0 10px 20px rgba(139, 0, 0, 0.6))'
+            }}
+          />
+          
+          {/* Golden Fire Horse - Year of the Horse 2026 */}
+          {/* <img 
+            src="/chinese_event/3.png" 
+            alt="Golden Fire Horse" 
+            className="absolute -bottom-80 -right-120 w-[900px] opacity-30 h-auto animate-float"
+            style={{ animationDelay: '1s' }}
+          /> */}
         </div>
-        <div className="absolute inset-0 opacity-[0.025]">
+        
+        {/* Traditional Chinese Waves Pattern */}
+        <div className="absolute inset-0 opacity-[0.30]">
           <div className="absolute inset-0" style={{
-            backgroundImage: `linear-gradient(30deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316), linear-gradient(150deg, #f97316 12%, transparent 12.5%, transparent 87%, #f97316 87.5%, #f97316)`,
-            backgroundSize: '80px 80px'
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='200' height='60' viewBox='0 0 200 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 30 Q 25 10, 50 30 T 100 30 T 150 30 T 200 30' stroke='%23ffd700' stroke-width='1.5' fill='none' opacity='0.4'/%3E%3Cpath d='M0 40 Q 25 20, 50 40 T 100 40 T 150 40 T 200 40' stroke='%23ffd700' stroke-width='1.5' fill='none' opacity='0.3'/%3E%3C/svg%3E")`,
+            backgroundSize: '200px 60px',
+            backgroundRepeat: 'repeat'
           }} />
         </div>
         
-        {/* Enhanced Floating Orbs */}
+        {/* Elegant Chinese Knot Pattern */}
+        <div className="absolute inset-0 opacity-[0.17]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg width='120' height='120' viewBox='0 0 120 120' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M40 60 L50 50 L60 60 L70 50 L80 60 L70 70 L60 60 L50 70 Z' stroke='%23ffd700' stroke-width='1' fill='none' opacity='0.5'/%3E%3Ccircle cx='60' cy='60' r='15' stroke='%23ff6b35' stroke-width='0.5' fill='none' opacity='0.3'/%3E%3C/svg%3E")`,
+            backgroundSize: '120px 120px'
+          }} />
+        </div>
+        
+        {/* Subtle Diagonal Shimmer */}
+        <div className="absolute inset-0 opacity-[0.1]">
+          <div className="absolute inset-0" style={{
+            backgroundImage: `repeating-linear-gradient(45deg, transparent, transparent 40px, rgba(255, 215, 0, 0.2) 40px, rgba(255, 215, 0, 0.2) 42px)`,
+          }} />
+        </div>
+        
+        {/* Firework Sparkles */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute top-20 right-20 w-[400px] h-[400px] bg-gradient-to-br from-orange-300/18 to-red-300/12 rounded-full blur-3xl animate-float" />
-          <div className="absolute bottom-20 left-20 w-[500px] h-[500px] bg-gradient-to-br from-amber-300/15 to-yellow-300/12 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-          <div className="absolute top-1/2 left-1/2 w-[350px] h-[350px] bg-gradient-to-br from-orange-200/12 to-pink-200/10 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+          <div className="absolute top-1/4 right-1/4 w-2 h-2 bg-yellow-400 rounded-full animate-ping" style={{ animationDuration: '2s' }} />
+          <div className="absolute top-1/3 left-1/3 w-2 h-2 bg-amber-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '0.5s' }} />
+          <div className="absolute bottom-1/3 right-1/3 w-2 h-2 bg-yellow-500 rounded-full animate-ping" style={{ animationDuration: '2.5s', animationDelay: '1s' }} />
+          <div className="absolute top-1/2 right-1/5 w-2 h-2 bg-red-400 rounded-full animate-ping" style={{ animationDuration: '3s', animationDelay: '1.5s' }} />
+          <div className="absolute bottom-1/4 left-1/4 w-2 h-2 bg-yellow-300 rounded-full animate-ping" style={{ animationDuration: '2s', animationDelay: '2s' }} />
         </div>
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-20 relative z-10">
-          <div className="max-w-7xl mx-auto">
-            <div className="grid lg:grid-cols-2 gap-12 items-center">
-              {/* Left Content */}
-              <div className="text-center lg:text-left">
-                {/* Badge */}
+          <div className="max-w-5xl mx-auto">
+            <div className="flex flex-col items-center justify-center text-center">
+              {/* Main Content - Centered */}
+              <div className="text-center w-full">
+                {/* CNY Badge */}
                 <AnimatedSection animation="fadeInDown" showByDefault>
-                  <div className="inline-flex items-center gap-2 bg-white border border-orange-200 rounded-full px-4 py-2 mb-6 shadow-lg hover:shadow-xl transition-all duration-300 group">
-                    <BookOpen className="h-4 w-4 text-orange-600 group-hover:rotate-12 transition-transform duration-300" />
-                    <span className="text-sm font-semibold text-gray-700">Faculty of Information Technology</span>
+                  <div className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 border-3 border-red-900 rounded-full px-6 py-3 mb-8 shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 group">
+                    <div className="w-6 h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full border border-red-900" />
+                    </div>
+                    <span className="text-sm font-black text-red-900 tracking-wide">FACULTY OF INFORMATION TECHNOLOGY</span>
+                    <div className="w-6 h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
+                      <div className="w-3 h-3 rounded-full border border-red-900" />
+                    </div>
                   </div>
                 </AnimatedSection>
 
-                {/* Main Heading */}
+                {/* Main Heading - CNY 2026 */}
                 <AnimatedSection animation="fadeInUp" delay={100} showByDefault>
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 text-gray-900 leading-tight">
+                  <div className="mb-4">
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-yellow-400 mb-2 animate-pulse">恭喜发财 Gong Xi Fa Cai</h2>
+                    <p className="text-lg sm:text-xl text-yellow-300 font-semibold">Happy Chinese New Year 2026 - Year of the Fire Horse</p>
+                  </div>
+                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 text-white leading-tight">
                     Book Your{' '}
                     <span className="relative inline-block">
-                      <span className="bg-gradient-to-r from-orange-500 via-orange-600 to-red-500 bg-clip-text text-transparent">
+                      <span className="bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-400 bg-clip-text text-transparent">
                         Laboratory
                       </span>
-                      <div className="absolute -bottom-2 left-0 right-0 h-3 bg-orange-200/50 -rotate-1 -z-10" />
+                      <div className="absolute -bottom-2 left-0 right-0 h-3 bg-yellow-500/50 -rotate-1 -z-10" />
                     </span>
                     <br />
-                    <span className="text-gray-600 text-2xl sm:text-3xl md:text-4xl font-bold">
+                    <span className="text-yellow-200 text-2xl sm:text-3xl md:text-4xl font-bold">
                       Anytime, Anywhere
                     </span>
                   </h1>
@@ -314,9 +385,9 @@ export default function Home() {
 
                 {/* CTA Buttons */}
                 <AnimatedSection animation="scaleIn" delay={300} showByDefault>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start items-center mb-8 lg:mb-0">
+                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
                     <Button 
-                      className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-6 text-lg font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 w-full sm:w-auto"
+                      className="group relative bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:to-amber-600 text-red-900 px-8 py-6 text-lg font-black rounded-full shadow-2xl hover:shadow-yellow-500/50 cursor-pointer transition-all duration-300 hover:scale-110 w-full sm:w-auto border-2 border-yellow-600"
                       onClick={() => window.location.href = '/book-room'}
                     >
                       <span className="flex items-center gap-3 justify-center">
@@ -327,7 +398,7 @@ export default function Home() {
                     
                     <Button 
                       variant="outline"
-                      className="group relative bg-white hover:bg-gray-50 text-gray-700 px-8 py-6 text-lg font-semibold rounded-full border-2 border-gray-300 hover:border-orange-400 cursor-pointer transition-all duration-300 hover:scale-105 w-full sm:w-auto"
+                      className="group relative bg-white/95 hover:bg-yellow-50 text-red-900 px-8 py-6 text-lg font-bold rounded-full border-3 border-yellow-600 hover:border-yellow-500 cursor-pointer transition-all duration-300 hover:scale-110 w-full sm:w-auto shadow-xl"
                       onClick={() => window.location.href = '/booking-calendar'}
                     >
                       <span className="flex items-center gap-3 justify-center">
@@ -338,31 +409,6 @@ export default function Home() {
                   </div>
                 </AnimatedSection>
               </div>
-
-              {/* Right Content - Phone Mockup */}
-              <AnimatedSection animation="fadeInRight" delay={200} showByDefault className="hidden lg:block">
-                <div className="relative flex justify-center items-center">
-                  {/* Decorative elements behind phone */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-[250px] h-[250px] bg-gradient-to-br from-orange-400/20 to-red-400/20 rounded-full blur-3xl animate-pulse" />
-                  </div>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="w-[200px] h-[200px] bg-gradient-to-br from-blue-400/15 to-purple-400/15 rounded-full blur-2xl animate-float" style={{ animationDelay: '1s' }} />
-                  </div>
-                  
-                  {/* Shadow below phone - stays fixed */}
-                  <div className="absolute bottom-8 left-1/2 -translate-x-1/2 w-[200px] h-10 bg-black/50 rounded-[50%] blur-2xl" />
-                  
-                  {/* Phone mockup with floating animation */}
-                  <div className="relative animate-floatPhone">
-                    <img 
-                      src="/mockup.png" 
-                      alt="BookLab Mobile App" 
-                      className="relative z-10 w-full max-w-[280px] xl:max-w-[320px]"
-                    />
-                  </div>
-                </div>
-              </AnimatedSection>
             </div>
           </div>
         </div>
@@ -373,15 +419,15 @@ export default function Home() {
             onClick={() => scrollToSection('about')}
             className="group flex flex-col items-center gap-3 transition-all duration-300 hover:scale-110"
           >
-            <span className="text-xs font-semibold uppercase tracking-widest text-gray-500 group-hover:text-orange-600 transition-colors duration-300">Scroll Down</span>
+            <span className="text-xs font-semibold uppercase tracking-widest text-yellow-300 group-hover:text-yellow-400 transition-colors duration-300">Scroll Down</span>
             <div className="relative">
               {/* Mouse Icon */}
-              <div className="w-6 h-10 border-2 border-gray-400 group-hover:border-orange-600 rounded-full flex justify-center pt-2 transition-colors duration-300">
-                <div className="w-1.5 h-2.5 bg-gray-400 group-hover:bg-orange-600 rounded-full animate-scroll transition-colors duration-300" />
+              <div className="w-6 h-10 border-2 border-yellow-400 group-hover:border-yellow-300 rounded-full flex justify-center pt-2 transition-colors duration-300">
+                <div className="w-1.5 h-2.5 bg-yellow-400 group-hover:bg-yellow-300 rounded-full animate-scroll transition-colors duration-300" />
               </div>
             </div>
             {/* Arrow */}
-            <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-600 animate-bounceArrow transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-5 h-5 text-yellow-400 group-hover:text-yellow-300 animate-bounceArrow transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </button>
@@ -389,14 +435,14 @@ export default function Home() {
       </section>
 
       {/* About Section */}
-      <section id="about" className="py-16 sm:py-24 bg-gradient-to-br from-orange-50/60 via-white to-blue-50/40 overflow-hidden relative">
-        {/* Enhanced Background Decoration */}
+      <section id="about" className="py-16 sm:py-24 bg-gradient-to-br from-red-50 via-red-50/80 to-yellow-50/60 overflow-hidden relative">
+        {/* CNY Background Decoration */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-gradient-to-br from-orange-300/12 to-red-300/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] bg-gradient-to-br from-blue-300/12 to-cyan-300/10 rounded-full blur-3xl animate-float" />
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-to-br from-purple-200/8 to-pink-200/8 rounded-full blur-3xl" />
-          <div className="absolute top-20 left-1/4 w-[350px] h-[350px] bg-gradient-to-br from-amber-300/10 to-yellow-300/8 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
-          <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-indigo-300/10 to-purple-300/8 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+          <div className="absolute -top-24 -right-24 w-[500px] h-[500px] bg-gradient-to-br from-red-300/20 to-red-400/15 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute -bottom-24 -left-24 w-[500px] h-[500px] bg-gradient-to-br from-yellow-300/18 to-amber-400/15 rounded-full blur-3xl animate-float" />
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[900px] h-[900px] bg-gradient-to-br from-red-200/12 to-rose-200/10 rounded-full blur-3xl" />
+          <div className="absolute top-20 left-1/4 w-[350px] h-[350px] bg-gradient-to-br from-yellow-400/15 to-amber-400/12 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+          <div className="absolute bottom-20 right-1/4 w-[400px] h-[400px] bg-gradient-to-br from-red-400/15 to-rose-400/12 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
         </div>
         
         {/* Multiple Pattern Layers */}
@@ -418,10 +464,10 @@ export default function Home() {
             <AnimatedSection animation="fadeInUp" delay={200}>
               <div className="text-center mb-12 sm:mb-16">
                 <div className="inline-block mb-4">
-                  <span className="text-orange-600 font-semibold text-sm uppercase tracking-wider bg-orange-100 px-4 py-2 rounded-full">About Us</span>
+                  <span className="text-red-900 font-bold text-sm uppercase tracking-wider bg-gradient-to-r from-yellow-400 to-amber-500 px-5 py-2 rounded-full border-2 border-red-700">About Us</span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-gray-900 mb-4 sm:mb-6">
-                  About <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">FIT BookLab</span>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-red-900 mb-4 sm:mb-6">
+                  About <span className="bg-gradient-to-r from-red-700 to-red-800 bg-clip-text text-transparent">FIT BookLab</span>
                 </h2>
                 <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
                   BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
@@ -437,34 +483,34 @@ export default function Home() {
                 {[
                   {
                     icon: <Users className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-orange-500 to-orange-600",
+                    gradient: "from-red-600 to-red-700",
                     title: "Easy Booking",
                     description: "Sistem booking yang user-friendly dengan calendar yang intuitif"
                   },
                   {
                     icon: <Timer className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-orange-500 to-orange-600",
+                    gradient: "from-red-600 to-red-700",
                     title: "Real-time Updates",
                     description: "Informasi ketersediaan lab yang selalu update secara real-time"
                   },
                   {
                     icon: <Layers className="h-7 w-7 sm:h-8 sm:w-8" />,
-                    gradient: "from-orange-500 to-orange-600",
+                    gradient: "from-red-600 to-red-700",
                     title: "Multiple Labs",
                     description: "Akses ke berbagai laboratorium dengan spesifikasi yang berbeda"
                   }
                 ].map((feature, index) => (
-                  <div key={index} className="group relative bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border border-gray-100 overflow-hidden">
+                  <div key={index} className="group relative bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 lg:p-8 shadow-lg hover:shadow-2xl transition-all duration-500 hover:-translate-y-2 border-2 border-red-200 hover:border-yellow-500 overflow-hidden">
                     {/* Animated Background */}
-                    <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 transition-opacity duration-500`} />
+                    <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-8 transition-opacity duration-500`} />
                     
                     {/* Icon */}
-                    <div className={`relative inline-flex p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br ${feature.gradient} text-white mb-3 sm:mb-5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg`}>
+                    <div className={`relative inline-flex p-3 sm:p-4 rounded-lg sm:rounded-xl bg-gradient-to-br ${feature.gradient} text-white mb-3 sm:mb-5 group-hover:scale-110 group-hover:rotate-6 transition-all duration-500 shadow-lg border-2 border-yellow-400`}>
                       {feature.icon}
                     </div>
                     
                     {/* Content */}
-                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-gray-900 mb-2 sm:mb-3 group-hover:text-orange-600 transition-colors duration-300">
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-red-900 mb-2 sm:mb-3 group-hover:text-red-700 transition-colors duration-300">
                       {feature.title}
                     </h3>
                     <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
@@ -481,7 +527,7 @@ export default function Home() {
         </section>
 
         {/* How to Use Section */}
-        <section id="how-to-use" className="py-16 sm:py-24 bg-gradient-to-br from-orange-50/50 via-amber-50/30 to-orange-50/40 overflow-hidden relative">
+        <section id="how-to-use" className="py-16 sm:py-24 bg-gradient-to-br from-red-100/70 via-red-50/50 to-yellow-50/40 overflow-hidden relative">
           {/* Enhanced Background Pattern */}
           <div className="absolute inset-0 opacity-[0.06]">
             <div className="absolute inset-0" style={{
@@ -496,21 +542,21 @@ export default function Home() {
             }} />
           </div>
           
-          {/* Enhanced Floating Orbs */}
+          {/* CNY Floating Orbs */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute top-20 right-20 w-[400px] h-[400px] bg-gradient-to-br from-orange-300/18 to-red-300/12 rounded-full blur-3xl animate-float" />
-            <div className="absolute bottom-20 left-20 w-[500px] h-[500px] bg-gradient-to-br from-amber-300/15 to-yellow-300/12 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
-            <div className="absolute top-1/2 left-1/2 w-[350px] h-[350px] bg-gradient-to-br from-orange-200/12 to-pink-200/10 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
+            <div className="absolute top-20 right-20 w-[400px] h-[400px] bg-gradient-to-br from-red-400/22 to-rose-400/15 rounded-full blur-3xl animate-float" />
+            <div className="absolute bottom-20 left-20 w-[500px] h-[500px] bg-gradient-to-br from-yellow-400/18 to-amber-400/15 rounded-full blur-3xl animate-float" style={{ animationDelay: '2s' }} />
+            <div className="absolute top-1/2 left-1/2 w-[350px] h-[350px] bg-gradient-to-br from-red-300/15 to-red-400/12 rounded-full blur-3xl" style={{ animationDelay: '1s' }} />
           </div>
 
           <div className="container mx-auto px-4 relative z-10">
             <div className="max-w-5xl mx-auto">
               <AnimatedSection animation="fadeInUp" className="text-center mb-8 sm:mb-16">
                 <div className="inline-block mb-3">
-                  <span className="text-orange-600 font-semibold text-xs sm:text-sm uppercase tracking-wider bg-white px-3 py-1.5 sm:px-4 sm:py-2 rounded-full shadow-md">How It Works</span>
+                  <span className="text-red-900 font-bold text-xs sm:text-sm uppercase tracking-wider bg-gradient-to-r from-yellow-400 to-amber-500 px-4 py-2 rounded-full shadow-md border-2 border-red-700">How It Works</span>
                 </div>
-                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-gray-900 mb-4 sm:mb-6">
-                  Cara Menggunakan <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">BookLab</span>
+                <h2 className="text-2xl sm:text-3xl md:text-4xl font-black text-red-900 mb-4 sm:mb-6">
+                  Cara Menggunakan <span className="bg-gradient-to-r from-red-700 to-red-800 bg-clip-text text-transparent">BookLab</span>
                 </h2>
                 <p className="text-sm sm:text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
                   Ikuti 6 langkah mudah untuk melakukan booking laboratorium
@@ -529,51 +575,45 @@ export default function Home() {
                   {
                     number: 1,
                     title: "Sign In ke Akun Anda",
-                    description: "Klik tombol \"Sign In\" di pojok kanan atas dan masuk menggunakan akun Google Anda.",
-                    icon: "🔐"
+                    description: "Klik tombol \"Sign In\" di pojok kanan atas dan masuk menggunakan akun Google Anda."
                   },
                   {
                     number: 2,
                     title: "Pilih Lab dan Waktu",
-                    description: "Buka halaman \"Lab Search\" atau \"Booking Calendar\" untuk melihat ketersediaan lab dan pilih waktu yang diinginkan.",
-                    icon: "📅"
+                    description: "Buka halaman \"Lab Search\" atau \"Booking Calendar\" untuk melihat ketersediaan lab dan pilih waktu yang diinginkan."
                   },
                   {
                     number: 3,
                     title: "Isi Form Booking",
-                    description: "Lengkapi informasi booking seperti nama event, deskripsi, dan jumlah peserta yang akan menggunakan lab.",
-                    icon: "📝"
+                    description: "Lengkapi informasi booking seperti nama event, deskripsi, dan jumlah peserta yang akan menggunakan lab."
                   },
                   {
                     number: 4,
                     title: "Konfirmasi Booking",
-                    description: "Review informasi booking Anda dan klik \"Submit\" untuk mengirim request.",
-                    icon: "✅"
+                    description: "Review informasi booking Anda dan klik \"Submit\" untuk mengirim request."
                   },
                   {
                     number: 5,
                     title: "Monitor Status Booking",
-                    description: "Cek status booking Anda di halaman \"Dashboard\" untuk melihat apakah booking sudah dikonfirmasi atau masih pending.",
-                    icon: "📊"
+                    description: "Cek status booking Anda di halaman \"Dashboard\" untuk melihat apakah booking sudah dikonfirmasi atau masih pending."
                   },
                   {
                     number: 6,
                     title: "Complete Booking",
-                    description: "Setelah selesai menggunakan lab, kembali ke \"Dashboard\" dan klik tombol \"Complete Booking\" pada booking Anda yang berstatus \"accepted\". Jangan lupa untuk mengupload bukti bahwa ruangan telah dibersihkan di halaman complete booking.",
-                    icon: "🎉"
+                    description: "Setelah selesai menggunakan lab, kembali ke \"Dashboard\" dan klik tombol \"Complete Booking\" pada booking Anda yang berstatus \"accepted\". Jangan lupa untuk mengupload bukti bahwa ruangan telah dibersihkan di halaman complete booking."
                   }
                 ].map((step) => (
                   <div key={step.number} className="relative flex items-start gap-3 sm:gap-4 md:gap-6 group">
                     {/* Number Badge */}
                     <div className="flex-shrink-0 relative z-10">
-                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-orange-500 to-orange-600 text-white rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-base sm:text-lg md:text-xl shadow-lg group-hover:shadow-2xl group-hover:shadow-orange-500/50 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6">
+                      <div className="w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 bg-gradient-to-br from-red-600 to-red-700 text-yellow-400 rounded-xl sm:rounded-2xl flex items-center justify-center font-black text-base sm:text-lg md:text-xl shadow-lg group-hover:shadow-2xl group-hover:shadow-red-500/50 transition-all duration-500 group-hover:scale-110 group-hover:rotate-6 border-2 border-yellow-500">
                         {step.number}
                       </div>
                     </div>
                     
                     {/* Content Card */}
-                    <div className="flex-1 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-md hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1 border border-gray-100 group-hover:border-orange-200">
-                      <h3 className="text-sm sm:text-base md:text-lg font-bold text-gray-900 mb-1 sm:mb-2 group-hover:text-orange-600 transition-colors duration-300">
+                    <div className="flex-1 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 md:p-6 shadow-md hover:shadow-xl transition-all duration-500 group-hover:-translate-y-1 border-2 border-red-200 group-hover:border-yellow-500">
+                      <h3 className="text-sm sm:text-base md:text-lg font-bold text-red-900 mb-1 sm:mb-2 group-hover:text-red-700 transition-colors duration-300">
                         {step.title}
                       </h3>
                       <p className="text-xs sm:text-sm md:text-base text-gray-600 leading-relaxed">
@@ -586,7 +626,7 @@ export default function Home() {
               
               <AnimatedSection animation="scaleIn" delay={800} className="mt-8 sm:mt-16 text-center">
                 <Button 
-                  className="group relative bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-6 sm:px-12 py-3 sm:py-5 text-sm sm:text-base md:text-lg font-bold rounded-full shadow-2xl hover:shadow-orange-500/50 cursor-pointer transition-all duration-300 hover:scale-105 border-2 border-orange-400/50 overflow-hidden"
+                  className="group relative bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:to-amber-600 text-red-900 px-6 sm:px-12 py-3 sm:py-5 text-sm sm:text-base md:text-lg font-black rounded-full shadow-2xl hover:shadow-yellow-500/50 cursor-pointer transition-all duration-300 hover:scale-110 border-3 border-red-700 overflow-hidden"
                   onClick={() => window.location.href = '/book-room'}
                 >
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-shimmer" />
