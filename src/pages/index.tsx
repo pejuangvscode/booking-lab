@@ -358,7 +358,7 @@ export default function Home() {
                 {/* Main Heading - CNY 2026 */}
                 <AnimatedSection animation="fadeInUp" delay={100} showByDefault>
                   <div className="mb-4">
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-yellow-400 mb-2 animate-pulse">恭喜发财 Gong Xi Fa Cai</h2>
+                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-yellow-400 mb-2 animate-pulse">新年快乐 Xin Nian Kuai Le</h2>
                     <p className="text-lg sm:text-xl text-yellow-300 font-semibold">Happy Chinese New Year 2026 - Year of the Fire Horse</p>
                   </div>
                   <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 text-white leading-tight">
