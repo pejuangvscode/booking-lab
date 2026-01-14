@@ -260,19 +260,19 @@ export default function Home() {
           <img 
             src="/chinese_event/1.png" 
             alt="Chinese Cloud" 
-            className="absolute top-16 w-32 lg:w-48 h-auto opacity-70 animate-float-left"
+            className="absolute top-12 sm:top-16 w-24 sm:w-32 lg:w-48 h-auto opacity-50 sm:opacity-70 animate-float-left"
             style={{ animationDuration: '30s' }}
           />
           <img 
             src="/chinese_event/1.png" 
             alt="Chinese Cloud" 
-            className="absolute bottom-20 w-48 lg:w-80 h-auto opacity-60 animate-float-right"
+            className="absolute bottom-16 sm:bottom-20 w-32 sm:w-48 lg:w-80 h-auto opacity-40 sm:opacity-60 animate-float-right"
             style={{ animationDuration: '40s' }}
           />
           <img 
             src="/chinese_event/1.png" 
             alt="Chinese Cloud" 
-            className="absolute top-1/3 w-40 lg:w-120 h-auto opacity-50 animate-float-right"
+            className="absolute top-1/3 w-28 sm:w-40 lg:w-120 h-auto opacity-35 sm:opacity-50 animate-float-right"
             style={{ animationDuration: '25s' }}
           />
           
@@ -344,33 +344,33 @@ export default function Home() {
               <div className="text-center w-full">
                 {/* CNY Badge */}
                 <AnimatedSection animation="fadeInDown" showByDefault>
-                  <div className="inline-flex items-center gap-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 border-3 border-red-900 rounded-full px-6 py-3 mb-8 shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 group">
-                    <div className="w-6 h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
-                      <div className="w-3 h-3 rounded-full border border-red-900" />
+                  <div className="inline-flex items-center gap-2 sm:gap-3 bg-gradient-to-r from-yellow-400 via-yellow-500 to-amber-500 border-2 sm:border-3 border-red-900 rounded-full px-3 sm:px-6 py-2 sm:py-3 mb-6 sm:mb-8 shadow-2xl hover:shadow-yellow-500/50 transition-all duration-300 group">
+                    <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full border border-red-900" />
                     </div>
-                    <span className="text-sm font-black text-red-900 tracking-wide">FACULTY OF INFORMATION TECHNOLOGY</span>
-                    <div className="w-6 h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
-                      <div className="w-3 h-3 rounded-full border border-red-900" />
+                    <span className="text-xs sm:text-sm font-black text-red-900 tracking-wide">FACULTY OF INFORMATION TECHNOLOGY</span>
+                    <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
+                      <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full border border-red-900" />
                     </div>
                   </div>
                 </AnimatedSection>
 
                 {/* Main Heading - CNY 2026 */}
                 <AnimatedSection animation="fadeInUp" delay={100} showByDefault>
-                  <div className="mb-4">
-                    <h2 className="text-3xl sm:text-4xl md:text-5xl font-black text-yellow-400 mb-2 animate-pulse">新年快乐 Xin Nian Kuai Le</h2>
-                    <p className="text-lg sm:text-xl text-yellow-300 font-semibold">Happy Chinese New Year 2026 - Year of the Fire Horse</p>
+                  <div className="mb-4 sm:mb-6">
+                    <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-black text-yellow-400 mb-2 animate-pulse">新年快乐 Xin Nian Kuai Le</h2>
+                    <p className="text-sm sm:text-base md:text-lg lg:text-xl text-yellow-300 font-semibold">Happy Chinese New Year 2026 - Year of the Fire Horse</p>
                   </div>
-                  <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black mb-6 text-white leading-tight">
+                  <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-black mb-6 text-white leading-tight">
                     Book Your{' '}
                     <span className="relative inline-block">
                       <span className="bg-gradient-to-r from-yellow-300 via-yellow-400 to-amber-400 bg-clip-text text-transparent">
                         Laboratory
                       </span>
-                      <div className="absolute -bottom-2 left-0 right-0 h-3 bg-yellow-500/50 -rotate-1 -z-10" />
+                      <div className="absolute -bottom-2 left-0 right-0 h-2 sm:h-3 bg-yellow-500/50 -rotate-1 -z-10" />
                     </span>
                     <br />
-                    <span className="text-yellow-200 text-2xl sm:text-3xl md:text-4xl font-bold">
+                    <span className="text-yellow-200 text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold">
                       Anytime, Anywhere
                     </span>
                   </h1>
@@ -385,24 +385,24 @@ export default function Home() {
 
                 {/* CTA Buttons */}
                 <AnimatedSection animation="scaleIn" delay={300} showByDefault>
-                  <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+                  <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center mb-6 sm:mb-8 px-4 sm:px-0">
                     <Button 
-                      className="group relative bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:to-amber-600 text-red-900 px-8 py-6 text-lg font-black rounded-full shadow-2xl hover:shadow-yellow-500/50 cursor-pointer transition-all duration-300 hover:scale-110 w-full sm:w-auto border-2 border-yellow-600"
+                      className="group relative bg-gradient-to-r from-yellow-500 via-amber-500 to-yellow-600 hover:from-yellow-600 hover:to-amber-600 text-red-900 px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-black rounded-full shadow-2xl hover:shadow-yellow-500/50 cursor-pointer transition-all duration-300 hover:scale-110 w-full sm:w-auto border-2 border-yellow-600"
                       onClick={() => window.location.href = '/book-room'}
                     >
-                      <span className="flex items-center gap-3 justify-center">
-                        <Calendar className="h-5 w-5" />
+                      <span className="flex items-center gap-2 sm:gap-3 justify-center">
+                        <Calendar className="h-4 w-4 sm:h-5 sm:w-5" />
                         <span>Book a Lab Now</span>
                       </span>
                     </Button>
                     
                     <Button 
                       variant="outline"
-                      className="group relative bg-white/95 hover:bg-yellow-50 text-red-900 px-8 py-6 text-lg font-bold rounded-full border-3 border-yellow-600 hover:border-yellow-500 cursor-pointer transition-all duration-300 hover:scale-110 w-full sm:w-auto shadow-xl"
+                      className="group relative bg-white/95 hover:bg-yellow-50 text-red-900 px-6 sm:px-8 py-4 sm:py-6 text-base sm:text-lg font-bold rounded-full border-2 sm:border-3 border-yellow-600 hover:border-yellow-500 cursor-pointer transition-all duration-300 hover:scale-110 w-full sm:w-auto shadow-xl"
                       onClick={() => window.location.href = '/booking-calendar'}
                     >
-                      <span className="flex items-center gap-3 justify-center">
-                        <BookOpen className="h-5 w-5 group-hover:rotate-12 transition-transform" />
+                      <span className="flex items-center gap-2 sm:gap-3 justify-center">
+                        <BookOpen className="h-4 w-4 sm:h-5 sm:w-5 group-hover:rotate-12 transition-transform" />
                         <span>View Calendar</span>
                       </span>
                     </Button>
@@ -414,20 +414,20 @@ export default function Home() {
         </div>
 
         {/* Scroll Indicator */}
-        <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2">
+        <div className="absolute bottom-8 sm:bottom-20 left-1/2 transform -translate-x-1/2">
           <button 
             onClick={() => scrollToSection('about')}
-            className="group flex flex-col items-center gap-3 transition-all duration-300 hover:scale-110"
+            className="group flex flex-col items-center gap-2 sm:gap-3 transition-all duration-300 hover:scale-110"
           >
             <span className="text-xs font-semibold uppercase tracking-widest text-yellow-300 group-hover:text-yellow-400 transition-colors duration-300">Scroll Down</span>
             <div className="relative">
               {/* Mouse Icon */}
-              <div className="w-6 h-10 border-2 border-yellow-400 group-hover:border-yellow-300 rounded-full flex justify-center pt-2 transition-colors duration-300">
-                <div className="w-1.5 h-2.5 bg-yellow-400 group-hover:bg-yellow-300 rounded-full animate-scroll transition-colors duration-300" />
+              <div className="w-5 h-8 sm:w-6 sm:h-10 border-2 border-yellow-400 group-hover:border-yellow-300 rounded-full flex justify-center pt-1.5 sm:pt-2 transition-colors duration-300">
+                <div className="w-1 h-2 sm:w-1.5 sm:h-2.5 bg-yellow-400 group-hover:bg-yellow-300 rounded-full animate-scroll transition-colors duration-300" />
               </div>
             </div>
             {/* Arrow */}
-            <svg className="w-5 h-5 text-yellow-400 group-hover:text-yellow-300 animate-bounceArrow transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg className="w-4 h-4 sm:w-5 sm:h-5 text-yellow-400 group-hover:text-yellow-300 animate-bounceArrow transition-colors duration-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M19 14l-7 7m0 0l-7-7m7 7V3" />
             </svg>
           </button>
