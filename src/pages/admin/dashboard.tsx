@@ -244,24 +244,24 @@ export default function AdminBookings() {
           {/* Tab */}
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "pending" | "accepted" | "rejected" | "completed" | "cancelled")} className="mb-4 sm:mb-6">
             <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
-              <TabsList className="inline-flex w-full min-w-max sm:grid sm:w-full sm:grid-cols-5 bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-orange-100">
-                <TabsTrigger value="pending" className="flex items-center gap-1 sm:gap-2 hover:cursor-pointer whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm">
+              <TabsList className="inline-flex w-full min-w-max sm:grid sm:w-full sm:grid-cols-5 gap-2 sm:gap-3 bg-transparent p-0 h-auto">
+                <TabsTrigger value="pending" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
                   <span className="hidden sm:inline">Pending</span>
                   <span className="sm:hidden">Pending</span>
                 </TabsTrigger>
-                <TabsTrigger value="accepted" className="flex items-center gap-1 sm:gap-2 hover:cursor-pointer whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm">
+                <TabsTrigger value="accepted" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
                   <span className="hidden sm:inline">Accepted</span>
                   <span className="sm:hidden">Accept</span>
                 </TabsTrigger>
-                <TabsTrigger value="rejected" className="flex items-center gap-1 sm:gap-2 hover:cursor-pointer whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm">
+                <TabsTrigger value="rejected" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
                   <span className="hidden sm:inline">Rejected</span>
                   <span className="sm:hidden">Reject</span>
                 </TabsTrigger>
-                <TabsTrigger value="completed" className="flex items-center gap-1 sm:gap-2 hover:cursor-pointer whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm">
+                <TabsTrigger value="completed" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
                   <span className="hidden sm:inline">Completed</span>
                   <span className="sm:hidden">Done</span>
                 </TabsTrigger>
-                <TabsTrigger value="cancelled" className="flex items-center gap-1 sm:gap-2 hover:cursor-pointer whitespace-nowrap px-3 sm:px-4 text-xs sm:text-sm">
+                <TabsTrigger value="cancelled" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
                   <span className="hidden sm:inline">Cancelled</span>
                   <span className="sm:hidden">Cancel</span>
                 </TabsTrigger>
@@ -276,7 +276,7 @@ export default function AdminBookings() {
                 placeholder="Search by event, requester, or faculty..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 sm:pl-12 bg-white/80 backdrop-blur-sm shadow-lg border-2 border-orange-100 focus:border-orange-300 focus:ring-2 focus:ring-orange-200 text-sm sm:text-base rounded-xl transition-all duration-300"
+                className="pl-10 sm:pl-12 bg-white shadow-lg border-2 border-orange-100 hover:border-orange-300 focus:border-orange-300 focus:ring-2 focus:ring-orange-200 text-sm sm:text-base rounded-xl transition-all duration-300"
               />
             </div>
 

@@ -987,25 +987,47 @@ export const adminRouter = createTRPCRouter({
           });
         }
 
-        // Get ALL users from Clerk (not just admins from database)
-        const clerkUsers = await clerkClient.users.getUserList({
-          limit: 100, // Get up to 100 users
+        // Get admins from database first (more reliable than scanning all Clerk users)
+        const dbAdmins = await ctx.db.users.findMany({
+          where: {
+            OR: [
+              { role: 'admin' },
+              { role: 'super_admin' }
+            ]
+          },
+          select: {
+            id: true,
+            role: true,
+          }
         });
 
-        // Map to our admin format and filter only admin/super_admin roles
-        const adminsWithNames = clerkUsers.data
-          .map((clerkUser) => {
-            const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
-            const email = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? '';
-            const role = (clerkUser.publicMetadata?.role as string) ?? 'user';
-            
-            return {
-              id: clerkUser.id,
-              name: fullName || clerkUser.username || email || 'Unknown User',
-              role: role,
-            };
+        // Enrich with names from Clerk (batch get)
+        const adminIds = dbAdmins.map(admin => admin.id);
+        const adminsWithNames = await Promise.all(
+          adminIds.map(async (adminId) => {
+            try {
+              const clerkUser = await clerkClient.users.getUser(adminId);
+              const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
+              const email = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? '';
+              const dbAdmin = dbAdmins.find(a => a.id === adminId);
+              
+              return {
+                id: adminId,
+                name: fullName || clerkUser.username || email || 'Unknown User',
+                role: dbAdmin?.role ?? 'admin',
+              };
+            } catch (error) {
+              console.error(`Failed to fetch Clerk user ${adminId}:`, error);
+              // If Clerk fails, still return the admin with ID as name
+              const dbAdmin = dbAdmins.find(a => a.id === adminId);
+              return {
+                id: adminId,
+                name: `Admin ${adminId.slice(0, 8)}`,
+                role: dbAdmin?.role ?? 'admin',
+              };
+            }
           })
-          .filter(user => user.role === 'admin' || user.role === 'super_admin'); // Only show admins and super_admins
+        );
 
         return adminsWithNames.sort((a, b) => a.name.localeCompare(b.name));
       } catch (error) {
@@ -1016,6 +1038,163 @@ export const adminRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to fetch admins",
+        });
+      }
+    }),
+
+  getAllUsers: protectedProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      limit: z.number().min(1).max(100).default(50),
+    }))
+    .query(async ({ ctx, input }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      try {
+        // Check if user is super admin
+        const user = await ctx.db.users.findUnique({
+          where: { id: ctx.userId },
+          select: { role: true },
+        });
+
+        if (!user || user.role !== 'super_admin') {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only super admin can view users",
+          });
+        }
+
+        // Get all users from database with student/user role
+        const dbUsers = await ctx.db.users.findMany({
+          where: {
+            role: 'user',
+          },
+          select: {
+            id: true,
+            role: true,
+          },
+          take: input.limit,
+        });
+
+        // Enrich with names from Clerk
+        const usersWithNames = await Promise.all(
+          dbUsers.map(async (dbUser) => {
+            try {
+              const clerkUser = await clerkClient.users.getUser(dbUser.id);
+              const fullName = `${clerkUser.firstName ?? ''} ${clerkUser.lastName ?? ''}`.trim();
+              const email = clerkUser.emailAddresses.find(e => e.id === clerkUser.primaryEmailAddressId)?.emailAddress ?? '';
+              
+              return {
+                id: dbUser.id,
+                name: fullName || clerkUser.username || email || 'Unknown User',
+                email: email,
+                role: dbUser.role,
+              };
+            } catch (error) {
+              console.error(`Failed to fetch Clerk user ${dbUser.id}:`, error);
+              return {
+                id: dbUser.id,
+                name: `User ${dbUser.id.slice(0, 8)}`,
+                email: '',
+                role: dbUser.role,
+              };
+            }
+          })
+        );
+
+        // Filter by search if provided
+        let filteredUsers = usersWithNames;
+        if (input.search) {
+          const searchLower = input.search.toLowerCase();
+          filteredUsers = usersWithNames.filter(
+            user => 
+              user.name.toLowerCase().includes(searchLower) ||
+              user.email.toLowerCase().includes(searchLower)
+          );
+        }
+
+        return filteredUsers.sort((a, b) => a.name.localeCompare(b.name));
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        console.error("Error fetching users:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to fetch users",
+        });
+      }
+    }),
+
+  promoteToAdmin: protectedProcedure
+    .input(z.object({
+      userId: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      try {
+        // Check if user is super admin
+        const user = await ctx.db.users.findUnique({
+          where: { id: ctx.userId },
+          select: { role: true },
+        });
+
+        if (!user || user.role !== 'super_admin') {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Only super admin can promote users to admin",
+          });
+        }
+
+        // Check if target user exists
+        const targetUser = await ctx.db.users.findUnique({
+          where: { id: input.userId },
+        });
+
+        if (!targetUser) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User not found",
+          });
+        }
+
+        if (targetUser.role === 'admin' || targetUser.role === 'super_admin') {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User is already an admin",
+          });
+        }
+
+        // Update user role to admin
+        const updatedUser = await ctx.db.users.update({
+          where: { id: input.userId },
+          data: { role: 'admin' },
+        });
+
+        return {
+          success: true,
+          user: updatedUser,
+          message: "User promoted to admin successfully",
+        };
+      } catch (error) {
+        if (error instanceof TRPCError) {
+          throw error;
+        }
+        console.error("Error promoting user to admin:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to promote user to admin",
         });
       }
     }),

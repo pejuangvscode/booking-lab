@@ -356,11 +356,6 @@ export default function Dashboard() {
                                 onClick={() => handleCancelBooking(booking.id)}
                                 disabled={cancelBookingMutation.isPending}
                               >
-                                {cancelBookingMutation.isPending ? ( 
-                                  <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1 animate-spin" />
-                                ) : (
-                                  <XCircle className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                                )}
                                 Cancel
                               </Button>
                             )}
