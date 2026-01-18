@@ -42,31 +42,43 @@ export const bookingRouter = createTRPCRouter({
           }
         }
         
-        // Check if user is PIC for this lab
+        // Check if user is PIC for this lab or super_admin
         let bookingStatus = "pending";
         let adminNote = null;
         
         if (userId) {
-          const lab = await ctx.db.lab.findUnique({
-            where: { id: input.labId },
-            select: { picIds: true }
+          // Check if user is super_admin
+          const user = await ctx.db.users.findUnique({
+            where: { id: userId },
+            select: { role: true }
           });
           
-          if (lab?.picIds) {
-            try {
-              const picIdsArray = typeof lab.picIds === 'string' 
-                ? (JSON.parse(lab.picIds) as string[])
-                : Array.isArray(lab.picIds) 
-                  ? lab.picIds 
-                  : [];
-              
-              // If user is PIC, auto-approve
-              if (picIdsArray.includes(userId)) {
-                bookingStatus = "accepted";
-                adminNote = "Auto-approved: Booking by lab PIC";
+          if (user?.role === "super_admin") {
+            bookingStatus = "accepted";
+            adminNote = "Auto-approved: Booking by super admin";
+          } else {
+            // If not super_admin, check if user is PIC
+            const lab = await ctx.db.lab.findUnique({
+              where: { id: input.labId },
+              select: { picIds: true }
+            });
+            
+            if (lab?.picIds) {
+              try {
+                const picIdsArray = typeof lab.picIds === 'string' 
+                  ? (JSON.parse(lab.picIds) as string[])
+                  : Array.isArray(lab.picIds) 
+                    ? lab.picIds 
+                    : [];
+                
+                // If user is PIC, auto-approve
+                if (picIdsArray.includes(userId)) {
+                  bookingStatus = "accepted";
+                  adminNote = "Auto-approved: Booking by lab PIC";
+                }
+              } catch {
+                // If parsing fails, keep status as pending
               }
-            } catch {
-              // If parsing fails, keep status as pending
             }
           }
         }
@@ -755,24 +767,41 @@ export const bookingRouter = createTRPCRouter({
         const successful: any[] = [];
         const failed: Array<{ date: string; error: string }> = [];
 
-        // Check if user is PIC for this lab
+        // Check if user is PIC for this lab or super_admin
         let isPIC = false;
-        const lab = await ctx.db.lab.findUnique({
-          where: { id: labId },
-          select: { picIds: true }
-        });
+        let isSuperAdmin = false;
         
-        if (lab?.picIds && ctx.userId) {
-          try {
-            const picIdsArray = typeof lab.picIds === 'string' 
-              ? (JSON.parse(lab.picIds) as string[])
-              : Array.isArray(lab.picIds) 
-                ? lab.picIds 
-                : [];
-            
-            isPIC = picIdsArray.includes(ctx.userId);
-          } catch {
-            // If parsing fails, isPIC remains false
+        // Check if user is super_admin
+        if (ctx.userId) {
+          const user = await ctx.db.users.findUnique({
+            where: { id: ctx.userId },
+            select: { role: true }
+          });
+          
+          if (user?.role === "super_admin") {
+            isSuperAdmin = true;
+          }
+        }
+        
+        // If not super_admin, check if user is PIC
+        if (!isSuperAdmin) {
+          const lab = await ctx.db.lab.findUnique({
+            where: { id: labId },
+            select: { picIds: true }
+          });
+          
+          if (lab?.picIds && ctx.userId) {
+            try {
+              const picIdsArray = typeof lab.picIds === 'string' 
+                ? (JSON.parse(lab.picIds) as string[])
+                : Array.isArray(lab.picIds) 
+                  ? lab.picIds 
+                  : [];
+              
+              isPIC = picIdsArray.includes(ctx.userId);
+            } catch {
+              // If parsing fails, isPIC remains false
+            }
           }
         }
 
@@ -834,7 +863,7 @@ export const bookingRouter = createTRPCRouter({
                 userId: ctx.userId,
                 status: "accepted",
                 equipment: equipment,
-                adminNote: isPIC ? "Auto-approved: Booking by lab PIC (Multiple booking)" : "Admin created multiple booking",
+                adminNote: isSuperAdmin ? "Auto-approved: Booking by super admin (Multiple booking)" : (isPIC ? "Auto-approved: Booking by lab PIC (Multiple booking)" : "Admin created multiple booking"),
                 approvedAt: new Date(),
               },
             });
@@ -1001,6 +1030,33 @@ export const bookingRouter = createTRPCRouter({
         throw new TRPCError({
           code: "INTERNAL_SERVER_ERROR",
           message: "Failed to bulk delete class bookings",
+        });
+      }
+    }),
+
+  deleteBookings: protectedProcedure
+    .input(z.object({
+      bookingIds: z.array(z.number()),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      try {
+        // Delete bookings by IDs
+        const result = await ctx.db.bookings.deleteMany({
+          where: {
+            id: {
+              in: input.bookingIds,
+            },
+          },
+        });
+
+        return {
+          deletedCount: result.count,
+          bookingIds: input.bookingIds,
+        };
+      } catch (error) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Failed to delete selected bookings",
         });
       }
     }),

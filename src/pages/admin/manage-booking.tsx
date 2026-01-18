@@ -82,6 +82,7 @@ export default function ManageBookingPage() {
   const [expandedGroups, setExpandedGroups] = useState<Set<string>>(new Set());
   const [selectedClassCodes, setSelectedClassCodes] = useState<Set<string>>(new Set());
   const [bulkDeleteMode, setBulkDeleteMode] = useState(false);
+  const [selectedBookings, setSelectedBookings] = useState<Record<string, Set<number>>>({}); // classCode -> Set<bookingId>
 
   const {
     data: adminBookings,
@@ -99,6 +100,18 @@ export default function ManageBookingPage() {
     onSuccess: (result) => {
       success(`Successfully deleted ${result.deletedCount} bookings for class code: ${result.classCode}`);
       void refetchBookings();
+    },
+    onError: (err) => {
+      error(`Failed to delete bookings: ${err.message}`);
+    }
+  });
+
+  const deleteBookingsMutation = api.booking.deleteBookings.useMutation({
+    onSuccess: (result) => {
+      success(`Successfully deleted ${result.deletedCount} booking(s)`);
+      void refetchBookings();
+      // Clear selected bookings
+      setSelectedBookings({});
     },
     onError: (err) => {
       error(`Failed to delete bookings: ${err.message}`);
@@ -207,6 +220,62 @@ export default function ManageBookingPage() {
     }
   };
 
+  // Handle booking selection
+  const toggleBookingSelection = (classCode: string, bookingId: number) => {
+    setSelectedBookings(prev => {
+      const newSelected = { ...prev };
+      // Create new Set to avoid mutation
+      const classSet = new Set(newSelected[classCode] ?? []);
+      
+      if (classSet.has(bookingId)) {
+        classSet.delete(bookingId);
+        // Clean up empty sets
+        if (classSet.size === 0) {
+          delete newSelected[classCode];
+        } else {
+          newSelected[classCode] = classSet;
+        }
+      } else {
+        classSet.add(bookingId);
+        newSelected[classCode] = classSet;
+      }
+      return newSelected;
+    });
+  };
+
+  // Handle select all bookings in a group
+  const toggleSelectAllInGroup = (classCode: string, bookingIds: number[]) => {
+    setSelectedBookings(prev => {
+      const newSelected = { ...prev };
+      const classSet = new Set(newSelected[classCode] ?? []);
+      
+      if (classSet.size === bookingIds.length) {
+        // All selected, deselect all
+        delete newSelected[classCode];
+      } else {
+        // Select all - create new Set
+        newSelected[classCode] = new Set(bookingIds);
+      }
+      return newSelected;
+    });
+  };
+
+  // Handle delete selected bookings
+  const handleDeleteSelectedBookings = async (classCode: string) => {
+    const selectedIds = selectedBookings[classCode];
+    if (!selectedIds || selectedIds.size === 0) return;
+
+    const confirmed = await confirm(
+      `Are you sure you want to delete ${selectedIds.size} selected booking(s)?\n\n` +
+      `This action cannot be undone.`,
+      `Delete Selected Bookings`
+    );
+
+    if (confirmed) {
+      deleteBookingsMutation.mutate({ bookingIds: Array.from(selectedIds) });
+    }
+  };
+
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center min-h-screen">
@@ -247,18 +316,6 @@ export default function ManageBookingPage() {
               <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 bg-clip-text text-transparent">
                 Manage Class Bookings
               </h1>
-            </div>
-            
-            {/* Admin info */}
-            <div className="bg-gradient-to-r from-orange-50 to-orange-100/50 border-2 border-orange-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 shadow-sm">
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs sm:text-sm">
-                <span className="text-orange-900 font-medium">
-                  Signed in as: <strong>{user?.firstName} {user?.lastName}</strong> (Admin)
-                </span>
-                <span className="text-orange-700 font-semibold">
-                  {filteredGroups.length} class{filteredGroups.length !== 1 ? 'es' : ''} found
-                </span>
-              </div>
             </div>
           </div>
 
@@ -318,16 +375,39 @@ export default function ManageBookingPage() {
             </div>
           </div>
           {isLoadingBookings ? (
-            <div className="text-center py-12">
-              <div className="relative mx-auto w-20 h-20">
-                <div className="absolute inset-0 rounded-full border-[3px] border-gray-100"></div>
-                <div className="absolute inset-0 rounded-full border-[3px] border-transparent border-t-orange-500 border-r-orange-400 animate-spin"></div>
-              </div>
-              <p className="mt-4 text-gray-800 font-semibold">Loading bookings...</p>
+            <div className="grid gap-3 sm:gap-4">
+              {[1, 2, 3, 4].map((i) => (
+                <div key={i} className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden animate-pulse">
+                  <div className="p-4">
+                    <div className="grid grid-cols-[auto_1fr_auto_auto] gap-3 sm:gap-4 items-center">
+                      {/* Icon Skeleton */}
+                      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg bg-gray-200 flex-shrink-0"></div>
+                      
+                      {/* Content Skeleton */}
+                      <div className="min-w-0 space-y-2">
+                        <div className="h-4 bg-gray-200 rounded w-3/4"></div>
+                        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+                        <div className="flex gap-2">
+                          <div className="h-3 bg-gray-200 rounded w-20"></div>
+                          <div className="h-3 bg-gray-200 rounded w-24"></div>
+                        </div>
+                      </div>
+
+                      {/* Badges Skeleton */}
+                      <div className="flex flex-col gap-1.5 items-end">
+                        <div className="h-5 bg-gray-200 rounded-full w-20"></div>
+                        <div className="h-5 bg-gray-200 rounded-full w-16"></div>
+                      </div>
+                      
+                      {/* Button Skeleton */}
+                      <div className="w-8 h-8 rounded-lg bg-gray-200 flex-shrink-0"></div>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : filteredGroups.length === 0 ? (
             <div className="text-center py-12">
-              <BookOpen className="w-16 h-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-gray-900 mb-2">
                 No class bookings found
               </h3>
@@ -340,155 +420,198 @@ export default function ManageBookingPage() {
             </div>
           ) : (
             /* Class Groups List */
-            <div className="space-y-4">
-              {filteredGroups.map((group) => (
-                <Card key={group.classCode} className="overflow-hidden bg-white rounded-2xl shadow-xl border-2 border-orange-100">
-                  {/* Group Header */}
-                  <div className="p-4 sm:p-6 bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 border-b-2 border-orange-400">
-                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-                      <div className="flex items-center space-x-3 sm:space-x-4 flex-1 min-w-0">
-                        {bulkDeleteMode && (
-                          <input
-                            type="checkbox"
-                            checked={selectedClassCodes.has(group.classCode)}
-                            onChange={() => toggleClassSelection(group.classCode)}
-                            className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded flex-shrink-0"
-                          />
-                        )}
+            <div className="grid gap-3 sm:gap-4">
+              {filteredGroups.map((group) => {
+                const isExpanded = expandedGroups.has(group.classCode);
+                return (
+                  <div
+                    key={group.classCode}
+                    className="bg-white border-2 border-gray-200 rounded-xl hover:shadow-lg hover:border-orange-200 transition-all duration-200"
+                  >
+                    {/* Summary View - Always Visible */}
+                    <div 
+                      className="p-4 cursor-pointer"
+                      onClick={() => toggleGroup(group.classCode)}
+                    >
+                      <div className="grid grid-cols-[auto_1fr_auto_auto] gap-3 sm:gap-4 items-center">
                         
-                        <div className="flex-1 min-w-0">
-                          <h3 className="font-bold text-base sm:text-lg text-white truncate">
-                            {group.instructor}
-                          </h3>
-                          <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-orange-50">
+                        {/* Class Info */}
+                        <div className="min-w-0 overflow-hidden">
+                          <h3 className="font-bold text-sm sm:text-base text-gray-900 truncate">{group.instructor}</h3>
+                          <p className="text-xs sm:text-sm text-gray-500 truncate">
+                            {group.classCode} • {group.room}
+                          </p>
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-gray-600 mt-1">
                             <span className="flex items-center whitespace-nowrap">
-                              <Building className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
-                              <span className="truncate">{group.room}</span>
-                            </span>
-                            <span className="flex items-center whitespace-nowrap">
-                              <Clock className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                              <Clock className="h-3 w-3 mr-1" />
                               {group.timeSlot}
                             </span>
-                            <span className="flex items-center whitespace-nowrap">
-                              <Calendar className="h-3 w-3 sm:h-3.5 sm:w-3.5 mr-1 flex-shrink-0" />
+                            <span className="hidden sm:flex items-center whitespace-nowrap">
+                              <Calendar className="h-3 w-3 mr-1" />
                               {group.days.join(', ')}
                             </span>
                           </div>
                         </div>
-                      </div>
 
-                      <div className="flex items-center gap-2 sm:gap-3">
-                        {/* Stats */}
-                        <div className="text-right text-xs sm:text-sm">
-                          <div className="font-bold text-white">
-                            {group.totalBookings} bookings
-                          </div>
-                          <div className="text-orange-100">
-                            {group.upcomingBookings} upcoming
-                          </div>
-                        </div>
-
-                        {/* Actions */}
-                        <div className="flex items-center space-x-2">
-                          {!bulkDeleteMode && (
-                            <Button
-                              onClick={() => handleDeleteClass(
-                                group.classCode, 
-                                group.totalBookings,
-                                group.upcomingBookings,
-                                group.eventName
-                              )}
-                              variant="destructive"
-                              size="sm"
-                              disabled={deleteClassBookingsMutation.isPending}
-                              className="cursor-pointer bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold shadow-lg hover:shadow-xl transition-all duration-300 text-xs sm:text-sm h-9"
-                            >
-                              <Trash2 className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                              <span className="hidden sm:inline">Delete All</span>
-                              <span className="sm:hidden">Delete</span>
-                            </Button>
+                        {/* Status Badge */}
+                        <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
+                          <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 text-xs whitespace-nowrap">
+                            {group.totalBookings} booking{group.totalBookings > 1 ? 's' : ''}
+                          </Badge>
+                          {group.upcomingBookings > 0 && (
+                            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 text-xs whitespace-nowrap">
+                              {group.upcomingBookings} upcoming
+                            </Badge>
                           )}
-                          
-                          <Button
-                            onClick={() => toggleGroup(group.classCode)}
-                            variant="outline"
-                            size="sm"
-                            className="cursor-pointer bg-white hover:bg-orange-50 border-2 border-white hover:border-orange-200 text-xs sm:text-sm h-9 w-9 sm:w-auto p-0 sm:px-3 shadow-sm transition-all duration-300"
-                          >
-                            {expandedGroups.has(group.classCode) ? (
-                              <ChevronUp className="h-4 w-4" />
-                            ) : (
-                              <ChevronDown className="h-4 w-4" />
-                            )}
-                          </Button>
+                        </div>
+                        
+                        {/* Expand Button */}
+                        <div className="w-8 h-8 rounded-lg bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors flex-shrink-0">
+                          {isExpanded ? (
+                            <ChevronUp className="w-4 h-4 text-gray-600" />
+                          ) : (
+                            <ChevronDown className="w-4 h-4 text-gray-600" />
+                          )}
                         </div>
                       </div>
                     </div>
 
-                    {/* Date Range */}
-                    <div className="mt-3 text-xs sm:text-sm text-orange-100 font-medium">
-                      <Calendar className="inline h-3 w-3 mr-1" />
-                      Period: {group.dateRange.start} - {group.dateRange.end}
-                    </div>
-                  </div>
+                    {/* Expanded Details - Only Visible When Expanded */}
+                    {isExpanded && (
+                      <div className="border-t border-gray-200 p-4 space-y-4">
+                        {/* Class Details */}
+                        <div>
+                          <div className="flex items-center justify-between mb-2">
+                            <h4 className="font-semibold text-sm text-gray-700">Class Details</h4>
+                          </div>
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
+                            <div className="bg-gray-50 p-2 rounded-lg">
+                              <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Class Code</span>
+                              <p className="font-semibold text-gray-900 truncate">{group.classCode}</p>
+                            </div>
+                            <div className="bg-gray-50 p-2 rounded-lg">
+                              <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Room</span>
+                              <p className="font-semibold text-gray-900 truncate">{group.room}</p>
+                            </div>
+                            <div className="bg-gray-50 p-2 rounded-lg">
+                              <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Time</span>
+                              <p className="font-semibold text-gray-900 truncate">{group.timeSlot}</p>
+                            </div>
+                            <div className="bg-gray-50 p-2 rounded-lg">
+                              <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Days</span>
+                              <p className="font-semibold text-gray-900 truncate">{group.days.join(', ')}</p>
+                            </div>
+                            <div className="bg-gray-50 p-2 rounded-lg col-span-2">
+                              <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Period</span>
+                              <p className="font-semibold text-gray-900 truncate">{group.dateRange.start} - {group.dateRange.end}</p>
+                            </div>
+                          </div>
+                        </div>
 
-                  {/* Expanded Details */}
-                  {expandedGroups.has(group.classCode) && (
-                    <div className="p-4 sm:p-6 bg-gray-50">
-                      <h4 className="font-bold text-base sm:text-lg text-gray-900 mb-4">
-                        Individual Bookings ({group.bookings.length})
-                      </h4>
-                      <div className="grid gap-2 sm:gap-3">
-                        {group.bookings.map((booking, index) => (
-                          <div
-                            key={booking.id}
-                            className={`p-2 sm:p-3 rounded-lg border ${
-                              new Date(booking.bookingDate) >= new Date()
-                                ? 'bg-green-50 border-green-200'
-                                : 'bg-gray-50 border-gray-200'
-                            }`}
-                          >
-                            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-                              <div className="flex items-center space-x-2 sm:space-x-4">
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 bg-orange-200 text-orange-600 rounded-full flex items-center justify-center text-[10px] sm:text-xs font-medium flex-shrink-0">
-                                  {index + 1}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-xs sm:text-sm text-gray-900 truncate">
-                                    {format(new Date(booking.bookingDate), 'EEEE, MMM d, yyyy')}
-                                  </div>
-                                  <div className="flex flex-wrap items-center gap-2 sm:gap-4 text-xs sm:text-sm text-gray-600">
-                                    <span className="whitespace-nowrap">{booking.startTime} - {booking.endTime}</span>
-                                    <span className="flex items-center whitespace-nowrap">
-                                      <Users className="h-3 w-3 mr-1 flex-shrink-0" />
-                                      {booking.participants}
-                                    </span>
-                                    <Badge 
-                                      variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
-                                      className="text-[10px] sm:text-xs"
-                                    >
-                                      {booking.status}
-                                    </Badge>
-                                  </div>
-                                </div>
-                              </div>
-                              
-                              {booking.eventName && (
-                                <div className="text-right text-xs sm:text-sm text-gray-600">
-                                  <div className="font-medium truncate">{booking.eventName}</div>
-                                  {booking.eventType && (
-                                    <div className="text-[10px] sm:text-xs truncate">{booking.eventType}</div>
-                                  )}
-                                </div>
+                        {/* Individual Bookings */}
+                        <div>
+                          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <h4 className="font-semibold text-sm text-gray-700">Individual Bookings ({group.bookings.length})</h4>
+                              {selectedBookings[group.classCode] && selectedBookings[group.classCode]!.size > 0 && (
+                                <Badge className="bg-blue-100 text-blue-800 border-blue-200">
+                                  {selectedBookings[group.classCode]!.size} selected
+                                </Badge>
+                              )}
+                            </div>
+                            <div className="flex items-center gap-2 flex-shrink-0">
+                              <Button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  toggleSelectAllInGroup(group.classCode, group.bookings.map(b => b.id));
+                                }}
+                                variant="outline"
+                                size="sm"
+                                className="cursor-pointer text-xs h-7 whitespace-nowrap"
+                              >
+                                {selectedBookings[group.classCode]?.size === group.bookings.length ? 'Deselect All' : 'Select All'}
+                              </Button>
+                              {selectedBookings[group.classCode] && selectedBookings[group.classCode]!.size > 0 && (
+                                <Button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteSelectedBookings(group.classCode);
+                                  }}
+                                  variant="destructive"
+                                  size="sm"
+                                  disabled={deleteBookingsMutation.isPending}
+                                  className="cursor-pointer bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold text-xs h-7 whitespace-nowrap"
+                                >
+                                  <Trash2 className="h-3 w-3 mr-1" />
+                                  Delete ({selectedBookings[group.classCode]!.size})
+                                </Button>
                               )}
                             </div>
                           </div>
-                        ))}
+                          <div className="space-y-1.5 max-h-80 overflow-y-auto">
+                            {group.bookings.map((booking, index) => {
+                              const isUpcoming = new Date(booking.bookingDate) >= new Date();
+                              const isSelected = selectedBookings[group.classCode]?.has(booking.id) ?? false;
+                              return (
+                                <div 
+                                  key={booking.id} 
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    toggleBookingSelection(group.classCode, booking.id);
+                                  }}
+                                  className={`flex items-center justify-between gap-2 p-2 rounded-lg transition-colors cursor-pointer ${
+                                    isSelected
+                                      ? 'bg-blue-50 border-2 border-blue-300'
+                                      : isUpcoming 
+                                        ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' 
+                                        : 'bg-gray-50 hover:bg-gray-100'
+                                  }`}
+                                >
+                                  <div className="flex items-center gap-2 flex-1 min-w-0">
+                                    <input
+                                      type="checkbox"
+                                      checked={isSelected}
+                                      onChange={(e) => {
+                                        // Checkbox visual only, actual toggle handled by parent div
+                                        e.stopPropagation();
+                                      }}
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                      }}
+                                      className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded pointer-events-none flex-shrink-0"
+                                    />
+                                    <div className="w-7 h-7 rounded-full bg-orange-200 text-orange-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                      {index + 1}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-xs text-gray-900 truncate">
+                                        {format(new Date(booking.bookingDate), 'EEE, MMM d, yyyy')}
+                                      </p>
+                                      <div className="flex items-center gap-2 text-xs text-gray-600">
+                                        <span className="whitespace-nowrap">{booking.startTime} - {booking.endTime}</span>
+                                        <span className="flex items-center whitespace-nowrap">
+                                          <Users className="h-3 w-3 mr-0.5" />
+                                          {booking.participants}
+                                        </span>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <Badge 
+                                    variant={booking.status === 'confirmed' ? 'default' : 'secondary'}
+                                    className="text-[10px] whitespace-nowrap flex-shrink-0"
+                                  >
+                                    {booking.status}
+                                  </Badge>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </Card>
-              ))}
+                    )}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>

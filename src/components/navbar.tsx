@@ -15,7 +15,7 @@ export function Navbar() {
   const [isMounted, setIsMounted] = useState(false);
   const [isAtTop, setIsAtTop] = useState(true);
 
-  const { data: dbUser } = api.user.getCurrentUser.useQuery(
+  const { data: dbUser, isLoading: isLoadingUser } = api.user.getCurrentUser.useQuery(
     undefined,
     {
       enabled: !!user,
@@ -73,15 +73,28 @@ export function Navbar() {
 
 
   const isAdmin = () => {
-    const clerkRole = user?.publicMetadata?.role;
+    // Jangan tampilkan admin menu jika masih loading
+    if (isLoadingUser || !user) return false;
+    
+    // Jika user sudah loaded tapi tidak ada dbUser, return false
+    if (!dbUser) return false;
+    
+    // HANYA gunakan DB role sebagai sumber kebenaran, abaikan Clerk metadata
     const dbRole = dbUser?.role;
-    return clerkRole === 'admin' || dbRole === 'admin' || dbRole === 'super_admin' || clerkRole === 'super_admin';
+    
+    // Hanya return true jika DB role adalah 'admin' atau 'super_admin'
+    return dbRole === 'admin' || dbRole === 'super_admin';
   };
 
   const isSuperAdmin = () => {
-    const clerkRole = user?.publicMetadata?.role;
+    // Jangan tampilkan super admin menu jika masih loading
+    if (isLoadingUser || !user || !dbUser) return false;
+    
+    // HANYA gunakan DB role sebagai sumber kebenaran
     const dbRole = dbUser?.role;
-    return dbRole === 'super_admin' || clerkRole === 'super_admin';
+    
+    // Hanya return true jika DB role adalah 'super_admin'
+    return dbRole === 'super_admin';
   };
 
   const isActive = (path: string) => {

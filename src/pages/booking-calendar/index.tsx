@@ -483,8 +483,8 @@ export default function BookingCalendar() {
             onClick={() => handleNavigation('PREV')}
             className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-2 border-gray-200 hover:border-orange-300 transition-all duration-300"
           >
-            <span className="hidden sm:inline">← Previous</span>
-            <span className="sm:hidden">← Prev</span>
+            <span className="hidden sm:inline">Previous</span>
+            <span className="sm:hidden">Prev</span>
           </Button>
           <Button
             variant="outline"
@@ -500,8 +500,8 @@ export default function BookingCalendar() {
             onClick={() => handleNavigation('NEXT')}
             className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-2 border-gray-200 hover:border-orange-300 transition-all duration-300"
           >
-            <span className="hidden sm:inline">Next →</span>
-            <span className="sm:hidden">Next →</span>
+            <span className="hidden sm:inline">Next</span>
+            <span className="sm:hidden">Next</span>
           </Button>
         </div>
       </div>
