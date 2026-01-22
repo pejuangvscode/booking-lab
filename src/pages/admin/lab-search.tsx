@@ -33,14 +33,6 @@ export default function LabSearch() {
   const [currentPage, setCurrentPage] = useState(1);
   const [openLabId, setOpenLabId] = useState<string | null>(null);
 
-  // Debug Clerk state
-  console.log('[Lab Search] Clerk State:', {
-    isLoaded,
-    isSignedIn,
-    userId: user?.id,
-    userEmail: user?.primaryEmailAddress?.emailAddress
-  });
-
   const {
     data: labData = [],
     isLoading: isLabsLoading,
@@ -56,13 +48,6 @@ export default function LabSearch() {
     enabled: isLoaded && isSignedIn && !!user?.id,
   });
 
-  // Debug: Log the lab data
-  console.log("Lab Data from backend:", labData);
-  console.log("Lab Data length:", labData.length);
-  console.log("Current user ID:", user?.id);
-  console.log("Current user from DB:", currentUser);
-
-  // Check if current user is PIC for a specific lab
   const isUserPICForLab = (lab: Lab) => {
     if (!user?.id || !lab.picIds) return false;
     
@@ -87,22 +72,13 @@ export default function LabSearch() {
     // First check Clerk metadata
     const clerkRole = user.publicMetadata?.role as string;
     if (clerkRole === 'super_admin') {
-      console.log('Super admin detected from Clerk metadata');
       return true;
     }
     
     // Fallback to database role if available
     if (currentUser && currentUser.role === 'super_admin') {
-      console.log('Super admin detected from database');
       return true;
     }
-    
-    console.log('User role check:', { 
-      clerkRole, 
-      dbRole: currentUser?.role,
-      publicMetadata: user.publicMetadata,
-      userId: user.id
-    });
     return false;
   };
 
@@ -176,19 +152,15 @@ export default function LabSearch() {
   // Handle booking based on user's role and PIC status
   const handleBooking = (lab: Lab) => {
     const isSuperAdmin = isUserSuperAdmin();
-    console.log('Booking logic:', { isSuperAdmin, labId: lab.id, userId: user?.id });
     
     if (isSuperAdmin) {
       // Super admin - always go to admin booking regardless of PIC status
-      console.log('Redirecting super admin to admin booking');
       void router.push(`/admin/booking?labId=${lab.id}`);
     } else if (isUserPICForLab(lab)) {
       // User is PIC for this lab - go to admin booking
-      console.log('Redirecting PIC user to admin booking');
       void router.push(`/admin/booking?labId=${lab.id}`);
     } else {
       // User is not PIC for this lab - go to regular user booking
-      console.log('Redirecting regular user to user booking');
       void router.push(`/booking?labId=${lab.id}`);
     }
   };
