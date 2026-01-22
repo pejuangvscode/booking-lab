@@ -348,7 +348,7 @@ export default function Home() {
                     <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
                       <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full border border-red-900" />
                     </div>
-                    <span className="text-xs sm:text-sm font-black text-red-900 tracking-wide">FACULTY OF INFORMATION TECHNOLOGY</span>
+                    <span className="text-xs sm:text-sm font-black text-red-900 tracking-wide">FACULTY OF ARTIFICIAL INTELLIGENCE AND DATA SCIENCE</span>
                     <div className="w-4 h-4 sm:w-6 sm:h-6 rounded-full border-2 border-red-900 bg-yellow-500 flex items-center justify-center">
                       <div className="w-2 h-2 sm:w-3 sm:h-3 rounded-full border border-red-900" />
                     </div>
