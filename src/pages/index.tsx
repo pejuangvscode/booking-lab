@@ -135,7 +135,7 @@ export default function Home() {
                 className={`group relative p-2.5 rounded-full transition-all duration-200 ${
                   activeSection === item.id
                     ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                    : 'text-gray-700 hover:text-gray-600 hover:bg-gray-50'
                 }`}
                 title={item.label}
               >
