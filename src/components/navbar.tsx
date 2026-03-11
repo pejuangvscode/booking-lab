@@ -105,10 +105,10 @@ export function Navbar() {
     const baseClasses = "inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium transition-colors duration-300";
     
     if (isActive(path)) {
-      return `${baseClasses} ${isAtTop && router.pathname === '/' ? 'border-yellow-400 text-yellow-400' : 'border-orange-500 text-orange-600'} font-semibold`;
+      return `${baseClasses} ${isAtTop && router.pathname === '/' ? 'border-white text-white font-semibold' : 'border-orange-500 text-orange-500 font-semibold'}`;
     }
     
-    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-yellow-300 hover:text-yellow-400' : 'text-gray-600 hover:text-orange-600'} ${isAtTop && router.pathname === '/' ? 'hover:border-yellow-300' : 'hover:border-orange-300'}`;
+    return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-white/85 hover:text-white hover:border-white/50' : 'text-gray-600 hover:text-orange-600 hover:border-orange-300'}`;
   };
 
   const getMobileLinkClasses = (path: string) => {
@@ -140,18 +140,20 @@ export function Navbar() {
                   alt="BookLab Logo"
                   width={40}
                   height={40}
-                  className="h-10 w-12 mr-2 border-r-2 pr-2 transition-colors duration-300 border-gray-300"
+                  className={`h-10 w-12 mr-2 border-r-2 pr-2 transition-colors duration-300 ${
+                    isAtTop && router.pathname === '/' && !isMenuOpen ? 'border-white/40' : 'border-gray-300'
+                  }`}
                 />
               </div>
               <div className="flex-shrink-0 flex flex-col items-left">
                 <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
                   isMenuOpen ? 'text-orange-600' :
-                  isAtTop && router.pathname === '/' ? 'text-orange-500 drop-shadow-lg' : 'text-orange-500'
+                  isAtTop && router.pathname === '/' ? 'text-white drop-shadow-md' : 'text-orange-500'
                 }`}>
                   Book
                 </span>
                 <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
-                  isMenuOpen ? 'text-orange-600' : isAtTop && router.pathname === '/' ? 'text-orange-500 drop-shadow-lg' : 'text-orange-500'
+                  isMenuOpen ? 'text-orange-600' : isAtTop && router.pathname === '/' ? 'text-white drop-shadow-md' : 'text-orange-500'
                 }`}>
                   Lab
                 </span>
@@ -199,8 +201,8 @@ export function Navbar() {
                       onClick={() => setIsAdminDropdownOpen(!isAdminDropdownOpen)}
                       className={`inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium hover:cursor-pointer transition-colors duration-300 ${
                         router.pathname.startsWith('/admin')
-                          ? isAtTop && router.pathname === '/' ? 'border-yellow-400 text-yellow-400 font-semibold' : 'border-orange-500 text-orange-600 font-semibold'
-                          : isAtTop && router.pathname === '/' ? 'border-transparent text-yellow-300 hover:text-yellow-400 hover:border-yellow-300' : 'border-transparent text-gray-700 hover:text-orange-600 hover:border-orange-300'
+                          ? isAtTop && router.pathname === '/' ? 'border-white text-white font-semibold' : 'border-orange-500 text-orange-500 font-semibold'
+                          : isAtTop && router.pathname === '/' ? 'border-transparent text-white/85 hover:text-white hover:border-white/50' : 'border-transparent text-gray-700 hover:text-orange-600 hover:border-orange-300'
                       }`}
                     >
                       Admin Menu
@@ -261,7 +263,7 @@ export function Navbar() {
               <SignInButton mode="modal">
                 <button className={`hover:cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   isAtTop && router.pathname === '/'
-                    ? 'text-yellow-400 bg-transparent border-2 border-yellow-400 hover:bg-yellow-400 hover:text-red-900 focus:ring-yellow-500' 
+                    ? 'text-white bg-white/15 border border-white/40 hover:bg-white/25 backdrop-blur-sm focus:ring-white/50 shadow-none' 
                     : 'text-white bg-orange-600 border border-transparent hover:bg-orange-700 focus:ring-orange-500'
                 }`}>
                   Sign in
@@ -285,7 +287,7 @@ export function Navbar() {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-inset ${
                 isAtTop && router.pathname === '/'
-                  ? 'text-yellow-400 hover:text-yellow-300 focus:ring-yellow-500'
+                  ? 'text-white hover:text-white/80 focus:ring-white/50'
                   : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:ring-orange-500'
               }`}
               aria-expanded={isMenuOpen}
