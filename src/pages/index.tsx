@@ -198,7 +198,7 @@ export default function Home() {
         {/* Bottom fade */}
         <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white/10 to-transparent" />
 
-        <div className="container mx-auto px-6 sm:px-10 lg:px-16 py-28 relative z-10">
+        <div className="container mx-auto px-5 sm:px-10 lg:px-16 py-20 sm:py-28 relative z-10">
           <div className="max-w-4xl">
             <AnimatedSection>
               <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm mb-8">
@@ -209,7 +209,7 @@ export default function Home() {
             </AnimatedSection>
 
             <AnimatedSection delay={80}>
-              <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] mb-6 tracking-tight">
+              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] mb-6 tracking-tight">
                 Book Your<br />
                 <span className="text-white/90">Laboratory.</span>
               </h1>
@@ -224,7 +224,7 @@ export default function Home() {
             <AnimatedSection delay={260}>
               <div className="flex flex-col sm:flex-row gap-3">
                 <Button
-                  className="bg-white text-orange-600 hover:bg-orange-50 px-8 py-6 text-base font-bold rounded-md cursor-pointer transition-all duration-200 shadow-xl shadow-black/20 hover:shadow-black/30"
+                  className="w-full sm:w-auto bg-white text-orange-600 hover:bg-orange-50 px-8 py-5 sm:py-6 text-sm sm:text-base font-bold rounded-md cursor-pointer transition-all duration-200 shadow-xl shadow-black/20 hover:shadow-black/30"
                   onClick={() => window.location.href = '/book-room'}
                 >
                   Book a Lab Now
@@ -232,7 +232,7 @@ export default function Home() {
 
                 <Button
                   variant="outline"
-                  className="bg-transparent text-white px-8 py-6 text-base font-semibold rounded-md border border-white/40 hover:bg-white/10 hover:border-white/60 cursor-pointer hover:text-white transition-all duration-200 backdrop-blur-sm"
+                  className="w-full sm:w-auto bg-transparent text-white px-8 py-5 sm:py-6 text-sm sm:text-base font-semibold rounded-md border border-white/40 hover:bg-white/10 hover:border-white/60 cursor-pointer hover:text-white transition-all duration-200 backdrop-blur-sm"
                   onClick={() => window.location.href = '/booking-calendar'}
                 >
                   View Calendar
@@ -262,7 +262,7 @@ export default function Home() {
         <div className="absolute top-[-5%] right-[-8%] w-[400px] h-[400px] rounded-full bg-gradient-to-bl from-orange-200/30 to-amber-100/20 blur-[70px]" />
         <div className="absolute bottom-[-10%] left-[-5%] w-[350px] h-[350px] rounded-full bg-gradient-to-tr from-orange-100/30 to-transparent blur-[60px]" />
 
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-16">
@@ -320,7 +320,7 @@ export default function Home() {
         <div className="absolute bottom-[-10%] left-[-5%] w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-orange-200/30 to-transparent blur-[70px]" />
         <div className="absolute top-[10%] right-[-5%] w-[300px] h-[300px] rounded-full bg-gradient-to-bl from-amber-200/25 to-transparent blur-[50px]" />
 
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-14">
@@ -385,7 +385,7 @@ export default function Home() {
 
             <AnimatedSection delay={600} className="mt-10 text-center">
               <Button
-                className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-5 text-base font-bold rounded-md cursor-pointer transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
+                className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 sm:py-5 text-sm sm:text-base font-bold rounded-md cursor-pointer transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
                 onClick={() => window.location.href = '/book-room'}>
                 Start Booking Now
                 <ArrowRight className="h-4 w-4 ml-2" />
@@ -403,7 +403,7 @@ export default function Home() {
         <div className="absolute top-20 left-[-8%] w-[350px] h-[350px] rounded-full bg-gradient-to-r from-orange-200/30 to-transparent blur-[60px]" />
         <div className="absolute bottom-[10%] right-[-5%] w-[300px] h-[300px] rounded-full bg-gradient-to-l from-amber-200/25 to-transparent blur-[55px]" />
 
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-14">
@@ -795,7 +795,7 @@ export default function Home() {
 
       {/* ==================== FOOTER / CONTACT SECTION ==================== */}
       <section id="contact" className="relative py-16 sm:py-20 bg-white border-t border-gray-100">
-        <div className="container mx-auto px-4">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto text-center">
             <AnimatedSection>
               <div className="flex justify-center mb-4">
