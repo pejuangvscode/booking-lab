@@ -119,7 +119,7 @@ export default function Home() {
   return (
     <div className="relative bg-white">
       <Head>
-        <title>BookLab | FIT Lab Booking</title>
+        <title>BookLab | FAIDAS Lab Booking</title>
         <meta name="description" content="UPH Lab Room Booking Portal" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
@@ -201,9 +201,9 @@ export default function Home() {
         <div className="container mx-auto px-5 sm:px-10 lg:px-16 py-20 sm:py-28 relative z-10">
           <div className="max-w-4xl">
             <AnimatedSection>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm mb-8">
-                <p className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-widest">
-                  Faculty of Information Technology — UPH
+              <div className="mb-12 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/15 border border-white/25 backdrop-blur-sm mb-8">
+                <p className="text-xs sm:text-sm font-medium text-center text-white/90 uppercase tracking-widest">
+                  Faculty of Artificial Intelligence and Data Science — UPH
                 </p>
               </div>
             </AnimatedSection>
@@ -217,12 +217,12 @@ export default function Home() {
 
             <AnimatedSection delay={180}>
               <p className="text-base sm:text-lg text-white/75 font-medium mb-10 max-w-xl leading-relaxed">
-                Sistem reservasi laboratorium FIT UPH. Pesan ruangan, pantau status booking, dan selesaikan peminjaman — kapan saja, di mana saja.
+                Sistem reservasi laboratorium FAIDAS UPH. Pesan ruangan, pantau status booking, dan selesaikan peminjaman — kapan saja, di mana saja.
               </p>
             </AnimatedSection>
 
             <AnimatedSection delay={260}>
-              <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex flex-col sm:flex-row gap-3 mt-12">
                 <Button
                   className="w-full sm:w-auto bg-white text-orange-600 hover:bg-orange-50 px-8 py-5 sm:py-6 text-sm sm:text-base font-bold rounded-md cursor-pointer transition-all duration-200 shadow-xl shadow-black/20 hover:shadow-black/30"
                   onClick={() => window.location.href = '/book-room'}
@@ -265,13 +265,13 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
             <AnimatedSection>
-              <div className="text-center mb-16">
+              <div className="mb-16">
                 <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">About Us</p>
                 <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                  About FIT BookLab
+                  About FAIDAS BookLab
                 </h2>
-                <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-                  BookLab adalah sistem booking laboratorium FIT (Faculty of Information Technology) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
+                <p className="text-base sm:text-lg text-gray-600 mx-auto leading-relaxed">
+                  BookLab adalah sistem booking laboratorium FAIDAS (Faculty of Artificial Intelligence and Data Science) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
                 </p>
               </div>
             </AnimatedSection>
@@ -406,14 +406,11 @@ export default function Home() {
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <AnimatedSection>
-              <div className="text-center mb-14">
+              <div className="text-center mb-8">
                 <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">Rules & Regulations</p>
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
-                  Tata Tertib Penggunaan Laboratorium FIT
+                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                  Tata Tertib Penggunaan Laboratorium FAIDAS
                 </h2>
-                <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-                  Harap patuhi aturan berikut untuk menjaga kelancaran dan keamanan penggunaan laboratorium
-                </p>
               </div>
             </AnimatedSection>
 
@@ -429,19 +426,19 @@ export default function Home() {
                   >
                     <div className="flex items-center gap-3">
                       <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">1</span>
-                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Larangan di Laboratorium FIT</span>
+                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Larangan di Laboratorium FAIDAS</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'larangan' ? 'rotate-180' : ''}`} />
                   </button>
                   {openRuleSection === 'larangan' && (
                     <div className="px-5 pb-5 border-t border-gray-50">
-                      <p className="text-sm text-gray-600 font-medium mt-4 mb-3">Semua pengunjung atau pengguna Laboratorium FIT, DILARANG:</p>
+                      <p className="text-sm text-gray-600 font-medium mt-4 mb-3">Semua pengunjung atau pengguna Laboratorium FAIDAS, DILARANG:</p>
                       <div className="space-y-2">
                         {[
                           { letter: "a", text: <>Merokok atau melakukan <i>vaping</i></> },
                           { letter: "b", text: "Membuang sampah sembarangan dan mengotori area Laboratorium (Lab)" },
                           { letter: "c", text: "Membawa makanan dan minuman ke dalam Laboratorium" },
-                          { letter: "d", text: "Makan atau minum dalam Laboratorium FIT tanpa se-izin Laboran (kecuali pengajar)" },
+                          { letter: "d", text: "Makan atau minum dalam Laboratorium FAIDAS tanpa se-izin Laboran (kecuali pengajar)" },
                           { letter: "e", text: "Membuat keributan" },
                           { letter: "f", text: "Melakukan perjudian dalam bentuk apapun" },
                           { letter: "g", text: "Merusak (melakukan vandalisme) dan mengotori fasilitas (meja, kursi, papan tulis, pintu, tembok, komputer dan seluruh peralatan dalam Laboratorium)" },
@@ -479,12 +476,12 @@ export default function Home() {
                   </button>
                   {openRuleSection === 'kewajiban' && (
                     <div className="px-5 pb-5 border-t border-gray-50">
-                      <p className="text-sm text-gray-600 font-medium mt-4 mb-3">Semua pengunjung atau pengguna Laboratorium FIT, WAJIB:</p>
+                      <p className="text-sm text-gray-600 font-medium mt-4 mb-3">Semua pengunjung atau pengguna Laboratorium FAIDAS, WAJIB:</p>
                       <div className="space-y-2">
                         {[
                           { letter: "a", text: <>Mengenakan pakaian rapi dan sopan sesuai dengan peraturan berpenampilan yang dapat dilihat pada <button className="text-orange-500 hover:underline font-medium" onClick={() => setOpenRuleSection('penampilan')}>poin 4</button></> },
-                          { letter: "b", text: <>Melakukan peminjaman melalui website FITBookLab. Prosedur peminjaman Laboratorium dapat dilihat pada <button className="text-orange-500 hover:underline font-medium" onClick={() => setOpenRuleSection('prosedur')}>poin 3</button></> },
-                          { letter: "c", text: "Mahasiswa FIT yang berada di area Lab wajib menjaga ketertiban Laboratorium" },
+                          { letter: "b", text: <>Melakukan peminjaman melalui website FAIDASBookLab. Prosedur peminjaman Laboratorium dapat dilihat pada <button className="text-orange-500 hover:underline font-medium" onClick={() => setOpenRuleSection('prosedur')}>poin 3</button></> },
+                          { letter: "c", text: "Mahasiswa FAIDAS yang berada di area Lab wajib menjaga ketertiban Laboratorium" },
                           { letter: "d", text: "Mahasiswa harus mengembalikan kembali posisi meja atau kursi jika Lab sudah selesai digunakan. Kondisi sebelum dan sesudah peminjaman harus rapi" },
                           { letter: "e", text: "Bertanggung jawab atas barang pribadi yang di bawa ke Lab. Kehilangan di luar tanggung jawab pengajar atau PIC Lab/Laboran" },
                         ].map((item) => (
@@ -517,7 +514,7 @@ export default function Home() {
                       <div className="space-y-2 mt-4">
                         {[
                           { letter: "a", text: "Cek jadwal perkuliahan yang ditempel di pintu Lab dan pastikan tidak ada kelas" },
-                          { letter: "b", text: <>Masuk ke website BookLab <a className="text-orange-500 hover:underline font-medium" href="https://www.fitbooklab.com">fitbooklab.com</a> atau pindai (scan) QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</> },
+                          { letter: "b", text: <>Masuk ke website BookLab <a className="text-orange-500 hover:underline font-medium" href="https://www.FAIDASbooklab.com">FAIDASbooklab.com</a> atau pindai (scan) QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</> },
                           { letter: "c", text: "Mahasiswa hanya dapat menggunakan Lab jika pemesanan melalui website BookLab telah disetujui" },
                           { letter: "d", text: "Jika pemesanan sudah disetujui silahkan gunakan Lab dengan tertib dan tetap mematuhi semua Tata Tertib Penggunaan Laboratorium" },
                         ].map((item) => (
@@ -616,7 +613,7 @@ export default function Home() {
               {/* Disclaimer */}
               <AnimatedSection delay={275}>
                 <div className="px-4 py-3 bg-orange-50/80 rounded-lg border border-orange-200/50 text-xs sm:text-sm text-orange-800/70 italic">
-                  Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FIT dan juga PIC Lab yang bertugas
+                  Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FAIDAS dan juga PIC Lab yang bertugas
                 </div>
               </AnimatedSection>
 
@@ -684,7 +681,7 @@ export default function Home() {
 
                         <div className="flex items-start gap-2.5 text-sm text-gray-600 py-1.5 px-3 rounded-lg bg-gray-50">
                           <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">d.</span>
-                          <span>Pelanggaran lain akan ditindak sesuai kebijakan Kepala Laboratorium FIT</span>
+                          <span>Pelanggaran lain akan ditindak sesuai kebijakan Kepala Laboratorium FAIDAS</span>
                         </div>
                       </div>
                     </div>
@@ -799,11 +796,9 @@ export default function Home() {
           <div className="max-w-3xl mx-auto text-center">
             <AnimatedSection>
               <div className="flex justify-center mb-4">
-                <div className="w-16 h-16 rounded-full bg-orange-50 border border-orange-100 flex items-center justify-center overflow-hidden">
-                  <img src="/favicon.ico" alt="FIT Logo" className="w-10 h-10" />
-                </div>
+                  <img src="/colored_logo.png" alt="FAIDAS Logo" className="h-8" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Faculty of Information Technology</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Faculty of Artificial Intelligence and Data Science</h3>
               <p className="text-sm text-gray-500 mb-4">Universitas Pelita Harapan</p>
 
               <div className="flex items-center justify-center space-x-3 mb-8">
@@ -838,11 +833,11 @@ export default function Home() {
               <div className="pt-6 border-t border-gray-100">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                   <p className="text-xs text-gray-400 order-2 sm:order-1">
-                    © 2025 BookLab - Faculty of Information Technology, Universitas Pelita Harapan
+                    © 2025 BookLab - Faculty of Artificial Intelligence and Data Science, Universitas Pelita Harapan
                   </p>
                   <div className="flex items-center space-x-1.5 order-1 sm:order-2">
-                    <img src="/favicon.ico" alt="FIT Logo" className="w-5 h-5" />
-                    <div className="flex flex-col">
+                    <img src="/colored_logo.png" alt="FAIDAS Logo" className="h-5" />
+                    <div className="flex flex-col pl-2 border-l-2 border-gray-400">
                       <span className="text-xs font-black leading-none text-orange-500">Book</span>
                       <span className="text-xs font-black leading-none text-orange-500">Lab</span>
                     </div>
