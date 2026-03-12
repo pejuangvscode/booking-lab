@@ -211,7 +211,7 @@ export default function Home() {
             <AnimatedSection delay={80}>
               <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] mb-6 tracking-tight">
                 Book Your<br />
-                <span className="text-white/90">Laboratory.</span>
+                <span className="text-white/90">Laboratory</span>
               </h1>
             </AnimatedSection>
 
