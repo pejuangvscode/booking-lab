@@ -32,9 +32,6 @@ export default function BookRoom() {
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 mb-4">
               Choose Room <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Category</span>
             </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-2xl mx-auto">
-              Select whether you want to book a student lab or a staff room
-            </p>
           </div>
 
           {/* Room Type Selection */}
