@@ -142,7 +142,7 @@ export function Navbar() {
                   alt="BookLab Logo"
                   width={150}
                   height={150}
-                  className={`w-30 h-10 mr-2 border-r-2 py-2 pr-2 transition-colors duration-300 ${
+                  className={`w-30 h-10 mr-2 border-r-2 py-2.5 pr-2 transition-colors duration-300 ${
                     isAtTop && router.pathname === '/' && !isMenuOpen ? 'border-white/40' : 'border-gray-300'
                   }`}
                 />
