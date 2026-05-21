@@ -32,7 +32,7 @@ function hasAuthCookies(req: NextRequest) {
 }
 
 const staticFilePattern = /\.(png|jpg|jpeg|gif|webp|svg|ico|css|js|woff|woff2|ttf|otf|eot|json|txt|xml|map)$/;
-const maintenanceMode = true;
+const maintenanceMode = false;
 
 export default clerkMiddleware(async (auth, req) => {  
   if (req.nextUrl.pathname.startsWith('/_next') || staticFilePattern.exec(req.nextUrl.pathname)) {
