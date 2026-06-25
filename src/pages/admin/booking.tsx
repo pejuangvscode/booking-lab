@@ -382,56 +382,57 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="container mx-auto px-4 py-8 mt-20">
+    <div className="min-h-screen bg-neutral-50 px-4 pb-12 pt-24">
       <Head>
         <title>Book a Lab | UPH Facility Booking</title>
       </Head>
       
       {/* User Info Bar */}
       <div className="max-w-4xl mx-auto mb-4">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+        <div className="rounded-xl border border-gray-200 bg-white p-3">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               <div className="h-2 w-2 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-blue-700">
+              <span className="text-sm text-gray-600">
                 Signed in as: <span className="font-medium">{user?.firstName} {user?.lastName} (Admin)</span>
               </span>
             </div>
-            <span className="text-xs text-blue-600">
+            <span className="text-xs text-gray-500">
               {user?.emailAddresses[0]?.emailAddress}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
+      <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
         {/* Header section */}
-        <div className="p-6 bg-gradient-to-r from-orange-600 to-orange-700">
-          <h2 className="text-3xl font-bold text-white">
+        <div className="border-b border-gray-100 px-6 py-6">
+          <h2 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
             {labDetail?.name ? `Book ${labDetail.name}` : "Book Laboratory"}
           </h2>
           {labDetail && (
-            <div className="flex flex-wrap gap-2 mt-2">
-              <span className="inline-flex items-center bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
                 {formatLabType(labDetail.type)}
               </span>
-              <span className="inline-flex items-center bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
                 {labDetail.capacity && labDetail.capacity > 0 
                   ? `${labDetail.capacity} seats` 
                   : "Flexible space"}
               </span>
-              <span className="inline-flex items-center bg-white/20 text-white px-3 py-1.5 rounded-lg text-sm font-medium">
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
                 {labDetail.department}
               </span>
             </div>
           )}
-          <div className="mt-2 flex space-x-2">
+          <div className="mt-3 flex flex-wrap gap-2">
             {labDetail?.facilityId && (
-              <span className="bg-white/20 text-white px-2 py-1 rounded text-sm">
-                ID: {labDetail.facilityId}
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
+                <span className="text-gray-400">ID:</span> {labDetail.facilityId}
               </span>
             )}
-            <span className="bg-green-500/80 text-white px-2 py-1 rounded text-sm">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
               Available
             </span>
           </div>
@@ -462,7 +463,7 @@ export default function BookingPage() {
         ) : (
           <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
             {/* Multiple Booking Toggle */}
-            <Card className="border-2 border-blue-200">
+            <Card className="border border-gray-200">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg flex items-center space-x-2">
                   <Calendar className="h-5 w-5 text-blue-600" />
@@ -701,7 +702,7 @@ export default function BookingPage() {
                     className="sr-only"
                   />
                   <Label htmlFor="full" className="flex-1 cursor-pointer w-full">
-                    <Card className={`p-4 border-2 transition-all duration-200 ${
+                    <Card className={`p-4 border transition-colors ${
                       bookingType === "full" 
                         ? "border-orange-500 bg-orange-50" 
                         : "border-gray-200 hover:border-gray-300"
@@ -735,7 +736,7 @@ export default function BookingPage() {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="partial" id="partial" className="sr-only" />
                     <Label htmlFor="partial" className="flex-1 cursor-pointer w-full">
-                      <Card className={`p-4 border-2 transition-all duration-200 ${
+                      <Card className={`p-4 border transition-colors ${
                         bookingType === "partial" 
                           ? "border-orange-500 bg-orange-50" 
                           : "border-gray-200 hover:border-gray-300"
@@ -910,7 +911,7 @@ export default function BookingPage() {
 
             {/* Note Message */}
             <div className="bg-gray-100 p-4 rounded-md">
-              <h4 className="text-sm font-semibold text-gray-700">Note</h4>
+              <h4 className="text-sm font-medium text-gray-700">Note</h4>
               <p className="text-sm text-gray-600 mt-1">
                 Booking Request is subject to approval by the lab administrator. Please ensure all details are correct before submitting.
               </p>
@@ -922,7 +923,7 @@ export default function BookingPage() {
                   {checking ? (
                     <>
                       <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                      <span className="text-sm text-blue-700">Checking availability...</span>
+                      <span className="text-sm text-gray-600">Checking availability...</span>
                     </>
                   ) : formErrors.startTime ? (
                     <>
@@ -949,7 +950,7 @@ export default function BookingPage() {
                 <div className="flex items-start space-x-2">
                   <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                   <div>
-                    <strong className="font-bold">Booking Conflict:</strong>
+                    <strong className="font-medium">Booking Conflict:</strong>
                     <div className="mt-1 text-sm">{formErrors.conflict}</div>
                     <div className="mt-2 text-xs">
                       <strong>Suggestions:</strong>

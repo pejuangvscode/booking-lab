@@ -51,7 +51,7 @@ const AnimatedSection: React.FC<{
 };
 
 export default function Home() {
-  const [showNoticeModal, setShowNoticeModal] = useState(true);
+  const [showNoticeModal, setShowNoticeModal] = useState(false);
   const [activeSection, setActiveSection] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openRuleSection, setOpenRuleSection] = useState<string | null>(null);
@@ -136,17 +136,17 @@ export default function Home() {
           >
             <div className="grid min-h-[320px] grid-cols-1 sm:min-h-[380px] sm:grid-cols-[1.1fr_0.9fr]">
               <div className="flex h-full flex-col p-6 sm:p-8">
-                <p className="text-[11px] font-semibold uppercase tracking-[0.35em] text-orange-600">
+                <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-orange-600">
                   Pengumuman
                 </p>
-                <h2 className="mt-3 text-2xl font-semibold text-gray-900">
+                <h2 className="mt-3 text-2xl font-medium text-gray-900">
                   Domain BookLab berubah
                 </h2>
                 <p className="mt-3 text-sm text-gray-600 mb-8">
                     <i>fitbooklab.com</i> sekarang pindah ke domain{' '}
                   <a
                     href="https://book.uphfaidas.com"
-                    className="font-semibold text-orange-600 hover:underline"
+                    className="font-medium text-orange-600 hover:underline"
                   >
                     book.uphfaidas.com
                   </a>
@@ -174,7 +174,7 @@ export default function Home() {
 
       {/* Side Navigation - Desktop */}
       <nav className="hidden lg:block fixed top-1/2 right-6 transform -translate-y-1/2 z-40">
-        <div className="bg-white/70 backdrop-blur-md rounded-full shadow-lg shadow-gray-200/40 border border-gray-100/60 py-3 px-1.5">
+        <div className="rounded-full border border-gray-200 bg-white py-3 px-1.5 shadow-sm">
           <div className="flex flex-col space-y-1">
             {navItems.map((item) => (
               <button
@@ -182,7 +182,7 @@ export default function Home() {
                 onClick={() => scrollToSection(item.id)}
                 className={`group relative p-2.5 rounded-full transition-all duration-200 ${
                   activeSection === item.id
-                    ? 'bg-gradient-to-br from-orange-500 to-orange-600 text-white shadow-md shadow-orange-500/20'
+                    ? 'bg-orange-600 text-white'
                     : 'text-gray-700 hover:text-gray-600 hover:bg-gray-50'
                 }`}
                 title={item.label}
@@ -200,7 +200,7 @@ export default function Home() {
       {/* Mobile Navigation Button */}
       <button
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-50 bg-gradient-to-br from-orange-500 to-orange-600 text-white p-3.5 rounded-full shadow-lg shadow-orange-500/30 transition-all duration-200 active:scale-95"
+        className="lg:hidden fixed bottom-6 right-6 z-50 bg-orange-600 text-white p-3.5 rounded-full shadow-md transition-colors duration-200 hover:bg-orange-700 active:scale-95"
       >
         {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
       </button>
@@ -231,56 +231,42 @@ export default function Home() {
       )}
 
       {/* ==================== HERO SECTION ==================== */}
-      <section id="home" className="relative min-h-screen flex items-center overflow-hidden" style={{ background: '#ea580c' }}>
-        {/* Animated floating blobs — each has a spread starting position */}
-        <div className="blob-1 absolute w-[900px] h-[900px] rounded-full" style={{ top: '-20%', left: '-10%', background: 'radial-gradient(circle, rgba(253,186,116,0.6) 0%, transparent 65%)' }} />
-        <div className="blob-2 absolute w-[750px] h-[750px] rounded-full" style={{ top: '-10%', right: '-5%', background: 'radial-gradient(circle, rgba(255,237,213,0.45) 0%, transparent 60%)' }} />
-        <div className="blob-3 absolute w-[800px] h-[800px] rounded-full" style={{ top: '30%', left: '30%', background: 'radial-gradient(circle, rgba(154,40,5,0.65) 0%, transparent 65%)' }} />
-        <div className="blob-4 absolute w-[600px] h-[600px] rounded-full" style={{ bottom: '-10%', right: '10%', background: 'radial-gradient(circle, rgba(251,146,60,0.55) 0%, transparent 65%)' }} />
-        <div className="blob-5 absolute w-[700px] h-[700px] rounded-full" style={{ bottom: '5%', left: '20%', background: 'radial-gradient(circle, rgba(254,215,170,0.4) 0%, transparent 62%)' }} />
-        <div className="blob-6 absolute w-[500px] h-[500px] rounded-full" style={{ top: '50%', right: '30%', background: 'radial-gradient(circle, rgba(194,65,12,0.7) 0%, transparent 68%)' }} />
+      <section id="home" className="relative flex min-h-screen items-center overflow-hidden" style={{ background: 'linear-gradient(155deg, #fb923c 0%, #ea580c 52%, #c2410c 100%)' }}>
+        <div className="pointer-events-none absolute -top-28 -right-24 h-[460px] w-[460px] rounded-full bg-white/10 blur-3xl" />
+        <div className="pointer-events-none absolute -bottom-32 -left-20 h-[420px] w-[420px] rounded-full bg-orange-900/20 blur-3xl" />
 
-        {/* Dot noise texture */}
-        <div className="absolute inset-0" style={{ backgroundImage: 'radial-gradient(circle, rgba(255,255,255,0.10) 1.5px, transparent 1px)', backgroundSize: '28px 28px' }} />
-
-        {/* Bottom fade */}
-        <div className="absolute bottom-0 left-0 right-0 h-40 bg-gradient-to-t from-white/10 to-transparent" />
-
-        <div className="container mx-auto px-5 sm:px-10 lg:px-16 py-20 sm:py-28 relative z-10">
-          <div className="max-w-4xl">
+        <div className="container relative z-10 mx-auto px-5 py-24 sm:px-10 sm:py-28 lg:px-16">
+          <div className="max-w-2xl">
             <AnimatedSection>
-              <div className="mb-12 inline-flex items-center gap-2 mb-8">
-                <p className="text-xs sm:text-sm font-medium text-white/90 uppercase tracking-widest">
-                  Faculty of Artificial Intelligence and Data Science — UPH
-                </p>
-              </div>
+              <span className="inline-flex items-center gap-2 rounded-full py-1 font-medium text-white backdrop-blur-sm">
+                FAIDAS &mdash; Universitas Pelita Harapan
+              </span>
             </AnimatedSection>
 
             <AnimatedSection delay={80}>
-              <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-black text-white leading-[1.05] mb-6 tracking-tight">
-                Book Your<br />
-                <span className="text-white/90">Laboratory</span>
+              <h1 className="mt-6 text-4xl font-medium leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
+                Book your lab,<br />
+                <span className="text-white/80">in a few clicks.</span>
               </h1>
             </AnimatedSection>
 
-            <AnimatedSection delay={180}>
-              <p className="text-base sm:text-lg text-white/75 font-medium mb-10 max-w-xl leading-relaxed">
-                Sistem reservasi laboratorium FAIDAS UPH. Pesan ruangan, pantau status booking, dan selesaikan peminjaman — kapan saja, di mana saja.
+            <AnimatedSection delay={160}>
+              <p className="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
+                Sistem reservasi laboratorium FAIDAS UPH. Pesan ruangan, pantau status booking, dan selesaikan peminjaman &mdash; kapan saja, di mana saja.
               </p>
             </AnimatedSection>
 
-            <AnimatedSection delay={260}>
-              <div className="flex flex-col sm:flex-row gap-3 mt-12">
+            <AnimatedSection delay={240}>
+              <div className="mt-8 flex flex-col gap-3 sm:flex-row">
                 <Button
-                  className="w-full sm:w-auto bg-white text-orange-600 hover:bg-orange-50 px-8 py-5 sm:py-6 text-sm sm:text-base font-bold rounded-md cursor-pointer transition-all duration-200 shadow-xl shadow-black/20 hover:shadow-black/30"
+                  className="h-12 w-full cursor-pointer rounded-lg bg-white px-7 text-sm font-medium text-orange-600 shadow-sm transition-colors hover:bg-orange-50 sm:w-auto"
                   onClick={() => window.location.href = '/book-room'}
                 >
                   Book a Lab Now
                 </Button>
-
                 <Button
                   variant="outline"
-                  className="w-full sm:w-auto bg-transparent text-white px-8 py-5 sm:py-6 text-sm sm:text-base font-semibold rounded-md border border-white/40 hover:bg-white/10 hover:border-white/60 cursor-pointer hover:text-white transition-all duration-200 backdrop-blur-sm"
+                  className="h-12 w-full cursor-pointer rounded-lg border border-white/40 bg-transparent px-7 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white sm:w-auto"
                   onClick={() => window.location.href = '/booking-calendar'}
                 >
                   View Calendar
@@ -290,32 +276,26 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Scroll Indicator */}
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
-          <button
-            onClick={() => scrollToSection('about')}
-            className="flex flex-col items-center gap-2 text-white/60 hover:text-white/90 transition-colors"
-          >
-            <span className="text-[10px] font-medium uppercase tracking-widest">Scroll</span>
-            <ChevronDown className="w-4 h-4 animate-bounce" />
-          </button>
-        </div>
+        <button
+          onClick={() => scrollToSection('about')}
+          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 text-white/60 transition-colors hover:cursor-pointer hover:text-white"
+        >
+          <span className="text-[10px] font-medium uppercase tracking-widest">Scroll</span>
+          <ChevronDown className="h-4 w-4 animate-bounce" />
+        </button>
       </section>
 
       {/* ==================== ABOUT SECTION ==================== */}
-      <section id="about" className="relative py-20 sm:py-28 overflow-hidden" style={{ background: 'linear-gradient(180deg, #fff8f3 0%, #fff4ec 50%, #fff9f5 100%)' }}>
+      <section id="about" className="relative border-t border-gray-100 py-20 sm:py-28">
         {/* Accent line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[2px] bg-gradient-to-r from-transparent via-orange-400 to-transparent" />
         {/* Orbs */}
-        <div className="absolute top-[-5%] right-[-8%] w-[400px] h-[400px] rounded-full bg-gradient-to-bl from-orange-200/30 to-amber-100/20 blur-[70px]" />
-        <div className="absolute bottom-[-10%] left-[-5%] w-[350px] h-[350px] rounded-full bg-gradient-to-tr from-orange-100/30 to-transparent blur-[60px]" />
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-5xl mx-auto">
             <AnimatedSection>
               <div className="mb-16">
                 <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">About Us</p>
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl sm:text-4xl font-medium text-gray-900 mb-4">
                   About FAIDAS BookLab
                 </h2>
                 <p className="text-base sm:text-lg text-gray-600 mx-auto leading-relaxed">
@@ -340,10 +320,9 @@ export default function Home() {
                 }
               ].map((feature, index) => (
                 <AnimatedSection key={index} delay={index * 100}>
-                  <div className="group relative bg-white/70 backdrop-blur-sm rounded-xl p-6 border border-orange-100/60 hover:border-orange-300/60 transition-all duration-300 hover:shadow-lg hover:shadow-orange-100/50">
-                    <div className="absolute inset-0 bg-gradient-to-br from-orange-50/0 to-orange-50/0 group-hover:from-orange-50/40 group-hover:to-amber-50/30 rounded-xl transition-all duration-300" />
+                  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
                     <div className="relative">
-                      <h3 className="text-base font-semibold text-gray-900 mb-2">{feature.title}</h3>
+                      <h3 className="text-base font-medium text-gray-900 mb-2">{feature.title}</h3>
                       <p className="text-sm text-gray-600 leading-relaxed">{feature.description}</p>
                     </div>
                   </div>
@@ -355,19 +334,16 @@ export default function Home() {
       </section>
 
       {/* ==================== HOW TO USE SECTION ==================== */}
-      <section id="how-to-use" className="relative py-20 sm:py-28 overflow-hidden" style={{ background: 'linear-gradient(180deg, #fff2e8 0%, #ffeedd 50%, #fff4ec 100%)' }}>
+      <section id="how-to-use" className="relative border-t border-gray-100 py-20 sm:py-28">
         {/* Accent line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[2px] bg-gradient-to-r from-transparent via-orange-400 to-transparent" />
         {/* Orbs */}
-        <div className="absolute bottom-[-10%] left-[-5%] w-[450px] h-[450px] rounded-full bg-gradient-to-tr from-orange-200/30 to-transparent blur-[70px]" />
-        <div className="absolute top-[10%] right-[-5%] w-[300px] h-[300px] rounded-full bg-gradient-to-bl from-amber-200/25 to-transparent blur-[50px]" />
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-14">
                 <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">How It Works</p>
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900 mb-4">
+                <h2 className="text-3xl sm:text-4xl font-medium text-gray-900 mb-4">
                   Cara Menggunakan BookLab
                 </h2>
                 <p className="text-base sm:text-lg text-gray-600">
@@ -378,7 +354,7 @@ export default function Home() {
 
             <div className="relative space-y-4">
               {/* Vertical connecting line */}
-              <div className="absolute left-[31px] sm:left-[33px] top-6 bottom-6 w-[2px] bg-gradient-to-b from-orange-200 via-orange-300 to-orange-100 rounded-full" />
+              <div className="absolute left-[31px] sm:left-[33px] top-6 bottom-6 w-[2px] bg-gray-200 rounded-full" />
               {[
                 {
                   number: 1,
@@ -412,12 +388,12 @@ export default function Home() {
                 }
               ].map((step) => (
                 <AnimatedSection key={step.number} delay={step.number * 80}>
-                  <div className="relative flex items-start gap-4 p-4 sm:p-5 rounded-xl bg-white/80 border border-orange-100/70 hover:border-orange-300/60 hover:shadow-md hover:shadow-orange-200/30 transition-all duration-300">
-                    <div className="flex-shrink-0 w-8 h-8 rounded-full bg-gradient-to-br from-orange-500 to-orange-600 text-white flex items-center justify-center text-sm font-bold shadow-md shadow-orange-500/20">
+                  <div className="relative flex items-start gap-4 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-shadow hover:shadow-md sm:p-5">
+                    <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orange-600 text-sm font-medium text-white">
                       {step.number}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h3 className="text-sm sm:text-base font-semibold text-gray-900 mb-1">{step.title}</h3>
+                      <h3 className="text-sm sm:text-base font-medium text-gray-900 mb-1">{step.title}</h3>
                       <p className="text-xs sm:text-sm text-gray-600 leading-relaxed">{step.description}</p>
                     </div>
                   </div>
@@ -427,7 +403,7 @@ export default function Home() {
 
             <AnimatedSection delay={600} className="mt-10 text-center">
               <Button
-                className="w-full sm:w-auto bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white px-8 py-4 sm:py-5 text-sm sm:text-base font-bold rounded-md cursor-pointer transition-all duration-200 shadow-lg shadow-orange-500/25 hover:shadow-orange-500/40"
+                className="w-full cursor-pointer rounded-md bg-orange-600 px-8 py-4 text-sm font-medium text-white transition-colors hover:bg-orange-700 sm:w-auto sm:py-5 sm:text-base"
                 onClick={() => window.location.href = '/book-room'}>
                 Start Booking Now
               </Button>
@@ -437,19 +413,16 @@ export default function Home() {
       </section>
 
       {/* ==================== RULES SECTION ==================== */}
-      <section id="rules" className="relative py-20 sm:py-28 overflow-hidden" style={{ background: 'linear-gradient(180deg, #fff8f3 0%, #fff4ec 50%, #fff2e8 100%)' }}>
+      <section id="rules" className="relative border-t border-gray-100 py-20 sm:py-28">
         {/* Accent line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-64 h-[2px] bg-gradient-to-r from-transparent via-orange-400 to-transparent" />
         {/* Orbs */}
-        <div className="absolute top-20 left-[-8%] w-[350px] h-[350px] rounded-full bg-gradient-to-r from-orange-200/30 to-transparent blur-[60px]" />
-        <div className="absolute bottom-[10%] right-[-5%] w-[300px] h-[300px] rounded-full bg-gradient-to-l from-amber-200/25 to-transparent blur-[55px]" />
 
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="max-w-3xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-8">
                 <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">Rules & Regulations</p>
-                <h2 className="text-3xl sm:text-4xl font-bold text-gray-900">
+                <h2 className="text-3xl sm:text-4xl font-medium text-gray-900">
                   Tata Tertib Penggunaan Laboratorium FAIDAS
                 </h2>
               </div>
@@ -460,14 +433,14 @@ export default function Home() {
 
               {/* 1. Larangan */}
               <AnimatedSection delay={100}>
-                  <div className="bg-white/80 rounded-xl border border-orange-100/60 overflow-hidden hover:shadow-md hover:shadow-orange-200/30 transition-all duration-300">
+                  <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                   <button
                     onClick={() => toggleRuleSection('larangan')}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gradient-to-r hover:from-orange-50/30 hover:to-transparent transition-all cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">1</span>
-                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Larangan di Laboratorium FAIDAS</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">1</span>
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">Larangan di Laboratorium FAIDAS</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'larangan' ? 'rotate-180' : ''}`} />
                   </button>
@@ -492,7 +465,7 @@ export default function Home() {
                           { letter: "n", text: <><i>Browsing</i> ke situs-situs yang melanggar etika atau berkaitan dengan pornografi atau kekerasan</> },
                         ].map((item) => (
                           <div key={item.letter} className="flex items-start gap-2.5 text-sm text-gray-600 py-1.5 px-3 rounded-lg bg-gray-50">
-                            <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">{item.letter}.</span>
+                            <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">{item.letter}.</span>
                             <span>{item.text}</span>
                           </div>
                         ))}
@@ -504,14 +477,14 @@ export default function Home() {
 
               {/* 2. Kewajiban */}
               <AnimatedSection delay={150}>
-                <div className="bg-white/80 rounded-xl border border-orange-100/60 overflow-hidden hover:shadow-md hover:shadow-orange-200/30 transition-all duration-300">
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                   <button
                     onClick={() => toggleRuleSection('kewajiban')}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gradient-to-r hover:from-orange-50/30 hover:to-transparent transition-all cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">2</span>
-                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Kewajiban Pengguna Laboratorium</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">2</span>
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">Kewajiban Pengguna Laboratorium</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'kewajiban' ? 'rotate-180' : ''}`} />
                   </button>
@@ -527,7 +500,7 @@ export default function Home() {
                           { letter: "e", text: "Bertanggung jawab atas barang pribadi yang di bawa ke Lab. Kehilangan di luar tanggung jawab pengajar atau PIC Lab/Laboran" },
                         ].map((item) => (
                           <div key={item.letter} className="flex items-start gap-2.5 text-sm text-gray-600 py-1.5 px-3 rounded-lg bg-gray-50">
-                            <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">{item.letter}.</span>
+                            <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">{item.letter}.</span>
                             <span>{item.text}</span>
                           </div>
                         ))}
@@ -539,14 +512,14 @@ export default function Home() {
 
               {/* 3. Prosedur */}
               <AnimatedSection delay={200}>
-                <div className="bg-white/80 rounded-xl border border-orange-100/60 overflow-hidden hover:shadow-md hover:shadow-orange-200/30 transition-all duration-300">
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                   <button
                     onClick={() => toggleRuleSection('prosedur')}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gradient-to-r hover:from-orange-50/30 hover:to-transparent transition-all cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">3</span>
-                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Prosedur Peminjaman Laboratorium</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">3</span>
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">Prosedur Peminjaman Laboratorium</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'prosedur' ? 'rotate-180' : ''}`} />
                   </button>
@@ -560,7 +533,7 @@ export default function Home() {
                           { letter: "d", text: "Jika pemesanan sudah disetujui silahkan gunakan Lab dengan tertib dan tetap mematuhi semua Tata Tertib Penggunaan Laboratorium" },
                         ].map((item) => (
                           <div key={item.letter} className="flex items-start gap-2.5 text-sm text-gray-600 py-1.5 px-3 rounded-lg bg-gray-50">
-                            <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">{item.letter}.</span>
+                            <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">{item.letter}.</span>
                             <span>{item.text}</span>
                           </div>
                         ))}
@@ -568,7 +541,7 @@ export default function Home() {
                         {/* Sub-point e with nested items */}
                         <div className="text-sm text-gray-600 py-1.5 px-3 rounded-lg bg-gray-50">
                           <div className="flex items-start gap-2.5">
-                            <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">e.</span>
+                            <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">e.</span>
                             <span>Jika penggunaan Lab berlanjut hingga di luar jam kerja (07:00 – 16:00), ikuti prosedur berikut ini:</span>
                           </div>
                           <div className="ml-6 mt-2 space-y-1.5">
@@ -609,14 +582,14 @@ export default function Home() {
 
               {/* 4. Penampilan */}
               <AnimatedSection delay={250}>
-                <div className="bg-white/80 rounded-xl border border-orange-100/60 overflow-hidden hover:shadow-md hover:shadow-orange-200/30 transition-all duration-300">
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                   <button
                     onClick={() => toggleRuleSection('penampilan')}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gradient-to-r hover:from-orange-50/30 hover:to-transparent transition-all cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">4</span>
-                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Peraturan Berpenampilan</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">4</span>
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">Peraturan Berpenampilan</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'penampilan' ? 'rotate-180' : ''}`} />
                   </button>
@@ -624,7 +597,7 @@ export default function Home() {
                     <div className="px-5 pb-5 border-t border-gray-50">
                       <div className="grid sm:grid-cols-3 gap-4 mt-4">
                         <div className="bg-gray-50 rounded-lg p-4">
-                          <h4 className="text-sm font-semibold text-gray-900 mb-2.5">a. Atasan</h4>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2.5">a. Atasan</h4>
                           <ul className="space-y-1.5 text-xs sm:text-sm text-gray-600">
                             <li className="flex items-start gap-1.5"><span className="text-orange-400 mt-0.5">i.</span> Menggunakan pakaian bebas dan wajib berlengan</li>
                             <li className="flex items-start gap-1.5"><span className="text-orange-400 mt-0.5">ii.</span> Nyaman saat digunakan dan tidak mengganggu aktivitas praktikum</li>
@@ -632,7 +605,7 @@ export default function Home() {
                           </ul>
                         </div>
                         <div className="bg-gray-50 rounded-lg p-4">
-                          <h4 className="text-sm font-semibold text-gray-900 mb-2.5">b. Bawahan</h4>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2.5">b. Bawahan</h4>
                           <ul className="space-y-1.5 text-xs sm:text-sm text-gray-600">
                             <li className="flex items-start gap-1.5"><span className="text-orange-400 mt-0.5">i.</span> Celana bahan kain panjang (menutup mata kaki) dan tidak ketat</li>
                             <li className="flex items-start gap-1.5"><span className="text-orange-400 mt-0.5">ii.</span> Celana berbahan jeans panjang (menutup mata kaki) tidak ketat dan tidak sobek-sobek</li>
@@ -640,7 +613,7 @@ export default function Home() {
                           </ul>
                         </div>
                         <div className="bg-gray-50 rounded-lg p-4">
-                          <h4 className="text-sm font-semibold text-gray-900 mb-2.5">c. Alas Kaki</h4>
+                          <h4 className="text-sm font-medium text-gray-900 mb-2.5">c. Alas Kaki</h4>
                           <ul className="space-y-1.5 text-xs sm:text-sm text-gray-600">
                             <li className="flex items-start gap-1.5"><span className="text-orange-400 mt-0.5">i.</span> Wajib mengenakan sepatu yang menutup semua permukaan kaki</li>
                           </ul>
@@ -660,14 +633,14 @@ export default function Home() {
 
               {/* 5. Sanksi */}
               <AnimatedSection delay={300}>
-                <div className="bg-white/80 rounded-xl border border-orange-100/60 overflow-hidden hover:shadow-md hover:shadow-orange-200/30 transition-all duration-300">
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                   <button
                     onClick={() => toggleRuleSection('sanksi')}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gradient-to-r hover:from-orange-50/30 hover:to-transparent transition-all cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">5</span>
-                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Sanksi Pelanggaran</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">5</span>
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">Sanksi Pelanggaran</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'sanksi' ? 'rotate-180' : ''}`} />
                   </button>
@@ -676,7 +649,7 @@ export default function Home() {
                       <div className="space-y-3 mt-4">
                         <div className="text-sm text-gray-600 py-2 px-3 rounded-lg bg-gray-50">
                           <div className="flex items-start gap-2.5 mb-2">
-                            <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">a.</span>
+                            <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">a.</span>
                             <span className="font-medium">Mahasiswa yang terbukti:</span>
                           </div>
                           <div className="ml-6 space-y-1">
@@ -699,13 +672,13 @@ export default function Home() {
                         </div>
 
                         <div className="flex items-start gap-2.5 text-sm text-gray-600 py-1.5 px-3 rounded-lg bg-gray-50">
-                          <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">b.</span>
+                          <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">b.</span>
                           <span>Pelanggran aturan Lab dikenakan skorsing larangan masuk ke seluruh area Lab selama 1 bulan penuh</span>
                         </div>
 
                         <div className="text-sm text-gray-600 py-2 px-3 rounded-lg bg-gray-50">
                           <div className="flex items-start gap-2.5 mb-2">
-                            <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">c.</span>
+                            <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">c.</span>
                             <span className="font-medium">Mahasiswa yang terbukti melakukan perusakan fasilitas atau peralatan di Lab:</span>
                           </div>
                           <div className="ml-6 space-y-1">
@@ -721,7 +694,7 @@ export default function Home() {
                         </div>
 
                         <div className="flex items-start gap-2.5 text-sm text-gray-600 py-1.5 px-3 rounded-lg bg-gray-50">
-                          <span className="text-orange-500 font-semibold text-xs mt-0.5 w-4 flex-shrink-0">d.</span>
+                          <span className="text-orange-500 font-medium text-xs mt-0.5 w-4 flex-shrink-0">d.</span>
                           <span>Pelanggaran lain akan ditindak sesuai kebijakan Kepala Laboratorium FAIDAS</span>
                         </div>
                       </div>
@@ -732,14 +705,14 @@ export default function Home() {
 
               {/* 6. Kontak */}
               <AnimatedSection delay={350}>
-                <div className="bg-white/80 rounded-xl border border-orange-100/60 overflow-hidden hover:shadow-md hover:shadow-orange-200/30 transition-all duration-300">
+                <div className="overflow-hidden rounded-xl border border-gray-200 bg-white shadow-sm">
                   <button
                     onClick={() => toggleRuleSection('kontak')}
-                    className="w-full flex items-center justify-between p-5 text-left hover:bg-gradient-to-r hover:from-orange-50/30 hover:to-transparent transition-all cursor-pointer"
+                    className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="w-7 h-7 rounded-full bg-gradient-to-br from-orange-100 to-orange-50 text-orange-600 flex items-center justify-center text-xs font-bold">6</span>
-                      <span className="font-semibold text-gray-900 text-sm sm:text-base">Nomor Kontak Penanggung Jawab</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">6</span>
+                      <span className="font-medium text-gray-900 text-sm sm:text-base">Nomor Kontak Penanggung Jawab</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'kontak' ? 'rotate-180' : ''}`} />
                   </button>
@@ -804,8 +777,8 @@ export default function Home() {
                         ].map((contact) => (
                           <div key={contact.letter} className="bg-gray-50 rounded-lg p-4">
                             <div className="flex items-center gap-2 mb-1.5">
-                              <span className="text-orange-500 font-semibold text-xs">{contact.letter}.</span>
-                              <h4 className="text-sm font-semibold text-gray-900">{contact.lab}</h4>
+                              <span className="text-orange-500 font-medium text-xs">{contact.letter}.</span>
+                              <h4 className="text-sm font-medium text-gray-900">{contact.lab}</h4>
                             </div>
                             <p className="text-xs text-gray-500 mb-3">{contact.desc}</p>
                             <div className="space-y-1.5 text-sm">
@@ -839,7 +812,7 @@ export default function Home() {
               <div className="flex justify-center mb-4">
                   <img src="/colored_logo.png" alt="FAIDAS Logo" className="h-8" />
               </div>
-              <h3 className="text-lg sm:text-xl font-bold text-gray-900">Faculty of Artificial Intelligence and Data Science</h3>
+              <h3 className="text-lg sm:text-xl font-medium text-gray-900">Faculty of Artificial Intelligence and Data Science</h3>
               <p className="text-sm text-gray-500 mb-4">Universitas Pelita Harapan</p>
 
               <div className="flex items-center justify-center space-x-3 mb-8">
@@ -881,8 +854,8 @@ export default function Home() {
                   <div className="flex items-center space-x-1.5 order-1 sm:order-2">
                     <img src="/colored_logo.png" alt="FAIDAS Logo" className="h-5" />
                     <div className="flex flex-col pl-2 border-l-2 border-gray-400">
-                      <span className="text-xs font-black leading-none text-orange-500">Book</span>
-                      <span className="text-xs font-black leading-none text-orange-500">Lab</span>
+                      <span className="text-xs font-medium leading-none text-orange-500">Book</span>
+                      <span className="text-xs font-medium leading-none text-orange-500">Lab</span>
                     </div>
                   </div>
                 </div>
@@ -893,61 +866,7 @@ export default function Home() {
       </section>
 
       <style jsx global>{`
-        html {
-          scroll-behavior: smooth;
-        }
-
-        @keyframes blob1 {
-          0%   { transform: translate(0vw, 0vh) scale(1.1); }
-          20%  { transform: translate(30vw, 15vh) scale(0.85); }
-          40%  { transform: translate(15vw, 40vh) scale(1.2); }
-          60%  { transform: translate(-10vw, 20vh) scale(0.9); }
-          80%  { transform: translate(5vw, -10vh) scale(1.15); }
-          100% { transform: translate(0vw, 0vh) scale(1.1); }
-        }
-        @keyframes blob2 {
-          0%   { transform: translate(0vw, 0vh) scale(0.9); }
-          20%  { transform: translate(-25vw, 20vh) scale(1.2); }
-          40%  { transform: translate(-35vw, 50vh) scale(0.85); }
-          60%  { transform: translate(-10vw, 60vh) scale(1.1); }
-          80%  { transform: translate(10vw, 25vh) scale(0.95); }
-          100% { transform: translate(0vw, 0vh) scale(0.9); }
-        }
-        @keyframes blob3 {
-          0%   { transform: translate(0vw, 0vh) scale(1); }
-          25%  { transform: translate(-20vw, -25vh) scale(1.15); }
-          50%  { transform: translate(20vw, -10vh) scale(0.88); }
-          75%  { transform: translate(25vw, 30vh) scale(1.2); }
-          100% { transform: translate(0vw, 0vh) scale(1); }
-        }
-        @keyframes blob4 {
-          0%   { transform: translate(0vw, 0vh) scale(1.05); }
-          25%  { transform: translate(-30vw, -15vh) scale(0.88); }
-          50%  { transform: translate(-15vw, -40vh) scale(1.18); }
-          75%  { transform: translate(15vw, -20vh) scale(0.9); }
-          100% { transform: translate(0vw, 0vh) scale(1.05); }
-        }
-        @keyframes blob5 {
-          0%   { transform: translate(0vw, 0vh) scale(0.92); }
-          30%  { transform: translate(25vw, -30vh) scale(1.1); }
-          60%  { transform: translate(35vw, -10vh) scale(0.85); }
-          80%  { transform: translate(10vw, 20vh) scale(1.15); }
-          100% { transform: translate(0vw, 0vh) scale(0.92); }
-        }
-        @keyframes blob6 {
-          0%   { transform: translate(0vw, 0vh) scale(1.1); }
-          25%  { transform: translate(-20vw, 15vh) scale(0.9); }
-          50%  { transform: translate(10vw, 30vh) scale(1.2); }
-          75%  { transform: translate(25vw, -5vh) scale(0.88); }
-          100% { transform: translate(0vw, 0vh) scale(1.1); }
-        }
-
-        .blob-1 { animation: blob1 19s ease-in-out infinite; }
-        .blob-2 { animation: blob2 24s ease-in-out infinite; }
-        .blob-3 { animation: blob3 17s ease-in-out infinite; }
-        .blob-4 { animation: blob4 21s ease-in-out infinite; }
-        .blob-5 { animation: blob5 27s ease-in-out infinite; }
-        .blob-6 { animation: blob6 15s ease-in-out infinite; }
+        html { scroll-behavior: smooth; }
       `}</style>
     </div>
   );

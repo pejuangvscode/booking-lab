@@ -1,6 +1,34 @@
 import { Building2, Users, ArrowRight } from "lucide-react";
-import Head from 'next/head';
-import { useRouter } from 'next/router';
+import Head from "next/head";
+import { useRouter } from "next/router";
+
+const categories = [
+  {
+    key: "student",
+    title: "Students Lab",
+    description:
+      "Computer labs for student activities, group work, and academic events.",
+    cta: "Browse labs",
+    href: "/book-room/student-lab",
+    icon: Users,
+    iconBg: "bg-blue-50",
+    iconText: "text-blue-600",
+    hoverBorder: "hover:border-blue-300",
+    link: "text-blue-600",
+  },
+  {
+    key: "staff",
+    title: "Staff Room",
+    description: "Meeting rooms for staff activities and discussions.",
+    cta: "Browse rooms",
+    href: "/book-room/staff-room",
+    icon: Building2,
+    iconBg: "bg-orange-50",
+    iconText: "text-orange-600",
+    hoverBorder: "hover:border-orange-300",
+    link: "text-orange-600",
+  },
+];
 
 export default function BookRoom() {
   const router = useRouter();
@@ -13,98 +41,46 @@ export default function BookRoom() {
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/30 to-gray-50 relative overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 opacity-40" style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23f97316' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")`
-        }}></div>
-        <div className="absolute top-0 left-0 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
-
-        <div className="container mx-auto px-4 py-12 sm:py-16 mt-16 sm:mt-20 relative z-10">
+      <div className="min-h-screen bg-neutral-50">
+        <div className="mx-auto max-w-4xl px-6 pb-20 pt-24 sm:pt-32">
           {/* Header */}
-          <div className="text-center mb-12 sm:mb-16 animate-fadeInUp">
-            <div className="inline-block mb-4">
-              <span className="text-orange-600 font-semibold text-xs sm:text-sm uppercase tracking-wider bg-orange-100 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full">
-                Book Room
-              </span>
-            </div>
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-black text-gray-900 mb-4">
-              Choose Room <span className="bg-gradient-to-r from-orange-500 to-orange-600 bg-clip-text text-transparent">Category</span>
+          <header className="mb-10 sm:mb-12">
+            <p className="text-sm font-medium text-gray-400">Book a room</p>
+            <h1 className="mt-2 text-3xl font-medium tracking-tight text-gray-900 sm:text-4xl">
+              Choose a category
             </h1>
-          </div>
+          </header>
 
-          {/* Room Type Selection */}
-          <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-6 sm:gap-8">
-            {/* Students Lab */}
-            <button
-              onClick={() => router.push('/book-room/student-lab')}
-              className="group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-100 hover:border-blue-300 transform hover:-translate-y-1 cursor-pointer"
-            >
-              <div className="p-8 sm:p-10">
-                <div className="flex flex-col items-center text-center space-y-6">
-                  {/* Icon */}
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-blue-100 to-blue-200 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                    <Users className="w-12 h-12 sm:w-14 sm:h-14 text-blue-600" />
-                  </div>
-
-                  {/* Title */}
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    Students Lab
+          {/* Categories */}
+          <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+            {categories.map((category) => {
+              const Icon = category.icon;
+              return (
+                <button
+                  key={category.key}
+                  onClick={() => router.push(category.href)}
+                  className={`group flex h-full flex-col items-start rounded-2xl border border-gray-200 bg-white p-7 text-left transition-colors hover:bg-gray-50/60 ${category.hoverBorder}`}
+                >
+                  <span
+                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${category.iconBg}`}
+                  >
+                    <Icon className={`h-6 w-6 ${category.iconText}`} />
+                  </span>
+                  <h2 className="mt-5 text-lg font-medium text-gray-900">
+                    {category.title}
                   </h2>
-
-                  {/* Description */}
-                  <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-                    Book computer labs for student activities, group work, and academic events
+                  <p className="mt-2 text-sm leading-relaxed text-gray-500">
+                    {category.description}
                   </p>
-
-                  {/* Action */}
-                  <div className="flex items-center text-blue-600 font-semibold group-hover:text-blue-700 transition-colors">
-                    Browse Labs
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-            </button>
-
-            {/* Staff Room */}
-            <button
-              onClick={() => router.push('/book-room/staff-room')}
-              className="group bg-white rounded-3xl shadow-xl hover:shadow-2xl transition-all duration-300 overflow-hidden border-2 border-gray-100 hover:border-orange-300 transform hover:-translate-y-1 cursor-pointer"
-            >
-              <div className="p-8 sm:p-10">
-                <div className="flex flex-col items-center text-center space-y-6">
-                  {/* Icon */}
-                  <div className="w-24 h-24 sm:w-28 sm:h-28 bg-gradient-to-br from-orange-100 to-orange-200 rounded-3xl flex items-center justify-center group-hover:scale-110 transition-transform duration-300 shadow-lg">
-                    <Building2 className="w-12 h-12 sm:w-14 sm:h-14 text-orange-600" />
-                  </div>
-
-                  {/* Title */}
-                  <h2 className="text-2xl sm:text-3xl font-bold text-gray-900">
-                    Staff Room
-                  </h2>
-
-                  {/* Description */}
-                  <p className="text-base sm:text-lg text-gray-600 leading-relaxed">
-                    Book meeting rooms for staff activities
-                  </p>
-
-                  {/* Action */}
-                  <div className="flex items-center text-orange-600 font-semibold group-hover:text-orange-700 transition-colors">
-                    Browse Rooms
-                    <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                  </div>
-                </div>
-              </div>
-            </button>
+                </button>
+              );
+            })}
           </div>
 
-          {/* Additional Info */}
-          <div className="mt-12 sm:mt-16 text-center">
-            <p className="text-sm text-gray-500">
-              Need help? Contact Kelvin Wiriyatama for assistance with room bookings
-            </p>
-          </div>
+          {/* Help */}
+          <p className="mt-10 text-sm text-gray-400">
+            Need help? Contact Kelvin Wiriyatama for assistance with room bookings.
+          </p>
         </div>
       </div>
     </>

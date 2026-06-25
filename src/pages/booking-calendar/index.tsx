@@ -7,17 +7,11 @@ import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, Filter, X, Check } from "lucide-react";
+import { Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
 import Head from 'next/head';
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { Button } from "~/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "~/components/ui/card";
 import {
   Dialog,
   DialogContent,
@@ -60,7 +54,7 @@ const bookingFormSchema = z.object({
 
 // Single color per room type
 const getColorForRoom = (roomType: string): string => {
-  return roomType === 'staff_room' ? '#F97316' : '#3B82F6'; // Orange for staff, Blue for students
+  return roomType === 'staff_room' ? '#ea580c' : '#2563eb'; // Orange for staff, Blue for students
 };
 
 type BookingEvent = {
@@ -275,7 +269,8 @@ export default function BookingCalendar() {
           try {
             const moreEvent: BookingEvent = {
               id: `more-${dateKey}`,
-              title: `+${overflowCount} more`,
+              // title: `+${overflowCount} more`,
+              title: `Click to see ${overflowCount} more event${overflowCount > 1 ? 's' : ''}`,
               start: new Date(lastVisibleEvent.end.getTime()),
               end: new Date(lastVisibleEvent.end.getTime() + 30 * 60 * 1000),
               roomId: 'MORE',
@@ -383,34 +378,33 @@ export default function BookingCalendar() {
     if (event.status === 'skeleton') {
       return {
         style: {
-          backgroundColor: '#e5e7eb',
+          backgroundColor: '#f3f4f6',
           color: 'transparent',
-          borderRadius: '4px',
-          border: '1px solid #d1d5db',
+          borderRadius: '6px',
+          border: '1px solid #e5e7eb',
           cursor: 'default',
         }
       };
     }
-    
+
     if (event.status === 'overflow') {
       return {
         style: {
-          backgroundColor: '#6b7280',
-          color: 'white',
-          borderRadius: '4px',
-          border: '1px solid #9ca3af',
-          fontStyle: 'italic',
+          backgroundColor: 'transparent',
+          color: '#6b7280',
+          borderRadius: '6px',
+          border: '1px solid #e5e7eb',
           textAlign: 'center' as const,
         }
       };
     }
 
-    const color = roomColors[event.roomId] || '#3B82F6';
+    const color = roomColors[event.roomId] ?? '#2563eb';
 
     const baseStyle = {
       backgroundColor: color,
       color: 'white',
-      borderRadius: '4px',
+      borderRadius: '6px',
       border: 'none',
     };
 
@@ -474,23 +468,23 @@ export default function BookingCalendar() {
     };
 
     return (
-      <div className="flex flex-col sm:flex-row items-center justify-between mb-2 sm:mb-4 p-2 sm:p-4 bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 rounded-xl shadow-md gap-2 sm:gap-0 border-2 border-orange-100">
-        <div className="text-lg sm:text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent order-1 sm:order-1">{label}</div>
-        <div className="flex space-x-1 sm:space-x-2 order-2 sm:order-2">
+      <div className="mb-3 flex flex-col items-start justify-between gap-3 sm:mb-4 sm:flex-row sm:items-center">
+        <div className="text-lg font-medium text-gray-900 sm:text-xl">{label}</div>
+        <div className="flex items-center gap-1">
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('PREV')}
-            className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-2 border-gray-200 hover:border-orange-300 transition-all duration-300"
+            aria-label="Previous month"
+            className="h-8 w-8 border-gray-200 p-0 text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:cursor-pointer"
           >
-            <span className="hidden sm:inline">Previous</span>
-            <span className="sm:hidden">Prev</span>
+            <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('TODAY')}
-            className="bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-0 shadow-lg hover:shadow-xl transition-all duration-300"
+            className="h-8 border-gray-200 px-3 text-sm font-medium text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:cursor-pointer"
           >
             Today
           </Button>
@@ -498,10 +492,10 @@ export default function BookingCalendar() {
             variant="outline"
             size="sm"
             onClick={() => handleNavigation('NEXT')}
-            className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer text-xs sm:text-sm px-2 sm:px-3 border-2 border-gray-200 hover:border-orange-300 transition-all duration-300"
+            aria-label="Next month"
+            className="h-8 w-8 border-gray-200 p-0 text-gray-600 hover:bg-gray-50 hover:text-gray-900 hover:cursor-pointer"
           >
-            <span className="hidden sm:inline">Next</span>
-            <span className="sm:hidden">Next</span>
+            <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
       </div>
@@ -519,14 +513,11 @@ export default function BookingCalendar() {
     if (event.status === 'overflow') {
       return (
         <div 
-          className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer"
+          className="text-xs h-full overflow-hidden px-1.5 py-1.5 sm:px-2 sm:py-2 cursor-pointer"
           style={{ fontSize: '10px' }}
         >
           <div className="font-bold text-center leading-tight">
             {event.title}
-          </div>
-          <div className="text-center text-xs">
-            Click to see all
           </div>
         </div>
       );
@@ -598,13 +589,7 @@ export default function BookingCalendar() {
 
   if (!isMounted || !isLoaded) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden pt-16 sm:pt-20">
-        {/* Background Decorative Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
-        </div>
+      <div className="min-h-screen bg-neutral-50 pt-20 sm:pt-24">
 
         <Head>
           <title>Laboratory Booking Calendar</title>
@@ -612,18 +597,14 @@ export default function BookingCalendar() {
         </Head>
         
         <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 relative z-10">
-          <div className="mb-6 animate-fadeInUp">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-              <div>
-                <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm">Laboratory Booking Calendar</h1>
-                <p className="text-gray-600 mt-1 sm:mt-2 text-sm sm:text-base">View and book available laboratory time slots</p>
-              </div>
-            </div>
+          <div className="mb-6">
+            <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">Laboratory Booking Calendar</h1>
+            <p className="mt-2 text-sm text-gray-500 sm:text-base">View and book available laboratory time slots</p>
           </div>
           
           <div>
             <div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-orange-100 p-3 sm:p-4">
+              <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4">
                 <div className="h-[950px] animate-pulse">
                   <div className="flex justify-between items-center mb-6">
                     <div className="h-8 bg-gray-200 rounded w-48"></div>
@@ -654,13 +635,7 @@ export default function BookingCalendar() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden pt-16 sm:pt-20">
-        {/* Background Decorative Elements */}
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
-          <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
-          <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
-        </div>
+      <div className="min-h-screen bg-neutral-50 pt-20 sm:pt-24">
 
         <Head>
           <title>Laboratory Booking Calendar</title>
@@ -672,23 +647,23 @@ export default function BookingCalendar() {
         <div className="mb-6 animate-fadeInUp">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
-              <h1 className="text-2xl sm:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm leading-tight pb-1">Laboratory Booking Calendar</h1>
-              <p className="text-gray-600 mt-2 sm:mt-3 text-sm sm:text-base">View and book available laboratory time slots</p>
+              <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">Laboratory Booking Calendar</h1>
+              <p className="mt-2 text-sm text-gray-500 sm:text-base">View and book available laboratory time slots</p>
             </div>
             
             <div className="flex items-center gap-3">
               <Popover open={showFilterPopover} onOpenChange={setShowFilterPopover}>
                 <PopoverTrigger asChild>
-                  <Button 
-                    variant="outline" 
-                    className="bg-white/80 backdrop-blur-sm border-2 border-orange-200 text-gray-700 hover:bg-orange-50 hover:border-orange-300 hover:cursor-pointer relative shadow-lg transition-all duration-300"
+                  <Button
+                    variant="outline"
+                    className="relative border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:cursor-pointer"
                   >
                     <Filter className="h-4 w-4 mr-2" />
                     Filter Rooms
                     {selectedRoomFilters.length > 0 && (
-                      <Badge 
-                        variant="secondary" 
-                        className="ml-2 bg-gradient-to-r from-orange-600 to-orange-700 text-white text-xs px-1.5 py-0.5 shadow-md"
+                      <Badge
+                        variant="secondary"
+                        className="ml-2 bg-gray-900 text-white text-xs px-1.5 py-0.5"
                       >
                         {selectedRoomFilters.length}
                       </Badge>
@@ -737,7 +712,7 @@ export default function BookingCalendar() {
                         <div className="p-4 space-y-3">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <h5 className="text-xs font-semibold text-blue-700 uppercase tracking-wide">Student Labs</h5>
+                            <h5 className="text-xs font-medium text-blue-700 uppercase tracking-wide">Student Labs</h5>
                           </div>
                           {studentLabs.map((room) => {
                             const color = roomColors[room.id];
@@ -783,7 +758,7 @@ export default function BookingCalendar() {
                         <div className="p-4 space-y-3">
                           <div className="flex items-center gap-2 mb-2">
                             <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            <h5 className="text-xs font-semibold text-orange-700 uppercase tracking-wide">Staff Rooms</h5>
+                            <h5 className="text-xs font-medium text-orange-700 uppercase tracking-wide">Staff Rooms</h5>
                           </div>
                           {staffRooms.map((room) => {
                             const color = roomColors[room.id];
@@ -829,7 +804,7 @@ export default function BookingCalendar() {
                       <div className="flex flex-wrap gap-1">
                         {selectedRoomFilters.map(roomId => {
                           const room = rooms.find(r => r.id === roomId);
-                          const color = roomColors[roomId] || '#3B82F6';
+                          const color = roomColors[roomId] || '#1177DE';
                           return (
                             <Badge 
                               key={roomId} 
@@ -856,7 +831,7 @@ export default function BookingCalendar() {
                   variant="ghost"
                   size="sm"
                   onClick={clearAllFilters}
-                  className="text-orange-600 hover:bg-orange-50 hover:text-orange-700 text-xs hover:cursor-pointer transition-all duration-300 border border-transparent hover:border-orange-200"
+                  className="text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-900 hover:cursor-pointer"
                 >
                   <X className="h-3 w-3 mr-1" />
                   Clear Filter
@@ -870,8 +845,8 @@ export default function BookingCalendar() {
         <div>
           {/* Calendar Section */}
           <div>
-              <div className="bg-white/80 backdrop-blur-sm rounded-2xl shadow-2xl border-2 border-orange-100 p-3 sm:p-4 hover:shadow-3xl transition-shadow duration-300">
-                <div className="h-[950px]">
+              <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4">
+                <div className="calendar-minimal h-[950px]">
                   {bookingsError ? (
                   <div className="flex items-center justify-center h-full p-4">
                     <p className="text-red-500 text-sm text-center">Error loading bookings: {bookingsError.message}</p>
@@ -930,295 +905,168 @@ export default function BookingCalendar() {
       </div>
 
       <Dialog open={isDetailsModalOpen} onOpenChange={setIsDetailsModalOpen}>
-        <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-white border border-gray-200 shadow-xl">
-          <DialogHeader className="flex-shrink-0 pb-4 border-b border-gray-100">
-            <DialogTitle className="text-2xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-3">
-                {/* <div 
-                  className="w-1 h-8 rounded-full flex-shrink-0" 
-                  style={{ backgroundColor: selectedEvent ? roomColors[selectedEvent.roomId] || '#3174ad' : '#3174ad' }}
-                /> */}
-              {selectedEvent?.title || 'Event Details'}
-            </DialogTitle>
-          </DialogHeader>
-          
+        <DialogContent showCloseButton={false} className="max-w-[95vw] gap-0 overflow-hidden p-0 sm:max-w-[440px]">
           {selectedEvent && (
-            <div className="flex-1 overflow-y-auto pr-2 -mr-2">
-              <div className="space-y-4 py-4">
-                {selectedEvent.status && selectedEvent.status !== 'overflow' && (
-                  <div className="flex items-center justify-between">
-                    <span className={`inline-flex items-center px-4 py-2 rounded-lg text-sm font-medium ${
-                      selectedEvent.status.toLowerCase() === 'confirmed' || selectedEvent.status.toLowerCase() === 'accepted' || selectedEvent.status.toLowerCase() === 'approved'
-                        ? 'bg-green-50 text-green-700 border border-green-200' 
-                        : selectedEvent.status.toLowerCase() === 'pending'
-                        ? 'bg-yellow-50 text-yellow-700 border border-yellow-200'
-                        : selectedEvent.status.toLowerCase() === 'completed'
-                        ? 'bg-blue-50 text-blue-700 border border-blue-200'
-                        : 'bg-gray-50 text-gray-700 border border-gray-200'
-                    }`}>
-                      <div className={`w-2 h-2 rounded-full mr-2 ${
-                        selectedEvent.status.toLowerCase() === 'confirmed' || selectedEvent.status.toLowerCase() === 'accepted' || selectedEvent.status.toLowerCase() === 'approved'
-                          ? 'bg-green-500' 
+            <>
+              <DialogHeader className="space-y-0 border-b border-gray-100 px-6 py-5 text-left">
+                <div className="flex items-center gap-2">
+                  <span
+                    className="h-2.5 w-2.5 shrink-0 rounded-full"
+                    style={{ backgroundColor: roomColors[selectedEvent.roomId] ?? '#2563eb' }}
+                  />
+                  {selectedEvent.status && selectedEvent.status !== 'overflow' && (
+                    <span
+                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
+                        ['confirmed', 'accepted', 'approved'].includes(selectedEvent.status.toLowerCase())
+                          ? 'bg-green-50 text-green-700'
                           : selectedEvent.status.toLowerCase() === 'pending'
-                          ? 'bg-yellow-500'
+                          ? 'bg-amber-50 text-amber-700'
                           : selectedEvent.status.toLowerCase() === 'completed'
-                          ? 'bg-blue-500'
-                          : 'bg-gray-500'
-                      }`}></div>
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'bg-gray-100 text-gray-600'
+                      }`}
+                    >
                       {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
                     </span>
-                  </div>
-                )}
-                
-                {selectedEvent.description && (
-                  <div className="bg-gray-50 rounded-lg p-4 border border-gray-200">
-                    <p className="text-gray-700 text-sm leading-relaxed">
-                      {selectedEvent.description}
-                    </p>
-                  </div>
-                )}
-
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Date</h4>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          {safeFormat(selectedEvent.start, 'EEEE, MMMM d, yyyy')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Time</h4>
-                        <p className="text-sm text-gray-600 leading-relaxed">
-                          {safeFormat(selectedEvent.start, 'HH:mm')} - {safeFormat(selectedEvent.end, 'HH:mm')}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
+                <DialogTitle className="mt-3 text-lg font-medium text-gray-900">
+                  {selectedEvent.title || 'Event details'}
+                </DialogTitle>
+              </DialogHeader>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Laboratory</h4>
-                        <p className="text-sm font-medium text-gray-700">{selectedEvent.roomId}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
-                          {rooms.find(r => r.id === selectedEvent.roomId)?.name || 'Room details not found'}
-                        </p>
-                      </div>
-                    </div>
+              <div className="max-h-[60vh] overflow-y-auto px-6">
+                <dl className="divide-y divide-gray-100">
+                  <div className="flex items-start justify-between gap-6 py-3">
+                    <dt className="text-sm text-gray-500">Date</dt>
+                    <dd className="text-right text-sm font-medium text-gray-900">
+                      {safeFormat(selectedEvent.start, 'EEEE, MMMM d, yyyy')}
+                    </dd>
                   </div>
-
-                  <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
-                    <div className="flex items-start gap-3">
-                      <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-                        <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                        </svg>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className="font-semibold text-gray-900 text-sm mb-1">Booking Type</h4>
-                        <div className="mt-1.5">
-                          {selectedEvent.bookingType === 'full' ? (
-                            <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200">
-                              <div className="w-1.5 h-1.5 bg-orange-500 rounded-full mr-1.5"></div>
-                              Full {selectedEvent.roomCapacity === 0 ? 'Space' : 'Room'}
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-md text-xs font-medium bg-blue-50 text-blue-700 border border-blue-200">
-                              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full mr-1.5"></div>
-                              Partial Booking
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-xs text-gray-500 mt-2">
-                          {selectedEvent.participants} participant{selectedEvent.participants !== 1 ? 's' : ''}
-                          {selectedEvent.roomCapacity && selectedEvent.roomCapacity > 0 && (
-                            ` of ${selectedEvent.roomCapacity} capacity`
-                          )}
-                        </p>
-                      </div>
-                    </div>
+                  <div className="flex items-start justify-between gap-6 py-3">
+                    <dt className="text-sm text-gray-500">Time</dt>
+                    <dd className="text-right text-sm font-medium text-gray-900">
+                      {safeFormat(selectedEvent.start, 'HH:mm')} &ndash; {safeFormat(selectedEvent.end, 'HH:mm')}
+                    </dd>
                   </div>
-                </div>
-
-                <div className="bg-white border border-gray-200 rounded-lg p-4 hover:border-gray-300 hover:shadow-md transition-all">
-                  <div className="flex items-start gap-3">
-                    <div className="p-2 bg-gray-50 rounded-lg border border-gray-200">
-                      <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-gray-900 text-sm mb-1">Booked By</h4>
-                      <p className="text-sm text-gray-600 leading-relaxed">{selectedEvent.bookedBy}</p>
-                    </div>
+                  <div className="flex items-start justify-between gap-6 py-3">
+                    <dt className="text-sm text-gray-500">Room</dt>
+                    <dd className="text-right">
+                      <div className="text-sm font-medium text-gray-900">{selectedEvent.roomId}</div>
+                      <div className="text-xs text-gray-500">
+                        {rooms.find((r) => r.id === selectedEvent.roomId)?.name || 'Unknown'}
+                      </div>
+                    </dd>
                   </div>
-                </div>
+                  <div className="flex items-start justify-between gap-6 py-3">
+                    <dt className="text-sm text-gray-500">Booking</dt>
+                    <dd className="text-right text-sm font-medium text-gray-900">
+                      {selectedEvent.bookingType === 'full'
+                        ? `Full ${selectedEvent.roomCapacity === 0 ? 'space' : 'room'}`
+                        : 'Partial'}
+                      <span className="ml-1 font-normal text-gray-500">
+                        {selectedEvent.roomCapacity && selectedEvent.roomCapacity > 0
+                          ? `(${selectedEvent.participants}/${selectedEvent.roomCapacity})`
+                          : `(${selectedEvent.participants} ${selectedEvent.participants === 1 ? 'person' : 'people'})`}
+                      </span>
+                    </dd>
+                  </div>
+                  <div className="flex items-start justify-between gap-6 py-3">
+                    <dt className="text-sm text-gray-500">Booked by</dt>
+                    <dd className="text-right text-sm font-medium text-gray-900">{selectedEvent.bookedBy}</dd>
+                  </div>
+                  {selectedEvent.description && (
+                    <div className="py-3">
+                      <dt className="text-sm text-gray-500">Notes</dt>
+                      <dd className="mt-1 text-sm leading-relaxed text-gray-700">{selectedEvent.description}</dd>
+                    </div>
+                  )}
+                </dl>
               </div>
-            </div>
+
+              <DialogFooter className="border-t border-gray-100 px-6 py-4">
+                <Button
+                  variant="outline"
+                  onClick={() => setIsDetailsModalOpen(false)}
+                  className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 hover:cursor-pointer sm:w-auto"
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
           )}
-          
-          <DialogFooter className="flex-shrink-0 pt-4 border-t border-gray-100 bg-white -mx-6 -mb-6 px-6 py-4">
-            <Button 
-              onClick={() => setIsDetailsModalOpen(false)}
-              className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white transition-all shadow-lg hover:shadow-xl hover:cursor-pointer"
-            >
-              Close
-            </Button>
-          </DialogFooter>
         </DialogContent>
       </Dialog>
 
       <Dialog open={showMoreEventsModal} onOpenChange={setShowMoreEventsModal}>
-        <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[85vh] overflow-hidden flex flex-col bg-white border-2 border-orange-100">
-          <DialogHeader className="flex-shrink-0 pb-4 border-b border-orange-100">
-            <DialogTitle className="text-xl font-bold bg-gradient-to-r from-orange-600 to-amber-600 bg-clip-text text-transparent flex items-center gap-2">
-              <div className="w-2 h-2 bg-gradient-to-r from-orange-500 to-amber-500 rounded-full shadow-md"></div>
-              Events on {moreEventsData?.date && format(moreEventsData.date, "EEEE, MMMM d, yyyy")}
+        <DialogContent showCloseButton={false} className="max-w-[95vw] gap-0 overflow-hidden p-0 sm:max-w-[520px]">
+          <DialogHeader className="space-y-1 border-b border-gray-100 px-6 py-5 text-left">
+            <DialogTitle className="text-base font-medium text-gray-900">
+              {moreEventsData?.date && format(moreEventsData.date, 'EEEE, MMMM d, yyyy')}
             </DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">
+            <p className="text-sm text-gray-500">
               {moreEventsData?.events.length} event{moreEventsData?.events.length !== 1 ? 's' : ''} scheduled
             </p>
           </DialogHeader>
-          
+
           {moreEventsData && (
-            <div className="flex-1 overflow-y-auto pr-2 -mr-2">
-              <div className="space-y-3 py-4">
-                {moreEventsData.events.map((event, index) => (
-                  <Card 
-                    key={event.id} 
-                    className="group relative overflow-hidden border-2 border-orange-100 hover:border-orange-300 transition-all duration-300 cursor-pointer bg-white"
-                    onClick={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      
-                      setTimeout(() => {
-                        setSelectedEvent(event);
-                        setIsDetailsModalOpen(true);
-                      }, 100);
-                    }}
-                  >
-                    <div 
-                      className="absolute left-0 top-0 bottom-0 w-1"
-                      style={{ backgroundColor: roomColors[event.roomId] || '#3B82F6' }}
-                    />
-                    
-                    <div className="p-4 pl-6">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h4 className="font-semibold text-gray-900 group-hover:text-blue-600 transition-colors truncate">
-                              {event.title}
-                            </h4>
-                            <span className="text-xs font-medium text-gray-500 bg-gray-100 px-2 py-1 rounded-md whitespace-nowrap">
-                              {format(event.start, 'HH:mm')} - {format(event.end, 'HH:mm')}
-                            </span>
-                          </div>
-                          
-                          <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
-                            <div className="flex items-center gap-2">
-                              <span 
-                                className="w-3 h-3 rounded-sm flex-shrink-0" 
-                                style={{ backgroundColor: roomColors[event.roomId] || '#3B82F6' }}
-                              />
-                              <span className="font-medium">{event.roomId}</span>
-                            </div>
-                            <div className="flex items-center gap-1 truncate">
-                              <span className="text-gray-400">•</span>
-                              <span className="truncate">{event.bookedBy}</span>
-                            </div>
-                          </div>
-                          
-                          {event.description && (
-                            <p className="text-sm text-gray-500 mb-3 line-clamp-2">
-                              {event.description}
-                            </p>
-                          )}
-                          
-                          <div className="flex items-center gap-2 flex-wrap">
-                            {event.bookingType === 'full' ? (
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
-                                <div className="w-1.5 h-1.5 bg-orange-400 rounded-full mr-1.5"></div>
-                                Full {event.roomCapacity === 0 ? 'Space' : 'Room'}
-                                <span className="ml-1 text-orange-600">• {event.participants} people</span>
-                              </span>
-                            ) : (
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                                <div className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-1.5"></div>
-                                Partial • {event.participants}/{event.roomCapacity} seats
-                              </span>
-                            )}
-                            
-                            {event.status && event.status !== 'overflow' && (
-                              <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${
-                                event.status.toLowerCase() === 'accepted' 
-                                  ? 'bg-green-100 text-green-800'
-                                  : event.status.toLowerCase() === 'completed' 
-                                    ? 'bg-blue-100 text-blue-800'
-                                    : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                <div className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                                  event.status.toLowerCase() === 'accepted' 
-                                    ? 'bg-green-400'
-                                    : 'bg-yellow-400'
-                                }`}></div>
-                                {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                        
-                        <div className="flex-shrink-0 ml-4">
-                          <div className="text-gray-400 group-hover:text-blue-500 transition-colors">
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            </svg>
-                          </div>
-                        </div>
-                      </div>
+            <div className="max-h-[60vh] overflow-y-auto p-2">
+              {moreEventsData.events.map((event) => (
+                <button
+                  key={event.id}
+                  type="button"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setTimeout(() => {
+                      setSelectedEvent(event);
+                      setIsDetailsModalOpen(true);
+                    }, 100);
+                  }}
+                  className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-gray-50 hover:cursor-pointer"
+                >
+                  <span
+                    className="h-9 w-1 shrink-0 rounded-full"
+                    style={{ backgroundColor: roomColors[event.roomId] ?? '#2563eb' }}
+                  />
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="truncate text-sm font-medium text-gray-900">{event.title}</span>
+                      <span className="shrink-0 text-xs text-gray-400">
+                        {format(event.start, 'HH:mm')}&ndash;{format(event.end, 'HH:mm')}
+                      </span>
                     </div>
-                  </Card>
-                ))}
-              </div>
+                    <div className="mt-0.5 truncate text-xs text-gray-500">
+                      {event.roomId} &middot; {event.bookedBy}
+                    </div>
+                  </div>
+                  {event.status && event.status !== 'overflow' && (
+                    <span
+                      className={`hidden shrink-0 rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${
+                        ['confirmed', 'accepted', 'approved'].includes(event.status.toLowerCase())
+                          ? 'bg-green-50 text-green-700'
+                          : event.status.toLowerCase() === 'completed'
+                          ? 'bg-blue-50 text-blue-700'
+                          : 'bg-amber-50 text-amber-700'
+                      }`}
+                    >
+                      {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                    </span>
+                  )}
+                  <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
+                </button>
+              ))}
             </div>
           )}
-          
-          <DialogFooter className="flex-shrink-0 pt-4 border-t border-orange-100 bg-gradient-to-r from-orange-50 to-amber-50 -mx-6 -mb-6 px-6 py-4">
-            <div className="flex items-center justify-between w-full">
-              <div className="text-sm text-gray-500">
-              </div>
-              <Button 
-                variant="outline"
-                onClick={() => setShowMoreEventsModal(false)}
-                className="hover:bg-white hover:border-orange-300 transition-colors hover:cursor-pointer border-2 border-orange-200"
-              >
-                <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-                Close
-              </Button>
-            </div>
+
+          <DialogFooter className="border-t border-gray-100 px-6 py-4">
+            <Button
+              variant="outline"
+              onClick={() => setShowMoreEventsModal(false)}
+              className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 hover:cursor-pointer sm:w-auto"
+            >
+              Close
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

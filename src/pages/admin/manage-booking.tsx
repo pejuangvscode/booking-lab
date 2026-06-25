@@ -299,56 +299,52 @@ export default function ManageBookingPage() {
 
   return (
     <AdminProtection>
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden">
+    <div className="min-h-screen bg-neutral-50">
       <Head>
         <title>Manage Class Bookings</title>
       </Head>
-      
-      {/* Background Decorations */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-orange-500/5 rounded-full blur-3xl"></div>
-      <div className="absolute bottom-0 right-0 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-16 sm:mt-20 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
           <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-3xl sm:text-4xl font-extrabold bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 bg-clip-text text-transparent">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">
                 Manage Class Bookings
               </h1>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="mb-6 sm:mb-8 bg-white rounded-2xl shadow-xl border-2 border-orange-100 overflow-hidden">
-            <div className="bg-gradient-to-r from-orange-500 via-orange-600 to-orange-500 px-6 py-4">
-              <h2 className="flex items-center gap-2 text-xl sm:text-2xl font-bold text-white mb-1">
+          <div className="mb-6 sm:mb-8 rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
+            <div className="border-b border-gray-100 px-6 py-4">
+              <h2 className="flex items-center gap-2 text-base font-medium text-gray-900 mb-1">
                 <Filter className="h-5 w-5 sm:h-6 sm:w-6" />
                 Filters & Search
               </h2>
-              <p className="text-orange-50 text-sm">Search dan filter class bookings</p>
+              <p className="text-gray-500 text-sm">Search dan filter class bookings</p>
             </div>
             <div className="p-6 sm:p-8">
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
               {/* Search */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Search</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Search</label>
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-3 w-3 sm:h-4 sm:w-4 text-gray-400" />
                   <Input
                     placeholder="Search by class code, instructor, or room..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-9 sm:pl-10 bg-white hover:border-orange-300 focus:ring-orange-200"
+                    className="pl-9 sm:pl-10 bg-white focus-visible:border-orange-400"
                   />
                 </div>
               </div>
 
               {/* Status Filter */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Status</label>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Status</label>
                 <Select value={statusFilter} onValueChange={setStatusFilter}>
-                  <SelectTrigger className="hover:cursor-pointer bg-white hover:border-orange-300 focus:ring-orange-200">
+                  <SelectTrigger className="hover:cursor-pointer bg-white">
                     <SelectValue />
                   </SelectTrigger>
                 <SelectContent>
@@ -361,12 +357,12 @@ export default function ManageBookingPage() {
 
               {/* Summary */}
               <div className="space-y-2">
-                <label className="block text-sm font-semibold text-gray-700 mb-2">Summary</label>
-                <div className="p-3 bg-orange-50 rounded-lg border-2 border-orange-200">
-                  <div className="text-sm text-orange-900 font-semibold">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Summary</label>
+                <div className="p-3 rounded-lg border border-gray-200 bg-gray-50">
+                  <div className="text-sm text-gray-700 font-medium">
                     Total: {filteredGroups.length} classes
                   </div>
-                  <div className="text-sm text-orange-900 font-semibold">
+                  <div className="text-sm text-gray-700 font-medium">
                     Bookings: {filteredGroups.reduce((sum, g) => sum + g.totalBookings, 0)}
                   </div>
                 </div>
@@ -377,7 +373,7 @@ export default function ManageBookingPage() {
           {isLoadingBookings ? (
             <div className="grid gap-3 sm:gap-4">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-white border-2 border-gray-200 rounded-xl overflow-hidden animate-pulse">
+                <div key={i} className="bg-white border border-gray-200 rounded-xl overflow-hidden animate-pulse">
                   <div className="p-4">
                     <div className="grid grid-cols-[auto_1fr_auto_auto] gap-3 sm:gap-4 items-center">
                       {/* Icon Skeleton */}
@@ -426,7 +422,7 @@ export default function ManageBookingPage() {
                 return (
                   <div
                     key={group.classCode}
-                    className="bg-white border-2 border-gray-200 rounded-xl hover:shadow-lg hover:border-orange-200 transition-all duration-200"
+                    className="bg-white border border-gray-200 rounded-xl transition-colors hover:border-gray-300"
                   >
                     {/* Summary View - Always Visible */}
                     <div 
@@ -437,7 +433,7 @@ export default function ManageBookingPage() {
                         
                         {/* Class Info */}
                         <div className="min-w-0 overflow-hidden">
-                          <h3 className="font-bold text-sm sm:text-base text-gray-900 truncate">{group.instructor}</h3>
+                          <h3 className="font-medium text-sm sm:text-base text-gray-900 truncate">{group.instructor}</h3>
                           <p className="text-xs sm:text-sm text-gray-500 truncate">
                             {group.classCode} • {group.room}
                           </p>
@@ -455,11 +451,11 @@ export default function ManageBookingPage() {
 
                         {/* Status Badge */}
                         <div className="flex flex-col gap-1.5 items-end flex-shrink-0">
-                          <Badge className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 text-xs whitespace-nowrap">
+                          <Badge className="bg-blue-50 text-blue-700 border-transparent text-xs whitespace-nowrap">
                             {group.totalBookings} booking{group.totalBookings > 1 ? 's' : ''}
                           </Badge>
                           {group.upcomingBookings > 0 && (
-                            <Badge className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 text-xs whitespace-nowrap">
+                            <Badge className="bg-green-50 text-green-700 border-transparent text-xs whitespace-nowrap">
                               {group.upcomingBookings} upcoming
                             </Badge>
                           )}
@@ -482,28 +478,28 @@ export default function ManageBookingPage() {
                         {/* Class Details */}
                         <div>
                           <div className="flex items-center justify-between mb-2">
-                            <h4 className="font-semibold text-sm text-gray-700">Class Details</h4>
+                            <h4 className="font-medium text-sm text-gray-700">Class Details</h4>
                           </div>
                           <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 text-xs sm:text-sm">
                             <div className="bg-gray-50 p-2 rounded-lg">
                               <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Class Code</span>
-                              <p className="font-semibold text-gray-900 truncate">{group.classCode}</p>
+                              <p className="font-medium text-gray-900 truncate">{group.classCode}</p>
                             </div>
                             <div className="bg-gray-50 p-2 rounded-lg">
                               <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Room</span>
-                              <p className="font-semibold text-gray-900 truncate">{group.room}</p>
+                              <p className="font-medium text-gray-900 truncate">{group.room}</p>
                             </div>
                             <div className="bg-gray-50 p-2 rounded-lg">
                               <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Time</span>
-                              <p className="font-semibold text-gray-900 truncate">{group.timeSlot}</p>
+                              <p className="font-medium text-gray-900 truncate">{group.timeSlot}</p>
                             </div>
                             <div className="bg-gray-50 p-2 rounded-lg">
                               <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Days</span>
-                              <p className="font-semibold text-gray-900 truncate">{group.days.join(', ')}</p>
+                              <p className="font-medium text-gray-900 truncate">{group.days.join(', ')}</p>
                             </div>
                             <div className="bg-gray-50 p-2 rounded-lg col-span-2">
                               <span className="text-gray-500 block mb-0.5 text-[10px] sm:text-xs">Period</span>
-                              <p className="font-semibold text-gray-900 truncate">{group.dateRange.start} - {group.dateRange.end}</p>
+                              <p className="font-medium text-gray-900 truncate">{group.dateRange.start} - {group.dateRange.end}</p>
                             </div>
                           </div>
                         </div>
@@ -512,7 +508,7 @@ export default function ManageBookingPage() {
                         <div>
                           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-2">
                             <div className="flex items-center gap-2 flex-wrap">
-                              <h4 className="font-semibold text-sm text-gray-700">Individual Bookings ({group.bookings.length})</h4>
+                              <h4 className="font-medium text-sm text-gray-700">Individual Bookings ({group.bookings.length})</h4>
                               {selectedBookings[group.classCode] && selectedBookings[group.classCode]!.size > 0 && (
                                 <Badge className="bg-blue-100 text-blue-800 border-blue-200">
                                   {selectedBookings[group.classCode]!.size} selected
@@ -540,7 +536,7 @@ export default function ManageBookingPage() {
                                   variant="destructive"
                                   size="sm"
                                   disabled={deleteBookingsMutation.isPending}
-                                  className="cursor-pointer bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 text-white font-bold text-xs h-7 whitespace-nowrap"
+                                  className="cursor-pointer bg-red-600 hover:bg-red-700 text-white font-medium text-xs h-7 whitespace-nowrap"
                                 >
                                   <Trash2 className="h-3 w-3 mr-1" />
                                   Delete ({selectedBookings[group.classCode]!.size})
@@ -561,7 +557,7 @@ export default function ManageBookingPage() {
                                   }}
                                   className={`flex items-center justify-between gap-2 p-2 rounded-lg transition-colors cursor-pointer ${
                                     isSelected
-                                      ? 'bg-blue-50 border-2 border-blue-300'
+                                      ? 'bg-blue-50 border border-blue-300'
                                       : isUpcoming 
                                         ? 'bg-orange-50 border border-orange-200 hover:bg-orange-100' 
                                         : 'bg-gray-50 hover:bg-gray-100'
@@ -580,7 +576,7 @@ export default function ManageBookingPage() {
                                       }}
                                       className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded pointer-events-none flex-shrink-0"
                                     />
-                                    <div className="w-7 h-7 rounded-full bg-orange-200 text-orange-700 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                                    <div className="w-7 h-7 rounded-full bg-orange-200 text-orange-700 flex items-center justify-center text-xs font-medium flex-shrink-0">
                                       {index + 1}
                                     </div>
                                     <div className="flex-1 min-w-0">

@@ -151,7 +151,7 @@ export default function AdminBookings() {
       case "rejected":
         return <Badge className="bg-red-100 text-red-800 border-red-300">Rejected</Badge>;
       case "completed":
-        return <Badge className="bg-blue-100 text-blue-800 border-blue-300">Completed</Badge>;
+        return <Badge className="bg-gray-100 text-gray-700 border-transparent">Completed</Badge>;
       case "cancelled":
         return <Badge className="bg-gray-100 text-gray-800 border-gray-300">Cancelled</Badge>;
       default:
@@ -180,49 +180,42 @@ export default function AdminBookings() {
 
   return (
     <AdminProtection>
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden">
-      {/* Background Decorative Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
-      </div>
-
+    <div className="min-h-screen bg-neutral-50">
       <Head>
         <title>Admin Dashboard</title>
       </Head>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8 mt-16 sm:mt-20 relative z-10">
         <div className="max-w-7xl mx-auto">
           {/* Header */}
-          <div className="mb-6 sm:mb-8 animate-fadeInUp">
+          <div className="mb-6 sm:mb-8">
             <div className="flex items-center justify-between mb-2">
-              <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold bg-gradient-to-r from-orange-600 via-orange-500 to-amber-600 bg-clip-text text-transparent drop-shadow-sm">
+              <h1 className="text-2xl sm:text-3xl font-medium tracking-tight text-gray-900">
                 Admin Dashboard
               </h1>
             </div>
             
             {/* Lab Assignment Info */}
             {userInfo && (
-              <div className="bg-gradient-to-r from-blue-50 to-blue-100/50 border-2 border-blue-200 rounded-xl p-3 sm:p-4 mb-4 sm:mb-6 shadow-lg hover:shadow-xl transition-all duration-300">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="font-semibold text-sm sm:text-base text-blue-900">
+              <div className="mb-4 space-y-1.5 rounded-xl border border-gray-200 bg-white p-4 sm:mb-6">
+                <div className="flex items-center gap-2">
+                  <span className="text-xs font-medium uppercase tracking-wider text-orange-600">
                     {userInfo.canAccessAllLabs ? 'Super Admin Access' : 'Lab Assignment'}
                   </span>
                 </div>
                 
                 {userInfo.canAccessAllLabs ? (
-                  <p className="text-xs sm:text-sm text-blue-700">
+                  <p className="text-sm text-gray-600">
                     You have access to manage all labs and bookings in the system.
                   </p>
                 ) : (
                   <div>
-                    <p className="text-xs sm:text-sm text-blue-700 mb-2">
+                    <p className="text-sm text-gray-600 mb-2">
                       You can manage bookings for the following labs:
                     </p>
                     {userInfo.managedLabs.length > 0 ? (
                       <div className="flex flex-wrap gap-1 sm:gap-2">
                         {userInfo.managedLabs.map((lab: { id: string; name: string; facilityId: string }) => (
-                          <Badge key={lab.id} className="bg-blue-100 text-blue-800 border-blue-300">
+                          <Badge key={lab.id} className="bg-gray-100 text-gray-700 border-transparent">
                             {lab.name} ({lab.facilityId})
                           </Badge>
                         ))}
@@ -245,23 +238,23 @@ export default function AdminBookings() {
           <Tabs value={activeTab} onValueChange={(value) => setActiveTab(value as "pending" | "accepted" | "rejected" | "completed" | "cancelled")} className="mb-4 sm:mb-6">
             <div className="overflow-x-auto -mx-4 px-4 sm:mx-0 sm:px-0">
               <TabsList className="inline-flex w-full min-w-max sm:grid sm:w-full sm:grid-cols-5 gap-2 sm:gap-3 bg-transparent p-0 h-auto">
-                <TabsTrigger value="pending" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
+                <TabsTrigger value="pending" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 rounded-lg font-medium text-gray-600 bg-white border border-gray-200 transition-colors hover:bg-gray-50 hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:border-orange-600">
                   <span className="hidden sm:inline">Pending</span>
                   <span className="sm:hidden">Pending</span>
                 </TabsTrigger>
-                <TabsTrigger value="accepted" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
+                <TabsTrigger value="accepted" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 rounded-lg font-medium text-gray-600 bg-white border border-gray-200 transition-colors hover:bg-gray-50 hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:border-orange-600">
                   <span className="hidden sm:inline">Accepted</span>
                   <span className="sm:hidden">Accept</span>
                 </TabsTrigger>
-                <TabsTrigger value="rejected" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
+                <TabsTrigger value="rejected" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 rounded-lg font-medium text-gray-600 bg-white border border-gray-200 transition-colors hover:bg-gray-50 hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:border-orange-600">
                   <span className="hidden sm:inline">Rejected</span>
                   <span className="sm:hidden">Reject</span>
                 </TabsTrigger>
-                <TabsTrigger value="completed" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
+                <TabsTrigger value="completed" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 rounded-lg font-medium text-gray-600 bg-white border border-gray-200 transition-colors hover:bg-gray-50 hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:border-orange-600">
                   <span className="hidden sm:inline">Completed</span>
                   <span className="sm:hidden">Done</span>
                 </TabsTrigger>
-                <TabsTrigger value="cancelled" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-3 sm:py-4 rounded-xl font-bold text-gray-600 bg-white border-2 border-gray-200 shadow-sm transition-all duration-300 hover:border-orange-300 hover:shadow-md hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-gradient-to-r data-[state=active]:from-orange-500 data-[state=active]:via-orange-600 data-[state=active]:to-orange-500 data-[state=active]:text-white data-[state=active]:border-orange-500 data-[state=active]:shadow-lg data-[state=active]:shadow-orange-200/50 data-[state=active]:scale-[1.02]">
+                <TabsTrigger value="cancelled" className="relative flex items-center justify-center gap-1 sm:gap-2 px-3 sm:px-6 py-2.5 rounded-lg font-medium text-gray-600 bg-white border border-gray-200 transition-colors hover:bg-gray-50 hover:cursor-pointer whitespace-nowrap text-xs sm:text-sm data-[state=active]:bg-orange-600 data-[state=active]:text-white data-[state=active]:border-orange-600">
                   <span className="hidden sm:inline">Cancelled</span>
                   <span className="sm:hidden">Cancel</span>
                 </TabsTrigger>
@@ -270,13 +263,13 @@ export default function AdminBookings() {
 
             {/* Search */}
             <div className="mt-4 sm:mt-6 relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-orange-500 w-4 h-4 sm:w-5 sm:h-5" />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 sm:w-5 sm:h-5" />
               <Input
                 type="text"
                 placeholder="Search by event, requester, or faculty..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 sm:pl-12 bg-white shadow-lg border-2 border-orange-100 hover:border-orange-300 focus:border-orange-300 focus:ring-2 focus:ring-orange-200 text-sm sm:text-base rounded-xl transition-all duration-300"
+                className="pl-10 sm:pl-12 bg-white border-gray-200 focus-visible:border-orange-400 text-sm sm:text-base rounded-xl"
               />
             </div>
 
@@ -289,22 +282,22 @@ export default function AdminBookings() {
                     <table className="w-full table-fixed">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                          <th className="w-1/4 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/4 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Event Details
                           </th>
-                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Schedule
                           </th>
-                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Room & Capacity
                           </th>
-                          <th className="w-1/5 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/5 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Requester
                           </th>
-                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Status
                           </th>
-                          <th className="w-1/8 px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/8 px-4 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Actions
                           </th>
                         </tr>
@@ -399,28 +392,28 @@ export default function AdminBookings() {
 
               {/* Bookings Table */}
               {bookingsData?.bookings && bookingsData.bookings.length > 0 && (
-                <div className="bg-white/80 backdrop-blur-sm rounded-2xl border-2 border-orange-100 overflow-hidden shadow-2xl">
+                <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
                   {/* Desktop Table View */}
                   <div className="hidden lg:block overflow-x-auto">
                     <table className="w-full table-fixed">
-                      <thead className="bg-gradient-to-r from-orange-50 to-amber-50 border-b-2 border-orange-200">
+                      <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
-                          <th className="w-1/4 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/4 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Event Details
                           </th>
-                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Schedule
                           </th>
-                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Room & Capacity
                           </th>
-                          <th className="w-1/5 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/5 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Requester
                           </th>
-                          <th className="w-1/6 px-4 py-4 text-left text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/6 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Status
                           </th>
-                          <th className="w-1/8 px-4 py-4 text-center text-xs font-semibold text-gray-600 uppercase tracking-wide">
+                          <th className="w-1/8 px-4 py-4 text-center text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Actions
                           </th>
                         </tr>
@@ -429,12 +422,12 @@ export default function AdminBookings() {
                         {bookingsData?.bookings.map((booking) => (
                           <tr 
                             key={booking.id} 
-                            className="hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 transition-all duration-200 cursor-pointer border-b border-gray-100 last:border-0"
+                            className="hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-0"
                             onClick={() => handleRowClick(booking)}
                           >
                             <td className="px-4 py-4">
                               <div className="space-y-2">
-                                <h3 className="text-sm font-semibold text-gray-900 leading-tight truncate" title={booking.eventName}>
+                                <h3 className="text-sm font-medium text-gray-900 leading-tight truncate" title={booking.eventName}>
                                   {booking.eventName}
                                 </h3>
                                 <p className="text-xs text-gray-500">
@@ -504,7 +497,7 @@ export default function AdminBookings() {
                             </td>
                             <td className="px-4 py-4">
                               <div className="space-y-2">
-                                <p className="text-sm font-semibold text-gray-900 truncate" title={booking.requesterName ?? undefined}>
+                                <p className="text-sm font-medium text-gray-900 truncate" title={booking.requesterName ?? undefined}>
                                   {booking.requesterName ?? 'N/A'}
                                 </p>
                                 <div className="flex items-center gap-1 text-xs text-gray-600">
@@ -556,7 +549,7 @@ export default function AdminBookings() {
                                       <DialogTrigger asChild>
                                         <Button 
                                           size="sm"
-                                          className="w-20 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs font-medium hover:cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+                                          className="w-20 bg-green-600 hover:bg-green-700 text-xs font-medium hover:cursor-pointer transition-colors"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             // setSelectedBooking(booking);
@@ -615,7 +608,7 @@ export default function AdminBookings() {
                                         <Button 
                                           variant="destructive"
                                           size="sm"
-                                          className="w-20 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-xs font-medium hover:cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+                                          className="w-20 bg-red-600 hover:bg-red-700 text-xs font-medium hover:cursor-pointer transition-colors"
                                           onClick={(e) => {
                                             e.stopPropagation();
                                             // setSelectedBooking(booking);
@@ -681,7 +674,7 @@ export default function AdminBookings() {
                                       <Button 
                                         variant="destructive"
                                         size="sm"
-                                        className="w-20 bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-xs font-medium hover:cursor-pointer shadow-lg hover:shadow-xl transition-all duration-300"
+                                        className="w-20 bg-orange-600 hover:bg-orange-700 text-xs font-medium hover:cursor-pointer transition-colors"
                                         onClick={(e) => {
                                           e.stopPropagation();
                                           // setSelectedBooking(booking);
@@ -757,7 +750,7 @@ export default function AdminBookings() {
                           {/* Header */}
                           <div className="flex items-start justify-between gap-2">
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-semibold text-gray-900 truncate">
+                              <h3 className="text-sm font-medium text-gray-900 truncate">
                                 {booking.eventName}
                               </h3>
                               <p className="text-xs text-gray-500 mt-1">
@@ -847,7 +840,7 @@ export default function AdminBookings() {
                                   <DialogTrigger asChild>
                                     <Button
                                       size="sm"
-                                      className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-xs font-medium hover:cursor-pointer h-8 shadow-lg hover:shadow-xl transition-all duration-300"
+                                      className="flex-1 bg-green-600 hover:bg-green-700 text-xs font-medium hover:cursor-pointer h-8 transition-colors"
                                       onClick={(e) => e.stopPropagation()}
                                     >
                                       Accept
@@ -903,7 +896,7 @@ export default function AdminBookings() {
                                     <Button
                                       variant="destructive"
                                       size="sm"
-                                      className="flex-1 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-700 hover:to-red-800 text-xs font-medium hover:cursor-pointer h-8 shadow-lg hover:shadow-xl transition-all duration-300"
+                                      className="flex-1 bg-red-600 hover:bg-red-700 text-xs font-medium hover:cursor-pointer h-8 transition-colors"
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         setRejectionReason("");
@@ -967,7 +960,7 @@ export default function AdminBookings() {
                                   <Button
                                     variant="destructive"
                                     size="sm"
-                                    className="w-full bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-xs font-medium hover:cursor-pointer h-8 shadow-lg hover:shadow-xl transition-all duration-300"
+                                    className="w-full bg-orange-600 hover:bg-orange-700 text-xs font-medium hover:cursor-pointer h-8 transition-colors"
                                     onClick={(e) => {
                                       e.stopPropagation();
                                       setRejectionReason("");
@@ -1037,12 +1030,12 @@ export default function AdminBookings() {
                     variant="outline"
                     disabled={!bookingsData.pagination.hasPrev}
                     onClick={() => setPage(page - 1)}
-                    className="bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer w-full sm:w-auto text-sm border-2 border-orange-100 hover:border-orange-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-300"
+                    className="bg-white hover:bg-gray-50 hover:cursor-pointer w-full sm:w-auto text-sm border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Previous
                   </Button>
-                  <div className="flex items-center px-3 sm:px-4 py-2 bg-gradient-to-r from-orange-50 to-amber-50 rounded-xl shadow-lg border-2 border-orange-200">
-                    <span className="text-xs sm:text-sm font-semibold text-orange-700">
+                  <div className="flex items-center px-3 sm:px-4 py-2 rounded-lg border border-gray-200 bg-white">
+                    <span className="text-xs sm:text-sm font-medium text-gray-700">
                       Page {bookingsData.pagination.currentPage} of {bookingsData.pagination.totalPages}
                     </span>
                   </div>
@@ -1050,7 +1043,7 @@ export default function AdminBookings() {
                     variant="outline"
                     disabled={!bookingsData.pagination.hasNext}
                     onClick={() => setPage(page + 1)}
-                    className="bg-white/80 backdrop-blur-sm hover:bg-gradient-to-r hover:from-orange-50 hover:to-amber-50 hover:cursor-pointer w-full sm:w-auto text-sm border-2 border-orange-100 hover:border-orange-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg transition-all duration-300"
+                    className="bg-white hover:bg-gray-50 hover:cursor-pointer w-full sm:w-auto text-sm border border-gray-200 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Next
                   </Button>
@@ -1106,7 +1099,7 @@ export default function AdminBookings() {
       <Dialog open={showDetailDialog} onOpenChange={setShowDetailDialog}>
         <DialogContent className="max-w-4xl w-full max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold">Booking Details</DialogTitle>
+            <DialogTitle className="text-xl font-medium">Booking Details</DialogTitle>
           </DialogHeader>
           
           {detailBooking && (
@@ -1115,7 +1108,7 @@ export default function AdminBookings() {
               <div className="bg-gray-50 p-4 rounded-lg">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                    <h3 className="text-lg font-medium text-gray-900 mb-2">
                       {detailBooking.eventName}
                     </h3>
                     <div className="space-y-1 text-sm text-gray-600">
@@ -1138,7 +1131,7 @@ export default function AdminBookings() {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 {/* Schedule & Location */}
                 <div className="space-y-4">
-                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Schedule & Location</h4>
+                  <h4 className="text-md font-medium text-gray-900 border-b pb-2">Schedule & Location</h4>
                   
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -1182,7 +1175,7 @@ export default function AdminBookings() {
 
                 {/* Requester Information */}
                 <div className="space-y-4">
-                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Requester Information</h4>
+                  <h4 className="text-md font-medium text-gray-900 border-b pb-2">Requester Information</h4>
                   
                   <div className="space-y-3">
                     <div className="flex items-center gap-3">
@@ -1217,7 +1210,7 @@ export default function AdminBookings() {
               {/* Equipment/Documentation - Only for completed bookings */}
               {detailBooking.status === "completed" && detailBooking.equipment && (
                 <div className="space-y-4">
-                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Completion Documentation</h4>
+                  <h4 className="text-md font-medium text-gray-900 border-b pb-2">Completion Documentation</h4>
                   
                   {isValidImageUrl(detailBooking.equipment) ? (
                     <div className="space-y-2">
@@ -1264,18 +1257,18 @@ export default function AdminBookings() {
               {/* Admin Notes/Rejection Reason */}
               {(detailBooking.adminNote || detailBooking.rejectionReason) && (
                 <div className="space-y-4">
-                  <h4 className="text-md font-semibold text-gray-900 border-b pb-2">Admin Notes</h4>
+                  <h4 className="text-md font-medium text-gray-900 border-b pb-2">Admin Notes</h4>
                   
                   {detailBooking.adminNote && (
                     <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm font-semibold text-green-800 mb-2">Admin Note:</p>
+                      <p className="text-sm font-medium text-green-800 mb-2">Admin Note:</p>
                       <p className="text-sm text-green-700">{detailBooking.adminNote}</p>
                     </div>
                   )}
                   
                   {detailBooking.rejectionReason && (
                     <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                      <p className="text-sm font-semibold text-red-800 mb-2">Rejection Reason:</p>
+                      <p className="text-sm font-medium text-red-800 mb-2">Rejection Reason:</p>
                       <p className="text-sm text-red-700">{detailBooking.rejectionReason}</p>
                     </div>
                   )}

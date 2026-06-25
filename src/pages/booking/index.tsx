@@ -1,5 +1,5 @@
 import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
-import { AlertTriangle, Building, Loader2, Users } from "lucide-react";
+import { AlertTriangle, Building, Loader2, Users, Lock } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -228,64 +228,33 @@ export default function BookingPage() {
 
   if (!isSignedIn) {
     return (
-      <div className="container mx-auto px-4 py-8 mt-20">
+      <div className="flex min-h-screen items-center justify-center bg-neutral-50 px-6 py-24">
         <Head>
           <title>Sign In Required | UPH Facility Booking</title>
         </Head>
-        <div className="max-w-4xl mx-auto bg-white rounded-lg shadow-lg overflow-hidden">
-          <div className="p-6 bg-gradient-to-r from-orange-600 to-orange-700">
-            <h2 className="text-3xl font-bold text-white">Authentication Required</h2>
-            <p className="text-orange-100 mt-2">
-              You need to sign in to book laboratory facilities
-            </p>
+        <div className="w-full max-w-md rounded-2xl border border-gray-200 bg-white p-8 text-center shadow-sm">
+          <h1 className="mt-5 text-xl font-medium tracking-tight text-gray-900">
+            Sign in to continue
+          </h1>
+          <p className="mt-2 text-sm leading-relaxed text-gray-500">
+            You need to be signed in to book a lab. Signing in lets us keep track of your bookings and send you updates.
+          </p>
+          <div className="mt-6 space-y-3">
+            <SignInButton mode="modal" fallbackRedirectUrl={router.asPath}>
+              <Button className="w-full bg-orange-600 text-white hover:bg-orange-700 hover:cursor-pointer">
+                Sign in
+              </Button>
+            </SignInButton>
+            <Link href="/">
+              <Button variant="outline" className="w-full border-gray-200 text-gray-700 hover:bg-gray-50 hover:cursor-pointer">
+                Back to home
+              </Button>
+            </Link>
           </div>
-          
-          <div className="p-8 text-center">
-            <div className="max-w-md mx-auto">
-              <div className="mb-6">
-                <AlertTriangle className="h-16 w-16 text-orange-500 mx-auto mb-4" />
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
-                  Sign In Required
-                </h3>
-                <p className="text-gray-600">
-                  To book laboratory facilities, you need to sign in to your account. 
-                  This helps us manage bookings and send you important updates.
-                </p>
-              </div>
-              
-              <div className="space-y-3">
-                <SignInButton
-                  mode="modal"
-                  fallbackRedirectUrl={router.asPath}
-                >
-                  <Button className="hover:cursor-pointer w-full bg-blue-600 hover:bg-blue-700 text-white py-3 px-4 rounded-md text-sm font-medium transition-colors flex items-center justify-center">
-                    Sign In to Continue
-                  </Button>
-                </SignInButton>
-                
-                <div className="text-sm text-gray-500">
-                  Don't have an account? You can create one during sign in.
-                </div>
-                
-                <Link href="/">
-                  <Button variant="outline" className="hover:cursor-pointer w-full">
-                    Return to Home
-                  </Button>
-                </Link>
-              </div>
-            </div>
-          </div>
+          <p className="mt-5 text-xs text-gray-400">
+            Don&apos;t have an account? You can create one during sign in.
+          </p>
         </div>
-        <CustomDialog
-          isOpen={dialogState.isOpen}
-          onClose={closeDialog}
-          onConfirm={dialogState.onConfirm}
-          title={dialogState.title}
-          message={dialogState.message}
-          type={dialogState.type}
-          confirmText={dialogState.confirmText}
-          cancelText={dialogState.cancelText}
-        />
       </div>
     );
   }
@@ -456,14 +425,7 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-orange-50/20 to-gray-50 relative overflow-hidden pt-20">
-      {/* Background Decorative Elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-orange-200/30 rounded-full blur-3xl"></div>
-        <div className="absolute top-1/2 -left-40 w-80 h-80 bg-blue-200/20 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-200/20 rounded-full blur-3xl"></div>
-      </div>
-      
+    <div className="min-h-screen bg-neutral-50 pt-20">
       <Head>
         <title>Book a Lab | UPH Facility Booking</title>
       </Head>
@@ -471,55 +433,51 @@ export default function BookingPage() {
       <div className="container mx-auto px-4 py-8 relative z-10">
       {/* User Info Bar */}
       <div className="max-w-4xl mx-auto mb-6">
-        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-200 rounded-xl p-4 shadow-md hover:shadow-lg transition-all duration-300">
+        <div className="rounded-xl border border-gray-200 bg-white p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-3">
-              <div className="relative">
-                <div className="h-3 w-3 bg-green-500 rounded-full animate-pulse"></div>
-                <div className="absolute inset-0 h-3 w-3 bg-green-400 rounded-full animate-ping"></div>
-              </div>
-              <span className="text-sm font-medium text-blue-800">
-                Signed in as: <span className="font-semibold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">{user?.firstName} {user?.lastName}</span>
+              <div className="h-2 w-2 rounded-full bg-green-500"></div>
+              <span className="text-sm text-gray-600">
+                Signed in as: <span className="font-medium text-gray-900">{user?.firstName} {user?.lastName}</span>
               </span>
             </div>
-            <span className="text-xs text-blue-600 bg-white/50 px-3 py-1 rounded-full">
+            <span className="text-xs text-gray-500">
               {user?.emailAddresses[0]?.emailAddress}
             </span>
           </div>
         </div>
       </div>
 
-      <div className="max-w-4xl mx-auto bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-orange-100 overflow-hidden hover:shadow-3xl transition-all duration-300">
+      <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         {/* Header section */}
-        <div className="p-8 bg-gradient-to-br from-orange-600 via-orange-500 to-orange-700 relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-r from-orange-400/20 to-transparent"></div>
-          <div className="relative z-10">
-          <h2 className="text-4xl font-bold text-white drop-shadow-lg">
+        <div className="border-b border-gray-100 px-6 py-6 sm:px-8">
+          <div>
+          <h2 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
             {labDetail?.name ? `Book ${labDetail.name}` : "Book Laboratory"}
           </h2>
           {labDetail && (
             <div className="flex flex-wrap gap-2 mt-3">
-              <span className="inline-flex items-center bg-white/20 px-3 py-1.5 rounded-full text-sm font-medium text-white">
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
                 {formatLabType(labDetail.type)}
               </span>
-              <span className="inline-flex items-center bg-white/20 px-3 py-1.5 rounded-full text-sm font-medium text-white">
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
                 {labDetail.capacity && labDetail.capacity > 0 
                   ? `${labDetail.capacity} seats` 
                   : "Flexible space"}
               </span>
-              <span className="inline-flex items-center bg-white/20 px-3 py-1.5 rounded-full text-sm font-medium text-white">
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
                 {labDetail.department}
               </span>
             </div>
           )}
           <div className="mt-4 flex flex-wrap gap-2">
             {labDetail?.facilityId && (
-              <span className="bg-white/30 backdrop-blur-sm text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg border border-white/20">
-                <span className="opacity-80">ID:</span> {labDetail.facilityId}
+              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
+                <span className="text-gray-400">ID:</span> {labDetail.facilityId}
               </span>
             )}
-            <span className="bg-green-500 text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg flex items-center gap-2 border border-green-400">
-              <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+              <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
               Available
             </span>
           </div>
@@ -553,10 +511,7 @@ export default function BookingPage() {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Booking Date */}
               <div className="space-y-3">
-                <label htmlFor="bookingDate" className="block text-sm font-semibold text-gray-800 flex items-center gap-2">
-                  <svg className="w-4 h-4 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                  </svg>
+                <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700">
                   Booking Date
                 </label>
                 <Input
@@ -646,11 +601,8 @@ export default function BookingPage() {
             </div>
 
             {/* Booking Type Selection */}
-            <div className="space-y-4 bg-gradient-to-r from-orange-50 to-amber-50 p-6 rounded-xl border-2 border-orange-200">
-              <label className="block text-sm font-semibold text-gray-800 flex items-center gap-2">
-                <svg className="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
+            <div className="space-y-4 rounded-xl border border-gray-200 bg-gray-50 p-6">
+              <label className="block text-sm font-medium text-gray-700">
                 Booking Type
               </label>
 
@@ -668,10 +620,10 @@ export default function BookingPage() {
                     className="sr-only"
                   />
                   <Label htmlFor="full" className="flex-1 cursor-pointer w-full">
-                    <Card className={`p-5 border-2 transition-all duration-300 shadow-md hover:shadow-xl ${
+                    <Card className={`p-5 border transition-colors ${
                       bookingType === "full" 
-                        ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 ring-2 ring-orange-200 scale-105" 
-                        : "border-gray-200 hover:border-orange-300 bg-white hover:bg-orange-50/50"
+                        ? "border-orange-500 bg-orange-50" 
+                        : "border-gray-200 bg-white hover:border-gray-300"
                     } ${labDetail?.capacity === 0 || labDetail?.type === "staff_room" ? 'opacity-100' : ''}`}>
                       <CardContent className="p-0">
                         <div className="flex items-center space-x-3">
@@ -702,10 +654,10 @@ export default function BookingPage() {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="partial" id="partial" className="sr-only" />
                     <Label htmlFor="partial" className="flex-1 cursor-pointer w-full">
-                      <Card className={`p-5 border-2 transition-all duration-300 shadow-md hover:shadow-xl ${
+                      <Card className={`p-5 border transition-colors ${
                         bookingType === "partial" 
-                          ? "border-orange-500 bg-gradient-to-br from-orange-50 to-orange-100 ring-2 ring-orange-200 scale-105" 
-                          : "border-gray-200 hover:border-orange-300 bg-white hover:bg-orange-50/50"
+                          ? "border-orange-500 bg-orange-50" 
+                          : "border-gray-200 bg-white hover:border-gray-300"
                       }`}>
                         <CardContent className="p-0">
                           <div className="flex items-center space-x-3">
@@ -906,15 +858,15 @@ export default function BookingPage() {
             </div>
 
             {/* Note Message */}
-            <div className="bg-gray-100 p-4 rounded-md">
-              <h4 className="text-sm font-semibold text-gray-700">Note</h4>
+            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+              <h4 className="text-sm font-medium text-gray-700">Note</h4>
               <p className="text-sm text-gray-600 mt-1">
                 Booking Request is subject to approval by the lab administrator. Please ensure all details are correct before submitting.
               </p>
             </div>
 
             {bookingDate && startHour && startMinute && endHour && endMinute && (
-              <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border-2 border-blue-300 rounded-xl p-5 shadow-lg">
+              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
                 <div className="flex items-center space-x-3">
                   {checking ? (
                     <>
@@ -942,11 +894,11 @@ export default function BookingPage() {
             )}
 
             {formErrors.conflict && (
-              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative mt-4" role="alert">
+              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700" role="alert">
                 <div className="flex items-start space-x-2">
                   <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
                   <div>
-                    <strong className="font-bold">Booking Conflict:</strong>
+                    <strong className="font-medium">Booking Conflict:</strong>
                     <div className="mt-1 text-sm">{formErrors.conflict}</div>
                     <div className="mt-2 text-xs">
                       <strong>Suggestions:</strong>
@@ -970,7 +922,7 @@ export default function BookingPage() {
             <div className="flex justify-center pt-6">
               <Button 
                 type="submit" 
-                className="w-full py-5 sm:py-7 bg-gradient-to-r from-orange-600 via-orange-500 to-orange-600 hover:from-orange-700 hover:via-orange-600 hover:to-orange-700 text-white text-base sm:text-xl font-semibold hover:cursor-pointer shadow-xl hover:shadow-2xl transform hover:scale-105 transition-all duration-300 rounded-xl border-2 border-orange-400"
+                className="w-full py-5 sm:py-6 bg-orange-600 hover:bg-orange-700 text-white text-base sm:text-lg font-medium hover:cursor-pointer transition-colors rounded-lg"
                 disabled={bookingMutation.status === "pending" || checking || isSubmitting}
               >
                 {bookingMutation.status === "pending" || isSubmitting ? (
