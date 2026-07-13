@@ -6,6 +6,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
+import { isRoomUnderRenovation } from "~/lib/renovation";
 import { useRef } from "react";
 
 type Lab = {
@@ -196,29 +197,37 @@ export default function LabSearch() {
               </div>
             ) : (
               <div className="space-y-4 sm:space-y-6">
-                {currentItems.map((lab, index) => (
+                {currentItems.map((lab, index) => {
+                  const underRenovation = isRoomUnderRenovation(lab);
+                  return (
                   <div
                     key={lab.id}
-                    className="group relative bg-white rounded-2xl border-2 border-gray-100 hover:border-orange-400 transition-all duration-500 hover:scale-[1.01] hover:shadow-2xl shadow-lg cursor-pointer overflow-hidden"
+                    className={`group relative rounded-2xl border-2 transition-all duration-500 shadow-lg cursor-pointer overflow-hidden ${
+                      underRenovation
+                        ? 'bg-gray-50 border-gray-200'
+                        : 'bg-white border-gray-100 hover:border-orange-400 hover:scale-[1.01] hover:shadow-2xl'
+                    }`}
                     onClick={() => setOpenLabId(openLabId === lab.id ? null : lab.id)}
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     {/* Gradient overlay on hover */}
-                    <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-                    
+                    {!underRenovation && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-orange-500/0 via-orange-500/5 to-orange-500/0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+                    )}
+
                     <div className="flex items-center p-6 sm:p-8 relative z-10">
 
                       {/* Content */}
                       <div className="flex-grow">
                         <div className="flex flex-col sm:flex-row sm:items-start justify-between">
-                          <div className="flex-grow">
-                            <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2 group-hover:text-orange-600 transition-colors">
+                          <div className={`flex-grow ${underRenovation ? 'opacity-60' : ''}`}>
+                            <h3 className={`text-xl sm:text-2xl font-bold text-gray-900 mb-2 transition-colors ${underRenovation ? '' : 'group-hover:text-orange-600'}`}>
                               {lab.name}
                             </h3>
                             <p className="text-gray-600 text-sm sm:text-base mb-4 leading-relaxed">
                               {lab.department} • Lab ID: {lab.facilityId}
                             </p>
-                            
+
                             <div className="flex flex-wrap gap-2 sm:gap-3">
                               <Badge className="bg-blue-100 text-blue-700 border-blue-200 text-xs sm:text-sm px-3 py-1">
                                 <MapPin className="h-3 w-3 mr-1" />
@@ -232,19 +241,25 @@ export default function LabSearch() {
 
                           {/* Book Button */}
                           <div className="mt-4 sm:mt-0 sm:ml-6 flex-shrink-0 items-center">
-                            <Button
-                              className="relative hover:cursor-pointer overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-0 group/btn"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                router.push(`/booking?labId=${lab.id}`);
-                              }}
-                            >
-                              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700"></div>
-                              <span className="flex items-center relative z-10">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                Book Now
+                            {underRenovation ? (
+                              <span className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-50 px-5 sm:px-6 py-3 sm:py-3.5 text-sm font-semibold text-gray-500">
+                                Under Construction
                               </span>
-                            </Button>
+                            ) : (
+                              <Button
+                                className="relative hover:cursor-pointer overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white font-bold px-6 sm:px-8 py-3 sm:py-3.5 rounded-xl shadow-lg hover:shadow-2xl transition-all duration-300 transform hover:scale-110 border-0 group/btn"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  router.push(`/booking?labId=${lab.id}`);
+                                }}
+                              >
+                                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-100%] group-hover/btn:translate-x-[100%] transition-transform duration-700"></div>
+                                <span className="flex items-center relative z-10">
+                                  <Calendar className="h-4 w-4 mr-2" />
+                                  Book Now
+                                </span>
+                              </Button>
+                            )}
                           </div>
                         </div>
                       </div>
@@ -270,7 +285,8 @@ export default function LabSearch() {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 

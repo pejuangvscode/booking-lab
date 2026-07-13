@@ -1,8 +1,9 @@
 ﻿import Head from "next/head";
 import { useEffect, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { Home as HomeIcon, BookOpen, Users, Calendar, FileText, Phone, Menu, X, Layers, Timer, Info, ChevronDown, ArrowRight, Mail } from "lucide-react";
+import { Home as HomeIcon, BookOpen, Users, Calendar, FileText, Phone, Menu, X, Layers, Timer, Info, ChevronDown, ArrowRight, Mail, Wrench } from "lucide-react";
 import React from "react";
+import { RENOVATION_ROOM_LABEL } from "~/lib/renovation";
 
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -51,7 +52,8 @@ const AnimatedSection: React.FC<{
 };
 
 export default function Home() {
-  const [showNoticeModal, setShowNoticeModal] = useState(false);
+  // Show the renovation notice on every page load.
+  const [showNoticeModal, setShowNoticeModal] = useState(true);
   const [activeSection, setActiveSection] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openRuleSection, setOpenRuleSection] = useState<string | null>(null);
@@ -125,49 +127,41 @@ export default function Home() {
       {showNoticeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
           <div
-            className="absolute inset-0 bg-black/40 backdrop-blur-[2px]"
+            className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px] animate-[noticeFade_0.2s_ease-out]"
             onClick={handleCloseNotice}
           />
           <div
             role="dialog"
             aria-live="polite"
             aria-modal="true"
-            className="relative w-full max-w-3xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-lg"
+            aria-labelledby="renovation-notice-title"
+            className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-xl animate-[noticeIn_0.25s_ease-out] sm:p-7"
           >
-            <div className="grid min-h-[320px] grid-cols-1 sm:min-h-[380px] sm:grid-cols-[1.1fr_0.9fr]">
-              <div className="flex h-full flex-col p-6 sm:p-8">
-                <p className="text-[11px] font-medium uppercase tracking-[0.35em] text-orange-600">
-                  Pengumuman
-                </p>
-                <h2 className="mt-3 text-2xl font-medium text-gray-900">
-                  Domain BookLab berubah
-                </h2>
-                <p className="mt-3 text-sm text-gray-600 mb-8">
-                    <i>fitbooklab.com</i> sekarang pindah ke domain{' '}
-                  <a
-                    href="https://book.uphfaidas.com"
-                    className="font-medium text-orange-600 hover:underline"
-                  >
-                    book.uphfaidas.com
-                  </a>
-                  . Pengunjung dari <i>fitbooklab.com</i> akan otomatis diarahkan ke sini.
-                </p>
-                <button
-                  type="button"
-                  onClick={handleCloseNotice}
-                  className="mt-auto hover:cursor-pointer inline-flex self-start items-center rounded-md border border-gray-300 px-4 py-2 text-sm font-medium text-gray-700 transition hover:bg-gray-50"
-                >
-                  Mengerti
-                </button>
-              </div>
-              <div className="relative h-full min-h-[220px]">
-                <img
-                  src="/ilustrasi.jpg"
-                  alt="Ilustrasi pengumuman BookLab"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </div>
+            <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.3em] text-orange-600">
+              Pemberitahuan
+            </p>
+            <h2
+              id="renovation-notice-title"
+              className="mt-2 text-xl font-medium text-gray-900"
+            > 
+              Ruangan sedang direnovasi
+            </h2>
+            <p className="mt-2.5 text-sm leading-relaxed text-gray-600">
+              Ruang{' '}
+              <span className="font-medium text-gray-900">
+                {RENOVATION_ROOM_LABEL}
+              </span>{' '}
+              sedang dalam masa renovasi dan untuk sementara tidak dapat dipesan.
+              Mohon pilih ruangan lain untuk peminjaman.
+            </p>
+
+            <button
+              type="button"
+              onClick={handleCloseNotice}
+              className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:cursor-pointer hover:bg-orange-700"
+            >
+              Mengerti
+            </button>
           </div>
         </div>
       )}
@@ -867,6 +861,14 @@ export default function Home() {
 
       <style jsx global>{`
         html { scroll-behavior: smooth; }
+        @keyframes noticeIn {
+          from { opacity: 0; transform: translateY(8px) scale(0.98); }
+          to { opacity: 1; transform: translateY(0) scale(1); }
+        }
+        @keyframes noticeFade {
+          from { opacity: 0; }
+          to { opacity: 1; }
+        }
       `}</style>
     </div>
   );

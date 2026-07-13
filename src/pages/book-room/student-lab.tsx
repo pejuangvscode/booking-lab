@@ -1,10 +1,11 @@
-import { ArrowLeft, Calendar, ChevronDown, MapPin, Search, Users } from "lucide-react";
+import { ArrowLeft, Calendar, ChevronDown, MapPin, Search, Users, Wrench } from "lucide-react";
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState } from 'react';
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
+import { isRoomUnderRenovation } from "~/lib/renovation";
 
 type Lab = {
   id: string;
@@ -115,16 +116,21 @@ export default function StudentLabList() {
               <div className="space-y-3">
                 {filteredData.map((lab) => {
                   const isOpen = openLabId === lab.id;
+                  const underRenovation = isRoomUnderRenovation(lab);
                   return (
                     <div
                       key={lab.id}
-                      className="overflow-hidden rounded-xl border border-gray-200 bg-white transition-colors hover:border-gray-300"
+                      className={`overflow-hidden rounded-xl border transition-colors ${
+                        underRenovation
+                          ? 'border-gray-200 bg-gray-50'
+                          : 'border-gray-200 bg-white hover:border-gray-300'
+                      }`}
                     >
                       <div
                         className="flex cursor-pointer flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
                         onClick={() => setOpenLabId(isOpen ? null : lab.id)}
                       >
-                        <div className="min-w-0">
+                        <div className={`min-w-0 ${underRenovation ? 'opacity-60' : ''}`}>
                           <h2 className="text-base font-medium text-gray-900">
                             {lab.name}
                           </h2>
@@ -144,16 +150,22 @@ export default function StudentLabList() {
                         </div>
 
                         <div className="flex shrink-0 items-center gap-3 self-start sm:self-auto">
-                          <Button
-                            className="bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              void router.push(`/booking?labId=${lab.id}`);
-                            }}
-                          >
-                            <Calendar className="h-4 w-4" />
-                            Book
-                          </Button>
+                          {underRenovation ? (
+                            <span className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500">
+                              Under Construction
+                            </span>
+                          ) : (
+                            <Button
+                              className="bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                void router.push(`/booking?labId=${lab.id}`);
+                              }}
+                            >
+                              <Calendar className="h-4 w-4" />
+                              Book
+                            </Button>
+                          )}
                           <ChevronDown
                             className={`h-5 w-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
                           />

@@ -1,5 +1,5 @@
 import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
-import { AlertTriangle, Building, Loader2, Users, Lock } from "lucide-react";
+import { AlertTriangle, Building, Loader2, Users, Lock, Wrench } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
@@ -20,6 +20,7 @@ import {
 } from "~/components/ui/select";
 import { useCustomDialog } from "~/hooks/useCustomDialog";
 import { api } from "~/utils/api";
+import { isRoomUnderRenovation, RENOVATION_ROOM_LABEL } from "~/lib/renovation";
 
 export default function BookingPage() {
   const router = useRouter();
@@ -263,6 +264,8 @@ export default function BookingPage() {
     return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
+  const underRenovation = !!labDetail && isRoomUnderRenovation(labDetail);
+
   const hourOptions = Array.from({ length: 13 }, (_, i) => (i + 7).toString().padStart(2, '0'));
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
   const eventTypes = ["Class", "Seminar", "Workshop", "Meeting", "Exam", "Other"];
@@ -476,10 +479,16 @@ export default function BookingPage() {
                 <span className="text-gray-400">ID:</span> {labDetail.facilityId}
               </span>
             )}
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-              Available
-            </span>
+            {underRenovation ? (
+              <span className="inline-flex items-center rounded-md border border-gray-200 bg-gray-50 px-2.5 py-1 text-xs font-medium text-gray-500">
+                Under Construction
+              </span>
+            ) : (
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
+                <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
+                Available
+              </span>
+            )}
           </div>
           </div>
         </div>
@@ -488,6 +497,29 @@ export default function BookingPage() {
         {isLabLoading ? (
           <div className="p-12 flex justify-center">
             <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
+          </div>
+        ) : underRenovation ? (
+          <div className="p-6 sm:p-8">
+            <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center">
+              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
+                <Wrench className="h-6 w-6 text-amber-600" />
+              </div>
+              <h3 className="mt-4 text-lg font-medium text-amber-900">
+                Ruangan sedang direnovasi
+              </h3>
+              <p className="mt-2 text-sm text-amber-800/80">
+                {labDetail?.name} untuk sementara tidak dapat dipesan karena sedang
+                dalam masa renovasi. Ruangan yang sedang direnovasi: {RENOVATION_ROOM_LABEL}.
+              </p>
+            </div>
+            <div className="mt-6 flex justify-center">
+              <Button
+                onClick={() => router.push("/book-room")}
+                variant="outline"
+              >
+                Pilih ruangan lain
+              </Button>
+            </div>
           </div>
         ) : labError ? (
           <div className="p-6">
