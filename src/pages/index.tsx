@@ -147,11 +147,11 @@ export default function Home() {
               Ruangan sedang direnovasi
             </h2>
             <p className="mt-2.5 text-sm leading-relaxed text-gray-600">
-              Ruang{' '}
+              Ruangan{' '}
               <span className="font-medium text-gray-900">
                 {RENOVATION_ROOM_LABEL}
               </span>{' '}
-              sedang dalam masa renovasi dan untuk sementara tidak dapat dipesan.
+              sedang dalam masa renovasi dan untuk sementara tidak dapat digunakan.
               Mohon pilih ruangan lain untuk peminjaman.
             </p>
 
