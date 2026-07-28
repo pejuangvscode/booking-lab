@@ -265,8 +265,8 @@ export function Navbar() {
               <SignInButton mode="modal">
                 <button className={`hover:cursor-pointer inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-offset-2 ${
                   isAtTop && router.pathname === '/'
-                    ? 'text-white bg-white/15 border border-white/40 hover:bg-white/25 backdrop-blur-sm focus:ring-white/50 shadow-none' 
-                    : 'text-white bg-orange-600 border border-transparent hover:bg-orange-700 focus:ring-orange-500'
+                    ? 'text-white bg-white/15 hover:bg-white/25 backdrop-blur-sm shadow-none' 
+                    : 'text-white bg-orange-600 hover:bg-orange-700 focus:ring-orange-500'
                 }`}>
                   Sign in
                 </button>
@@ -459,7 +459,7 @@ export function Navbar() {
           <div className="flex items-center px-4">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                <button className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
                   Sign in
                 </button>
               </SignInButton>

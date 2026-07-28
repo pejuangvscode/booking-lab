@@ -231,12 +231,6 @@ export default function Home() {
 
         <div className="container relative z-10 mx-auto px-5 py-24 sm:px-10 sm:py-28 lg:px-16">
           <div className="max-w-2xl">
-            <AnimatedSection>
-              <span className="inline-flex items-center gap-2 rounded-full py-1 font-medium text-white backdrop-blur-sm">
-                FAIDAS &mdash; Universitas Pelita Harapan
-              </span>
-            </AnimatedSection>
-
             <AnimatedSection delay={80}>
               <h1 className="mt-6 text-4xl font-medium leading-[1.08] tracking-tight text-white sm:text-5xl lg:text-6xl">
                 Book your lab,<br />
@@ -246,7 +240,7 @@ export default function Home() {
 
             <AnimatedSection delay={160}>
               <p className="mt-5 max-w-xl text-base leading-relaxed text-white/80 sm:text-lg">
-                Sistem reservasi laboratorium FAIDAS UPH. Pesan ruangan, pantau status booking, dan selesaikan peminjaman &mdash; kapan saja, di mana saja.
+                Sistem reservasi laboratorium FAIDAS UPH. Pesan ruangan, pantau status booking, dan selesaikan peminjaman
               </p>
             </AnimatedSection>
 
@@ -433,7 +427,7 @@ export default function Home() {
                     className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">1</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-600 text-xs font-medium text-white">1</span>
                       <span className="font-medium text-gray-900 text-sm sm:text-base">Larangan di Laboratorium FAIDAS</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'larangan' ? 'rotate-180' : ''}`} />
@@ -477,7 +471,7 @@ export default function Home() {
                     className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">2</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-600 text-xs font-medium text-white">2</span>
                       <span className="font-medium text-gray-900 text-sm sm:text-base">Kewajiban Pengguna Laboratorium</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'kewajiban' ? 'rotate-180' : ''}`} />
@@ -512,7 +506,7 @@ export default function Home() {
                     className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">3</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-600 text-xs font-medium text-white">3</span>
                       <span className="font-medium text-gray-900 text-sm sm:text-base">Prosedur Peminjaman Laboratorium</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'prosedur' ? 'rotate-180' : ''}`} />
@@ -522,7 +516,7 @@ export default function Home() {
                       <div className="space-y-2 mt-4">
                         {[
                           { letter: "a", text: "Cek jadwal perkuliahan yang ditempel di pintu Lab dan pastikan tidak ada kelas" },
-                          { letter: "b", text: <>Masuk ke website BookLab <a className="text-orange-500 hover:underline font-medium" href="https://www.FAIDASbooklab.com">FAIDASbooklab.com</a> atau pindai (scan) QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</> },
+                          { letter: "b", text: <>Masuk ke website BookLab <a className="text-orange-500 hover:underline font-medium" href="https://www.book.uphfaidas.com">book.uphfaidas.com</a> atau pindai (scan) QR Code di pintu Lab. Lakukan pemesanan ruang Lab melalui Website. Ikuti langkah pemesanan yang tertera pada website</> },
                           { letter: "c", text: "Mahasiswa hanya dapat menggunakan Lab jika pemesanan melalui website BookLab telah disetujui" },
                           { letter: "d", text: "Jika pemesanan sudah disetujui silahkan gunakan Lab dengan tertib dan tetap mematuhi semua Tata Tertib Penggunaan Laboratorium" },
                         ].map((item) => (
@@ -582,7 +576,7 @@ export default function Home() {
                     className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">4</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-600 text-xs font-medium text-white">4</span>
                       <span className="font-medium text-gray-900 text-sm sm:text-base">Peraturan Berpenampilan</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'penampilan' ? 'rotate-180' : ''}`} />
@@ -633,7 +627,7 @@ export default function Home() {
                     className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">5</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-600 text-xs font-medium text-white">5</span>
                       <span className="font-medium text-gray-900 text-sm sm:text-base">Sanksi Pelanggaran</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'sanksi' ? 'rotate-180' : ''}`} />
@@ -705,7 +699,7 @@ export default function Home() {
                     className="flex w-full cursor-pointer items-center justify-between p-5 text-left transition-colors hover:bg-gray-50"
                   >
                     <div className="flex items-center gap-3">
-                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-xs font-medium text-orange-600">6</span>
+                      <span className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-600 text-xs font-medium text-white">6</span>
                       <span className="font-medium text-gray-900 text-sm sm:text-base">Nomor Kontak Penanggung Jawab</span>
                     </div>
                     <ChevronDown className={`w-4 h-4 text-gray-400 transition-transform duration-200 ${openRuleSection === 'kontak' ? 'rotate-180' : ''}`} />
