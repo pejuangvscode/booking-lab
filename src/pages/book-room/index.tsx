@@ -59,7 +59,7 @@ export default function BookRoom() {
                 <button
                   key={category.key}
                   onClick={() => router.push(category.href)}
-                  className={`group flex h-full flex-col items-start rounded-2xl border border-gray-200 bg-white p-7 text-left transition-colors hover:bg-gray-50/60 ${category.hoverBorder}`}
+                  className={`group hover:cursor-pointer flex h-full flex-col items-start rounded-2xl border border-gray-200 bg-white p-7 text-left transition-colors hover:bg-gray-50/60 ${category.hoverBorder}`}
                 >
                   <span
                     className={`flex h-12 w-12 items-center justify-center rounded-xl ${category.iconBg}`}

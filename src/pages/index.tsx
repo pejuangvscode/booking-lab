@@ -817,18 +817,6 @@ export default function Home() {
               </div>
             </AnimatedSection>
 
-            <AnimatedSection delay={100}>
-              <div className="bg-orange-50 rounded-xl p-5 mb-8 border border-orange-100">
-                <p className="text-sm text-gray-700 italic leading-relaxed">
-                  &ldquo;For from him and through him and for him are all things. To him be the glory forever! Amen.&rdquo;
-                </p>
-                <p className="text-xs text-gray-400 mt-2">Romans 11:36</p>
-                <p className="text-xs text-gray-500 mt-3">
-                  Developed with purpose to serve and glorify God.
-                </p>
-              </div>
-            </AnimatedSection>
-
             <AnimatedSection delay={150}>
               <p className="text-sm text-gray-400 mb-6">
                 Developed by Teofilus Insani, Informatics 2023
@@ -837,7 +825,7 @@ export default function Home() {
               <div className="pt-6 border-t border-gray-100">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
                   <p className="text-xs text-gray-400 order-2 sm:order-1">
-                    © 2025 BookLab - Faculty of Artificial Intelligence and Data Science, Universitas Pelita Harapan
+                    © 2025 BookLab - Faculty of Artificial Intelligence and Data Science, UPH
                   </p>
                   <div className="flex items-center space-x-1.5 order-1 sm:order-2">
                     <img src="/colored_logo.png" alt="FAIDAS Logo" className="h-5" />

@@ -60,13 +60,10 @@ export default function StudentLabList() {
             <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
               Student labs
             </h1>
-            <p className="mt-2 text-base text-gray-500">
-              Select a computer lab for your student activities.
-            </p>
           </header>
 
           {/* Search */}
-          <div className="relative mb-8">
+          {/* <div className="relative mb-8">
             <Search className="pointer-events-none absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
             <Input
               type="text"
@@ -75,7 +72,7 @@ export default function StudentLabList() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
-          </div>
+          </div> */}
 
           {/* Loading */}
           {isLoading && (
@@ -143,7 +140,6 @@ export default function StudentLabList() {
                               {lab.type}
                             </span>
                             <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
-                              <Users className="h-3 w-3" />
                               {lab.capacity} seats
                             </span>
                           </div>
@@ -162,7 +158,6 @@ export default function StudentLabList() {
                                 void router.push(`/booking?labId=${lab.id}`);
                               }}
                             >
-                              <Calendar className="h-4 w-4" />
                               Book
                             </Button>
                           )}

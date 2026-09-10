@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 
 interface DialogOptions {
   title: string;
@@ -8,15 +8,15 @@ interface DialogOptions {
   cancelText?: string;
 }
 
-// Fix: Update the type definition to match DialogOptions
 interface DialogState {
   isOpen: boolean;
   title: string;
   message: string;
-  type: 'confirm' | 'alert' | 'success' | 'error'; // Changed from 'alert' as const
+  type: 'confirm' | 'alert' | 'success' | 'error';
   confirmText: string;
   cancelText: string;
-  onConfirm: () => void;
+  // Only set once a dialog is actually opened.
+  onConfirm?: () => void;
 }
 
 export function useCustomDialog() {
@@ -24,28 +24,40 @@ export function useCustomDialog() {
     isOpen: false,
     title: '',
     message: '',
-    type: 'alert', // Remove 'as const'
+    type: 'alert',
     confirmText: 'OK',
     cancelText: 'Cancel',
-    onConfirm: () => {},
   });
+
+  // Held so that dismissing the dialog (Cancel, backdrop, Escape) can settle the
+  // promise too. Without this, `await confirm(...)` never resolves when the user
+  // declines and the calling function is left hanging forever.
+  const resolverRef = useRef<((confirmed: boolean) => void) | null>(null);
+
+  const settle = useCallback((confirmed: boolean) => {
+    resolverRef.current?.(confirmed);
+    resolverRef.current = null;
+    setDialogState(prev => ({ ...prev, isOpen: false }));
+  }, []);
 
   const showDialog = useCallback((options: DialogOptions) => {
     return new Promise<boolean>((resolve) => {
+      // A dialog opened while another is still pending would strand the old
+      // promise, so settle it as declined first.
+      resolverRef.current?.(false);
+      resolverRef.current = resolve;
+
       setDialogState({
         isOpen: true,
         title: options.title,
         message: options.message,
-        type: options.type || 'alert', // This should now work correctly
-        confirmText: options.confirmText || 'OK',
-        cancelText: options.cancelText || 'Cancel',
-        onConfirm: () => {
-          resolve(true);
-          setDialogState(prev => ({ ...prev, isOpen: false }));
-        },
+        type: options.type ?? 'alert',
+        confirmText: options.confirmText ?? 'OK',
+        cancelText: options.cancelText ?? 'Cancel',
+        onConfirm: () => settle(true),
       });
     });
-  }, []);
+  }, [settle]);
 
   const confirm = useCallback((message: string, title = 'Confirm') => {
     return showDialog({
@@ -81,9 +93,7 @@ export function useCustomDialog() {
     });
   }, [showDialog]);
 
-  const closeDialog = useCallback(() => {
-    setDialogState(prev => ({ ...prev, isOpen: false }));
-  }, []);
+  const closeDialog = useCallback(() => settle(false), [settle]);
 
   return {
     dialogState,

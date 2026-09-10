@@ -179,7 +179,6 @@ export default function LabSearch() {
         {/* Header */}
         <div className="mb-6">
           <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">Find a laboratory</h1>
-          <p className="mt-2 text-base text-gray-500">Find the laboratory you want to book for your activities.</p>
         </div>
 
         {/* Search Section */}
@@ -317,7 +316,6 @@ export default function LabSearch() {
                                 {lab.type}
                               </Badge>
                               <Badge className={`${getCapacityColor(lab.capacity)} text-xs px-2 py-0.5`}>
-                                <Users className="h-3 w-3 mr-1" />
                                 {lab.capacity} seats
                               </Badge>
                             </div>
@@ -333,8 +331,7 @@ export default function LabSearch() {
                               }}
                             >
                               <span className="flex items-center relative z-10">
-                                <Calendar className="h-4 w-4 mr-2" />
-                                Book Now
+                                Book
                               </span>
                             </Button>
                           </div>

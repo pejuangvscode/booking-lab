@@ -2,6 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/clerk-sdk-node";
+import { type PrismaClient } from "@prisma/client";
 
 interface LabWithPIC {
   id: string;
@@ -17,6 +18,74 @@ interface LabWithPIC {
     name: string;
     role: string;
   }>;
+}
+
+/**
+ * Shared guard for the bulk actions below. Verifies the caller is an admin and
+ * splits the requested bookings into the ones they may actually act on and the
+ * ones that have to be skipped, so a single bad id never fails the whole batch.
+ */
+async function resolveBulkTargets(
+  db: PrismaClient,
+  userId: string,
+  bookingIds: number[],
+) {
+  const currentUser = await db.users.findUnique({
+    where: { id: userId },
+    select: { id: true, role: true },
+  });
+
+  if (!currentUser) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "User not found" });
+  }
+
+  if (currentUser.role !== "admin" && currentUser.role !== "super_admin") {
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Access denied. Admin role required.",
+    });
+  }
+
+  const isSuperAdmin = currentUser.role === "super_admin";
+
+  // Regular admins may only act on labs they are a PIC for. picIds is JSON, so
+  // it needs the same raw query the single-booking procedures use.
+  let managedLabIds: string[] = [];
+  if (!isSuperAdmin) {
+    const managedLabs = await db.$queryRaw<Array<{ id: string }>>`
+      SELECT "id" FROM "rooms" WHERE "picIds"::jsonb ? ${userId}
+    `;
+    managedLabIds = managedLabs.map((lab) => lab.id);
+  }
+
+  const bookings = await db.bookings.findMany({
+    where: { id: { in: bookingIds } },
+    select: { id: true, status: true, roomId: true },
+  });
+
+  const foundIds = new Set(bookings.map((booking) => booking.id));
+  const eligibleIds: number[] = [];
+  let forbidden = 0;
+  let notPending = 0;
+
+  for (const booking of bookings) {
+    if (!isSuperAdmin && !managedLabIds.includes(booking.roomId)) {
+      forbidden++;
+    } else if (booking.status !== "pending") {
+      notPending++;
+    } else {
+      eligibleIds.push(booking.id);
+    }
+  }
+
+  return {
+    eligibleIds,
+    skipped: {
+      notFound: bookingIds.filter((id) => !foundIds.has(id)).length,
+      forbidden,
+      notPending,
+    },
+  };
 }
 
 export const adminRouter = createTRPCRouter({
@@ -551,6 +620,96 @@ export const adminRouter = createTRPCRouter({
           message: `Failed to reject booking: ${error instanceof Error ? error.message : 'Unknown error'}`,
         });
       }
+    }),
+
+  bulkApproveBookings: protectedProcedure
+    .input(z.object({
+      bookingIds: z.array(z.number()).min(1, "Select at least one booking").max(100),
+      adminNote: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection not available",
+        });
+      }
+
+      const userId = ctx.userId;
+      if (!userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      const { eligibleIds, skipped } = await resolveBulkTargets(
+        ctx.db,
+        userId,
+        input.bookingIds,
+      );
+
+      if (eligibleIds.length === 0) {
+        return { count: 0, skipped };
+      }
+
+      // status is re-checked here so a booking approved by someone else between
+      // the read above and this write is not overwritten.
+      const result = await ctx.db.bookings.updateMany({
+        where: { id: { in: eligibleIds }, status: "pending" },
+        data: {
+          status: "accepted",
+          approvedAt: new Date(),
+          approvedBy: userId,
+          adminNote: input.adminNote,
+        },
+      });
+
+      return { count: result.count, skipped };
+    }),
+
+  bulkRejectBookings: protectedProcedure
+    .input(z.object({
+      bookingIds: z.array(z.number()).min(1, "Select at least one booking").max(100),
+      rejectionReason: z.string().min(1, "Rejection reason is required"),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (!ctx.db) {
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: "Database connection not available",
+        });
+      }
+
+      const userId = ctx.userId;
+      if (!userId) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "User not authenticated",
+        });
+      }
+
+      const { eligibleIds, skipped } = await resolveBulkTargets(
+        ctx.db,
+        userId,
+        input.bookingIds,
+      );
+
+      if (eligibleIds.length === 0) {
+        return { count: 0, skipped };
+      }
+
+      const result = await ctx.db.bookings.updateMany({
+        where: { id: { in: eligibleIds }, status: "pending" },
+        data: {
+          status: "rejected",
+          rejectedAt: new Date(),
+          rejectedBy: userId,
+          rejectionReason: input.rejectionReason,
+        },
+      });
+
+      return { count: result.count, skipped };
     }),
 
   cancelBooking: protectedProcedure

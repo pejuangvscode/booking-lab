@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { api } from '~/utils/api';
 import { Button } from "~/components/ui/button";
 import { Badge } from "~/components/ui/badge";
+import { Checkbox } from "~/components/ui/checkbox";
 import { Textarea } from "~/components/ui/textarea";
 import { Dialog, DialogClose, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "~/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "~/components/ui/tabs";
@@ -29,7 +30,8 @@ import { AdminProtection } from '~/components/admin-protection';
 
 export default function AdminBookings() {
   const router = useRouter();
-  
+  const utils = api.useUtils();
+
   const [activeTab, setActiveTab] = useState<"pending" | "accepted" | "rejected" | "completed" | "cancelled">("pending");
   const [page, setPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
@@ -40,6 +42,11 @@ export default function AdminBookings() {
   const [selectedImage, setSelectedImage] = useState("");
   const [showDetailDialog, setShowDetailDialog] = useState(false);
   const [detailBooking, setDetailBooking] = useState<any>(null);
+
+  // Bulk selection (pending tab only)
+  const [selectedIds, setSelectedIds] = useState<Set<number>>(new Set());
+  const [bulkRejectReason, setBulkRejectReason] = useState("");
+  const [showBulkRejectDialog, setShowBulkRejectDialog] = useState(false);
 
   // const debugAuth = api.admin.debugAuth.useQuery();
 
@@ -60,7 +67,6 @@ export default function AdminBookings() {
   const {
     data: bookingsData,
     isLoading,
-    refetch
   } = api.admin.getAllBookings.useQuery({
     status: activeTab,
     page,
@@ -68,12 +74,18 @@ export default function AdminBookings() {
     search: searchTerm
   });
 
+  // Invalidate every cached variant of the list, not just the one on screen.
+  // refetch() would only refresh the current tab/page, leaving the other tabs
+  // holding a stale copy — so a booking that was just accepted would still be
+  // listed under Pending when the admin came back to it.
+  const refreshBookings = () => utils.admin.getAllBookings.invalidate();
+
   const approveMutation = api.admin.approveBooking.useMutation({
     onSuccess: () => {
       toast.success("Booking accepted successfully!", {
         description: "The booking has been accepted and the user will be notified."
       });
-      void refetch();
+      void refreshBookings();
       // setSelectedBooking(null);
       setAdminNote("");
     },
@@ -89,7 +101,7 @@ export default function AdminBookings() {
       toast.success("Booking rejected successfully!", {
         description: "The booking has been rejected and the user will be notified."
       });
-      void refetch();
+      void refreshBookings();
       // setSelectedBooking(null);
       setRejectionReason("");
     },
@@ -105,7 +117,7 @@ export default function AdminBookings() {
       toast.success("Booking cancelled successfully!", {
         description: "The booking has been cancelled."
       });
-      void refetch();
+      void refreshBookings();
       // setSelectedBooking(null);
       setRejectionReason("");
     },
@@ -115,6 +127,123 @@ export default function AdminBookings() {
       });
     }
   });
+
+  // Only pending requests can be accepted/rejected, so bulk mode is limited to that tab.
+  const isBulkMode = activeTab === "pending";
+  const selectablePageIds = (bookingsData?.bookings ?? [])
+    .filter((booking) => booking.status === "pending")
+    .map((booking) => booking.id);
+  const selectedCount = selectedIds.size;
+  const allPageSelected =
+    selectablePageIds.length > 0 && selectablePageIds.every((id) => selectedIds.has(id));
+
+  // Drop the selection whenever the underlying list changes, so an id from a
+  // previous page/tab can never be submitted by accident.
+  useEffect(() => {
+    setSelectedIds(new Set());
+  }, [activeTab, page, searchTerm]);
+
+  // Handling every row on the last page moves those bookings to another tab,
+  // which can leave the admin stranded on a page that no longer exists.
+  useEffect(() => {
+    const totalPages = bookingsData?.pagination.totalPages;
+    if (!isLoading && totalPages !== undefined && page > 1 && page > totalPages) {
+      setPage(Math.max(1, totalPages));
+    }
+  }, [isLoading, page, bookingsData]);
+
+  const describeSkipped = (skipped: {
+    notFound: number;
+    forbidden: number;
+    notPending: number;
+  }) => {
+    const parts: string[] = [];
+    if (skipped.notPending > 0) parts.push(`${skipped.notPending} already handled`);
+    if (skipped.forbidden > 0) parts.push(`${skipped.forbidden} outside your labs`);
+    if (skipped.notFound > 0) parts.push(`${skipped.notFound} not found`);
+    return parts.length > 0 ? `Skipped: ${parts.join(", ")}.` : "";
+  };
+
+  const reportBulkResult = (
+    result: {
+      count: number;
+      skipped: { notFound: number; forbidden: number; notPending: number };
+    },
+    action: "accepted" | "rejected",
+  ) => {
+    const skippedNote = describeSkipped(result.skipped);
+
+    if (result.count === 0) {
+      toast.error(`No bookings were ${action}`, {
+        description: skippedNote || "Nothing to update.",
+      });
+      return;
+    }
+
+    toast.success(
+      `${result.count} booking${result.count > 1 ? "s" : ""} ${action}`,
+      { description: skippedNote || "The requesters will be notified." },
+    );
+  };
+
+  const bulkApproveMutation = api.admin.bulkApproveBookings.useMutation({
+    onSuccess: (result) => {
+      reportBulkResult(result, "accepted");
+      setSelectedIds(new Set());
+      void refreshBookings();
+    },
+    onError: (err) => {
+      toast.error("Failed to accept bookings", { description: err.message });
+    },
+  });
+
+  const bulkRejectMutation = api.admin.bulkRejectBookings.useMutation({
+    onSuccess: (result) => {
+      reportBulkResult(result, "rejected");
+      setSelectedIds(new Set());
+      setBulkRejectReason("");
+      setShowBulkRejectDialog(false);
+      void refreshBookings();
+    },
+    onError: (err) => {
+      toast.error("Failed to reject bookings", { description: err.message });
+    },
+  });
+
+  const isBulkPending = bulkApproveMutation.isPending || bulkRejectMutation.isPending;
+
+  const toggleSelect = (bookingId: number) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(bookingId)) {
+        next.delete(bookingId);
+      } else {
+        next.add(bookingId);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    setSelectedIds((prev) => {
+      const everySelected =
+        selectablePageIds.length > 0 && selectablePageIds.every((id) => prev.has(id));
+      return everySelected ? new Set<number>() : new Set(selectablePageIds);
+    });
+  };
+
+  const handleBulkApprove = () => {
+    if (selectedIds.size === 0) return;
+    bulkApproveMutation.mutate({ bookingIds: Array.from(selectedIds) });
+  };
+
+  const handleBulkReject = () => {
+    if (selectedIds.size === 0 || !bulkRejectReason.trim()) return;
+    bulkRejectMutation.mutate({
+      bookingIds: Array.from(selectedIds),
+      rejectionReason: bulkRejectReason.trim(),
+    });
+  };
 
   const handleApprove = (booking: any) => {
     approveMutation.mutate({
@@ -390,6 +519,41 @@ export default function AdminBookings() {
                 </div>
               )}
 
+              {/* Bulk action bar */}
+              {isBulkMode && selectedCount > 0 && (
+                <div className="mb-4 flex flex-col gap-3 rounded-xl border border-gray-200 bg-white px-4 py-3 shadow-sm sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex items-center gap-3">
+                    <span className="text-sm font-medium text-gray-900">
+                      {selectedCount} booking{selectedCount > 1 ? "s" : ""} selected
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setSelectedIds(new Set())}
+                      className="text-sm text-gray-500 transition-colors hover:cursor-pointer hover:text-gray-900"
+                    >
+                      Clear
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      onClick={handleBulkApprove}
+                      disabled={isBulkPending}
+                      className="flex-1 bg-green-600 text-white hover:cursor-pointer hover:bg-green-700 sm:flex-none"
+                    >
+                      {bulkApproveMutation.isPending ? "Accepting..." : `Accept`}
+                    </Button>
+                    <Button
+                      onClick={() => setShowBulkRejectDialog(true)}
+                      disabled={isBulkPending}
+                      variant="outline"
+                      className="flex-1 border-red-200 bg-white text-red-700 hover:cursor-pointer hover:bg-red-50 hover:text-red-800 sm:flex-none"
+                    >
+                      Reject
+                    </Button>
+                  </div>
+                </div>
+              )}
+
               {/* Bookings Table */}
               {bookingsData?.bookings && bookingsData.bookings.length > 0 && (
                 <div className="rounded-2xl border border-gray-200 bg-white overflow-hidden shadow-sm">
@@ -398,6 +562,17 @@ export default function AdminBookings() {
                     <table className="w-full table-fixed">
                       <thead className="bg-gray-50 border-b border-gray-200">
                         <tr>
+                          {isBulkMode && (
+                            <th className="w-12 px-4 py-4 text-left">
+                              <Checkbox
+                                checked={allPageSelected}
+                                onCheckedChange={toggleSelectAll}
+                                disabled={selectablePageIds.length === 0}
+                                aria-label="Select all pending bookings on this page"
+                                className="hover:cursor-pointer"
+                              />
+                            </th>
+                          )}
                           <th className="w-1/4 px-4 py-4 text-left text-xs font-medium text-gray-600 uppercase tracking-wide">
                             Event Details
                           </th>
@@ -420,11 +595,24 @@ export default function AdminBookings() {
                       </thead>
                       <tbody className="bg-white divide-y divide-gray-100">
                         {bookingsData?.bookings.map((booking) => (
-                          <tr 
-                            key={booking.id} 
-                            className="hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-0"
+                          <tr
+                            key={booking.id}
+                            className={`hover:bg-gray-50 transition-colors cursor-pointer border-b border-gray-100 last:border-0 ${
+                              selectedIds.has(booking.id) ? "bg-orange-50/60 hover:bg-orange-50" : ""
+                            }`}
                             onClick={() => handleRowClick(booking)}
                           >
+                            {isBulkMode && (
+                              <td className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                                <Checkbox
+                                  checked={selectedIds.has(booking.id)}
+                                  onCheckedChange={() => toggleSelect(booking.id)}
+                                  disabled={booking.status !== "pending"}
+                                  aria-label={`Select booking ${booking.eventName}`}
+                                  className="hover:cursor-pointer"
+                                />
+                              </td>
+                            )}
                             <td className="px-4 py-4">
                               <div className="space-y-2">
                                 <h3 className="text-sm font-medium text-gray-900 leading-tight truncate" title={booking.eventName}>
@@ -743,23 +931,38 @@ export default function AdminBookings() {
                     {bookingsData?.bookings.map((booking) => (
                       <div
                         key={booking.id}
-                        className="p-4 hover:bg-gray-50 transition-colors duration-150 cursor-pointer"
+                        className={`p-4 hover:bg-gray-50 transition-colors duration-150 cursor-pointer ${
+                          selectedIds.has(booking.id) ? "bg-orange-50/60 hover:bg-orange-50" : ""
+                        }`}
                         onClick={() => handleRowClick(booking)}
                       >
                         <div className="space-y-3">
                           {/* Header */}
                           <div className="flex items-start justify-between gap-2">
-                            <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-medium text-gray-900 truncate">
-                                {booking.eventName}
-                              </h3>
-                              <p className="text-xs text-gray-500 mt-1">
-                                Created {new Date(booking.createdAt).toLocaleDateString('id-ID', {
-                                  day: 'numeric',
-                                  month: 'short',
-                                  year: 'numeric'
-                                })}
-                              </p>
+                            <div className="flex flex-1 items-start gap-3 min-w-0">
+                              {isBulkMode && (
+                                <div className="pt-0.5" onClick={(e) => e.stopPropagation()}>
+                                  <Checkbox
+                                    checked={selectedIds.has(booking.id)}
+                                    onCheckedChange={() => toggleSelect(booking.id)}
+                                    disabled={booking.status !== "pending"}
+                                    aria-label={`Select booking ${booking.eventName}`}
+                                    className="hover:cursor-pointer"
+                                  />
+                                </div>
+                              )}
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-sm font-medium text-gray-900 truncate">
+                                  {booking.eventName}
+                                </h3>
+                                <p className="text-xs text-gray-500 mt-1">
+                                  Created {new Date(booking.createdAt).toLocaleDateString('id-ID', {
+                                    day: 'numeric',
+                                    month: 'short',
+                                    year: 'numeric'
+                                  })}
+                                </p>
+                              </div>
                             </div>
                             {getStatusBadge(booking.status)}
                           </div>
@@ -1053,6 +1256,45 @@ export default function AdminBookings() {
           </Tabs>
         </div>
       </div>
+
+      {/* Bulk Reject Dialog */}
+      <Dialog open={showBulkRejectDialog} onOpenChange={setShowBulkRejectDialog}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>
+              Reject {selectedCount} booking{selectedCount > 1 ? "s" : ""}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <p className="text-sm text-gray-500">
+              This reason will be sent to every selected requester.
+            </p>
+            <Textarea
+              value={bulkRejectReason}
+              onChange={(e) => setBulkRejectReason(e.target.value)}
+              placeholder="Please provide a reason for the rejection..."
+              rows={3}
+            />
+            <div className="flex gap-2">
+              <Button
+                onClick={handleBulkReject}
+                disabled={!bulkRejectReason.trim() || bulkRejectMutation.isPending}
+                variant="destructive"
+                className="flex-1 hover:cursor-pointer"
+              >
+                {bulkRejectMutation.isPending
+                  ? "Rejecting..."
+                  : `Reject ${selectedCount} booking${selectedCount > 1 ? "s" : ""}`}
+              </Button>
+              <DialogClose asChild>
+                <Button variant="outline" className="hover:cursor-pointer">
+                  Cancel
+                </Button>
+              </DialogClose>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       {/* Image Preview Dialog */}
       <Dialog open={showImageDialog} onOpenChange={setShowImageDialog}>

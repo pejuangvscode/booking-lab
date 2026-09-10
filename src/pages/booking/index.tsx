@@ -1,10 +1,9 @@
 import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
-import { AlertTriangle, Building, Loader2, Users, Lock, Wrench } from "lucide-react";
+import { Building, Loader2, Users } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
-import { Alert, AlertDescription } from "~/components/ui/alert";
 import { Button } from "~/components/ui/button";
 import { Card, CardContent } from "~/components/ui/card";
 import { CustomDialog } from "~/components/ui/custom-dialog";
@@ -44,7 +43,7 @@ export default function BookingPage() {
   const [requestorName, setRequestorName] = useState("");
   const [requestorNIM, setRequestorNIM] = useState("");
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
-  const [faculty, setFaculty] = useState("Faculty of Information & Technology");
+  const [faculty, setFaculty] = useState("Faculty of Artificial Intelligence and Data Science");
   const [checking, setChecking] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -433,23 +432,7 @@ export default function BookingPage() {
         <title>Book a Lab | UPH Facility Booking</title>
       </Head>
       
-      <div className="container mx-auto px-4 py-8 relative z-10">
-      {/* User Info Bar */}
-      <div className="max-w-4xl mx-auto mb-6">
-        <div className="rounded-xl border border-gray-200 bg-white p-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-3">
-              <div className="h-2 w-2 rounded-full bg-green-500"></div>
-              <span className="text-sm text-gray-600">
-                Signed in as: <span className="font-medium text-gray-900">{user?.firstName} {user?.lastName}</span>
-              </span>
-            </div>
-            <span className="text-xs text-gray-500">
-              {user?.emailAddresses[0]?.emailAddress}
-            </span>
-          </div>
-        </div>
-      </div>
+      <div className="container mx-auto px-4 py-8 relative z-10">    
 
       <div className="mx-auto max-w-4xl overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
         {/* Header section */}
@@ -500,22 +483,18 @@ export default function BookingPage() {
           </div>
         ) : underRenovation ? (
           <div className="p-6 sm:p-8">
-            <div className="rounded-xl border border-amber-200 bg-amber-50 p-6 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-amber-100">
-                <Wrench className="h-6 w-6 text-amber-600" />
-              </div>
-              <h3 className="mt-4 text-lg font-medium text-amber-900">
+            <div className="rounded-xl border border-gray-200 bg-gray-50 p-6">
+              <h3 className="text-base font-medium text-gray-900">
                 Ruangan sedang direnovasi
               </h3>
-              <p className="mt-2 text-sm text-amber-800/80">
+              <p className="mt-2 text-sm leading-relaxed text-gray-600">
                 {labDetail?.name} untuk sementara tidak dapat dipesan karena sedang
                 dalam masa renovasi. Ruangan yang sedang direnovasi: {RENOVATION_ROOM_LABEL}.
               </p>
-            </div>
-            <div className="mt-6 flex justify-center">
               <Button
                 onClick={() => router.push("/book-room")}
                 variant="outline"
+                className="mt-5 border-gray-200 bg-white text-gray-700 hover:cursor-pointer hover:bg-gray-50"
               >
                 Pilih ruangan lain
               </Button>
@@ -523,18 +502,19 @@ export default function BookingPage() {
           </div>
         ) : labError ? (
           <div className="p-6">
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
-              <AlertDescription>
-                Failed to load lab details. Please try again or select a different lab.
-              </AlertDescription>
-            </Alert>
-            <div className="mt-4 flex justify-center">
-              <Button 
+            <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
+              <p className="text-sm font-medium text-red-900">
+                Failed to load lab details
+              </p>
+              <p className="mt-1 text-sm leading-relaxed text-red-800">
+                Please try again, or select a different lab.
+              </p>
+              <Button
                 onClick={() => router.push("/lab-search")}
                 variant="outline"
+                className="mt-4 border-red-200 bg-white text-red-700 hover:cursor-pointer hover:bg-red-50 hover:text-red-800"
               >
-                Return to Lab Search
+                Return to lab search
               </Button>
             </div>
           </div>
@@ -751,16 +731,11 @@ export default function BookingPage() {
 
             {/* Full Room Confirmation Display - update text for zero capacity */}
             {bookingType === "full" && labDetail && labDetail.capacity !== 0 && (
-              <div className="bg-orange-50 border border-orange-200 rounded-lg p-4">
-                <div className="flex items-center space-x-2">
-                  <Building className="h-5 w-5 text-orange-600" />
-                  <div>
-                    <div className="font-medium text-orange-800">Full Room Booking</div>
-                    <div className="text-sm text-orange-700">
-                      You are booking the entire room ({labDetail.capacity} seats)
-                    </div>
-                  </div>
-                </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
+                <p className="text-sm font-medium text-gray-900">Full room booking</p>
+                <p className="mt-1 text-sm text-gray-600">
+                  You are booking the entire room ({labDetail.capacity} seats).
+                </p>
               </div>
             )}
 
@@ -890,63 +865,56 @@ export default function BookingPage() {
             </div>
 
             {/* Note Message */}
-            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
-              <h4 className="text-sm font-medium text-gray-700">Note</h4>
-              <p className="text-sm text-gray-600 mt-1">
-                Booking Request is subject to approval by the lab administrator. Please ensure all details are correct before submitting.
+            <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
+              <p className="text-sm font-medium text-gray-900">Note</p>
+              <p className="mt-1 text-sm leading-relaxed text-gray-600">
+                Booking requests are subject to approval by the lab administrator. Please make sure all details are correct before submitting.
               </p>
             </div>
 
             {bookingDate && startHour && startMinute && endHour && endMinute && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 p-4">
-                <div className="flex items-center space-x-3">
-                  {checking ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin text-blue-600" />
-                      <span className="text-sm text-blue-700">Checking availability...</span>
-                    </>
-                  ) : formErrors.startTime ? (
-                    <>
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
-                      <span className="text-sm text-red-700">Invalid booking time</span>
-                    </>
-                  ) : formErrors.conflict ? (
-                    <>
-                      <AlertTriangle className="h-4 w-4 text-red-600" />
-                      <span className="text-sm text-red-700">Time slot not available</span>
-                    </>
-                  ) : (
-                    <>
-                      <div className="h-4 w-4 bg-green-500 rounded-full"></div>
-                      <span className="text-sm text-green-700">Time slot available</span>
-                    </>
-                  )}
-                </div>
+              <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
+                {checking ? (
+                  <p className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gray-400" />
+                    Checking availability...
+                  </p>
+                ) : formErrors.startTime ? (
+                  <p className="flex items-center gap-2 text-sm text-red-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                    Invalid booking time
+                  </p>
+                ) : formErrors.conflict ? (
+                  <p className="flex items-center gap-2 text-sm text-red-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
+                    Time slot not available
+                  </p>
+                ) : (
+                  <p className="flex items-center gap-2 text-sm text-green-700">
+                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                    Time slot available
+                  </p>
+                )}
               </div>
             )}
 
             {formErrors.conflict && (
-              <div className="mt-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-red-700" role="alert">
-                <div className="flex items-start space-x-2">
-                  <AlertTriangle className="h-5 w-5 mt-0.5 flex-shrink-0" />
-                  <div>
-                    <strong className="font-medium">Booking Conflict:</strong>
-                    <div className="mt-1 text-sm">{formErrors.conflict}</div>
-                    <div className="mt-2 text-xs">
-                      <strong>Suggestions:</strong>
-                      <ul className="list-disc list-inside mt-1 space-y-1">
-                        <li>Try a different time slot</li>
-                        <li>Choose a different room</li>
-                        {bookingType === "partial" && (
-                          <li>Reduce the number of participants</li>
-                        )}
-                        {bookingType === "full" && (
-                          <li>Consider partial booking if you don't need the full room</li>
-                        )}
-                      </ul>
-                    </div>
-                  </div>
-                </div>
+              <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4" role="alert">
+                <p className="text-sm font-medium text-red-900">Booking conflict</p>
+                <p className="mt-1 text-sm leading-relaxed text-red-800">
+                  {formErrors.conflict}
+                </p>
+                <p className="mt-4 text-xs font-medium text-red-900">Suggestions</p>
+                <ul className="mt-1.5 space-y-1 text-xs leading-relaxed text-red-800">
+                  <li>Try a different time slot</li>
+                  <li>Choose a different room</li>
+                  {bookingType === "partial" && (
+                    <li>Reduce the number of participants</li>
+                  )}
+                  {bookingType === "full" && (
+                    <li>Consider a partial booking if you don&apos;t need the full room</li>
+                  )}
+                </ul>
               </div>
             )}
             

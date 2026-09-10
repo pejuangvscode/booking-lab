@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
-import { Loader2, Info, XCircle, RefreshCw, Check, CheckCircle, ToggleLeft } from 'lucide-react';
+import { Loader2, RefreshCw } from 'lucide-react';
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { Badge } from "~/components/ui/badge";
@@ -52,6 +52,9 @@ export default function Dashboard() {
   const [completedSearchTerm, setCompletedSearchTerm] = useState("");
   const [completedPage, setCompletedPage] = useState(1);
 
+  // Booking whose action sheet is currently open.
+  const [actionBooking, setActionBooking] = useState<Booking | null>(null);
+
   const {
     data: currentBookingsData,
     isLoading: isLoadingCurrentBookings,
@@ -96,12 +99,22 @@ export default function Dashboard() {
     }
   }, [isLoaded, isSignedIn, router]);
 
+  // Escape closes the action sheet, matching the confirm dialog's behaviour.
+  useEffect(() => {
+    if (!actionBooking) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') setActionBooking(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [actionBooking]);
+
   const handleCancelBooking = async (bookingId: number) => {
     const confirmed = await confirm(
       'Are you sure you want to cancel this booking? This action cannot be undone.',
       'Cancel Booking'
     );
-    
+
     if (confirmed) {
       cancelBookingMutation.mutate({ id: bookingId, cancelReason: "Cancelled by user" });
     }
@@ -109,12 +122,12 @@ export default function Dashboard() {
 
   const cancelBookingMutation = api.booking.cancelBooking.useMutation({
     onSuccess: () => {
-      success("Booking cancelled successfully!");
+      void success("Booking cancelled successfully!");
       void refetchCurrentBookings();
       void refetchCompletedBookings();
     },
     onError: (err) => {
-      error(`Error cancelling booking: ${err.message}`);
+      void error(`Error cancelling booking: ${err.message}`);
     }
   });
 
@@ -263,10 +276,7 @@ export default function Dashboard() {
                           <div className="h-4 bg-gray-200 rounded w-36"></div>
                         </td>
                         <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="flex space-x-2">
-                            <div className="h-8 bg-gray-200 rounded w-20"></div>
-                            <div className="h-8 bg-gray-200 rounded w-20"></div>
-                          </div>
+                          <div className="h-8 bg-gray-200 rounded w-20"></div>
                         </td>
                       </tr>
                     ))}
@@ -302,49 +312,15 @@ export default function Dashboard() {
                           {booking.eventName}
                         </td>
                         <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="flex flex-col sm:flex-row sm:space-x-2 space-y-2 sm:space-y-0">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:cursor-pointer text-[10px] sm:text-xs py-1.5 h-auto font-medium"
-                              onClick={() => router.push(`/booking-detail?bookingId=${booking.id}`)}
-                            >
-                              Details
-                            </Button>
-                            {booking.status === 'accepted' && (
-                              <>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="bg-green-600 text-white hover:bg-green-700 border-0 hover:cursor-pointer text-[10px] sm:text-xs py-1.5 h-auto font-medium"
-                                  onClick={() => router.push(`/complete-booking?bookingId=${booking.id}`)}
-                                  disabled={cancelBookingMutation.isPending}
-                                >
-                                  Complete
-                                </Button>
-                                <Button 
-                                  variant="outline" 
-                                  size="sm" 
-                                  className="border border-red-200 bg-white text-red-600 hover:bg-red-50 hover:cursor-pointer text-[10px] sm:text-xs py-1.5 h-auto font-medium"
-                                  onClick={() => handleCancelBooking(booking.id)}
-                                  disabled={cancelBookingMutation.isPending}
-                                >
-                                  Cancel
-                                </Button>
-                              </>
-                            )}
-                            {booking.status === 'pending' && (
-                              <Button 
-                                variant="outline" 
-                                size="sm" 
-                                className="border border-red-200 bg-white text-red-600 hover:bg-red-50 hover:cursor-pointer text-[10px] sm:text-xs py-1.5 h-auto font-medium"
-                                onClick={() => handleCancelBooking(booking.id)}
-                                disabled={cancelBookingMutation.isPending}
-                              >
-                                Cancel
-                              </Button>
-                            )}
-                          </div>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:cursor-pointer text-[10px] sm:text-xs py-1.5 h-auto font-medium"
+                            onClick={() => setActionBooking(booking)}
+                            disabled={cancelBookingMutation.isPending}
+                          >
+                            Manage
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -554,6 +530,86 @@ export default function Dashboard() {
       </div>
       </div>
       
+      {/* Action sheet — replaces the row of Details/Complete/Cancel buttons */}
+      {actionBooking && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+          <div
+            className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px]"
+            onClick={() => setActionBooking(null)}
+          />
+          <div
+            role="dialog"
+            aria-modal="true"
+            className="relative w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-6 shadow-xl sm:p-7"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <h3 className="min-w-0 text-lg font-medium text-gray-900">
+                {actionBooking.eventName}
+              </h3>
+              <Badge className={`${getStatusBadge(actionBooking.status)} shrink-0 px-2 py-0.5 text-[10px]`}>
+                {actionBooking.status}
+              </Badge>
+            </div>
+            <p className="mt-2 text-sm text-gray-500">
+              {formatDate(actionBooking.bookingDate)} &middot; {actionBooking.startTime} &ndash; {actionBooking.endTime}
+            </p>
+            <p className="mt-0.5 text-sm text-gray-500">
+              {getLocationInfo(actionBooking).name}
+            </p>
+
+            <div className="mt-6 space-y-2">
+              {actionBooking.status === 'accepted' && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = actionBooking.id;
+                    setActionBooking(null);
+                    void router.push(`/complete-booking?bookingId=${id}`);
+                  }}
+                  className="w-full rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:cursor-pointer hover:bg-orange-700"
+                >
+                  Complete booking
+                </button>
+              )}
+
+              <button
+                type="button"
+                onClick={() => {
+                  const id = actionBooking.id;
+                  setActionBooking(null);
+                  void router.push(`/booking-detail?bookingId=${id}`);
+                }}
+                className="w-full rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:cursor-pointer hover:bg-gray-50"
+              >
+                View details
+              </button>
+
+              {(actionBooking.status === 'accepted' || actionBooking.status === 'pending') && (
+                <button
+                  type="button"
+                  onClick={() => {
+                    const id = actionBooking.id;
+                    setActionBooking(null);
+                    void handleCancelBooking(id);
+                  }}
+                  className="w-full rounded-lg border border-red-200 bg-white px-4 py-2.5 text-sm font-medium text-red-700 transition-colors hover:cursor-pointer hover:bg-red-50 hover:text-red-800"
+                >
+                  Cancel booking
+                </button>
+              )}
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setActionBooking(null)}
+              className="mt-4 w-full border-t border-gray-100 pt-4 text-sm text-gray-500 transition-colors hover:cursor-pointer hover:text-gray-900"
+            >
+              Close
+            </button>
+          </div>
+        </div>
+      )}
+
       <CustomDialog
         isOpen={dialogState.isOpen}
         onClose={closeDialog}

@@ -1,5 +1,4 @@
-import { useState, useEffect } from 'react';
-import { X, AlertTriangle, CheckCircle, AlertCircle } from 'lucide-react';
+import { useEffect, useState } from 'react';
 
 interface CustomDialogProps {
   isOpen: boolean;
@@ -24,15 +23,34 @@ export function CustomDialog({
 }: CustomDialogProps) {
   const [isVisible, setIsVisible] = useState(false);
 
+  // Flip to visible on the next frame, otherwise the element mounts and gets
+  // its final classes in the same commit and the enter transition is skipped.
   useEffect(() => {
-    if (isOpen) {
-      setIsVisible(true);
+    if (!isOpen) {
+      setIsVisible(false);
+      return;
     }
+    const frame = requestAnimationFrame(() => setIsVisible(true));
+    return () => cancelAnimationFrame(frame);
   }, [isOpen]);
+
+  // Escape dismisses the dialog — it is the only keyboard route out now that
+  // there is no close icon.
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsVisible(false);
+        setTimeout(onClose, 150);
+      }
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [isOpen, onClose]);
 
   const handleClose = () => {
     setIsVisible(false);
-    setTimeout(onClose, 250);
+    setTimeout(onClose, 150);
   };
 
   const handleConfirm = () => {
@@ -42,102 +60,50 @@ export function CustomDialog({
     handleClose();
   };
 
-  const getIconConfig = () => {
-    switch (type) {
-      case 'confirm':
-        return {
-          icon: <AlertTriangle className="h-5 w-5" />,
-          bgColor: 'bg-orange-500',
-          textColor: 'text-orange-600'
-        };
-      case 'success':
-        return {
-          icon: <CheckCircle className="h-5 w-5" />,
-          bgColor: 'bg-green-500',
-          textColor: 'text-green-600'
-        };
-      case 'error':
-        return {
-          icon: <AlertTriangle className="h-5 w-5" />,
-          bgColor: 'bg-red-500',
-          textColor: 'text-red-600'
-        };
-      default:
-        return {
-          icon: <AlertCircle className="h-5 w-5" />,
-          bgColor: 'bg-blue-500',
-          textColor: 'text-blue-600'
-        };
-    }
-  };
-
-  const iconConfig = getIconConfig();
-
   if (!isOpen) return null;
 
+  const primaryClass =
+    type === 'error'
+      ? 'bg-red-600 hover:bg-red-700'
+      : 'bg-orange-600 hover:bg-orange-700';
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      {/* Backdrop */}
-      <div 
-        className={`absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity duration-250 ${
+    <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
+      <div
+        className={`absolute inset-0 bg-gray-900/40 backdrop-blur-[2px] transition-opacity duration-150 ${
           isVisible ? 'opacity-100' : 'opacity-0'
         }`}
         onClick={handleClose}
       />
-      
-      {/* Dialog */}
-      <div 
-        className={`relative bg-white rounded-2xl shadow-xl max-w-md w-full overflow-hidden transform transition-all duration-250 ease-out ${
-          isVisible ? 'scale-100 opacity-100' : 'scale-95 opacity-0'
+
+      <div
+        role="dialog"
+        aria-modal="true"
+        className={`relative w-full max-w-sm rounded-2xl border border-gray-100 bg-white p-6 shadow-xl transition-all duration-150 ease-out sm:p-7 ${
+          isVisible ? 'scale-100 opacity-100' : 'scale-[0.98] opacity-0'
         }`}
       >
-        {/* Close button */}
-        <button
-          onClick={handleClose}
-          className="absolute top-4 right-4 z-10 text-gray-400 hover:text-gray-600 transition-colors p-1 rounded-lg hover:bg-gray-100"
-        >
-          <X className="h-5 w-5" />
-        </button>
+        <h3 className="text-lg font-medium text-gray-900">{title}</h3>
 
-        {/* Content */}
-        <div className="p-6 pt-8">
-          {/* Icon */}
-          <div className={`inline-flex items-center justify-center w-12 h-12 rounded-full ${iconConfig.bgColor} mb-4`}>
-            <div className="text-white">
-              {iconConfig.icon}
-            </div>
-          </div>
+        {/* pre-line keeps the line breaks some callers put in their messages */}
+        <p className="mt-2 whitespace-pre-line text-sm leading-relaxed text-gray-600">
+          {message}
+        </p>
 
-          {/* Title */}
-          <h3 className="text-xl font-semibold text-gray-900 mb-2">
-            {title}
-          </h3>
-
-          {/* Message */}
-          <p className="text-gray-600 text-[15px] leading-relaxed">
-            {message}
-          </p>
-        </div>
-
-        {/* Actions */}
-        <div className="flex justify-end gap-3 px-6 pb-6">
+        <div className="mt-6 flex gap-2">
           {type === 'confirm' && (
             <button
+              type="button"
               onClick={handleClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2"
+              className="flex-1 rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:cursor-pointer hover:bg-gray-50"
             >
               {cancelText}
             </button>
           )}
           <button
+            type="button"
             onClick={handleConfirm}
-            className={`px-5 py-2 text-sm font-medium text-white rounded-lg transition-all focus:outline-none focus:ring-2 focus:ring-offset-2 ${
-              type === 'error' 
-                ? 'bg-red-600 hover:bg-red-700 focus:ring-red-500' 
-                : type === 'success'
-                ? 'bg-green-600 hover:bg-green-700 focus:ring-green-500'
-                : 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
-            }`}
+            className={`flex-1 rounded-lg px-4 py-2.5 text-sm font-medium text-white transition-colors hover:cursor-pointer ${primaryClass}`}
           >
             {confirmText}
           </button>
