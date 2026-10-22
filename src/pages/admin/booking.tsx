@@ -18,6 +18,7 @@ import { CustomDialog } from "~/components/ui/custom-dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
 import { RadioGroup } from "~/components/ui/radio-group";
+import { ROOM_STATUS_LABEL, ROOM_UNAVAILABLE_NOTICE, toRoomStatus } from "~/lib/room-status";
 import {
   Select,
   SelectContent,
@@ -386,6 +387,10 @@ export default function BookingPage() {
     }
   };
 
+  // Admins cannot book a room that is not active either; the server refuses it,
+  // so the form is replaced by a notice rather than failing on submit.
+  const roomStatus = toRoomStatus(labDetail?.status);
+
   return (
     <div className="min-h-screen bg-neutral-50 px-4 pb-16 pt-24 sm:px-6">
       <Head>
@@ -430,10 +435,17 @@ export default function BookingPage() {
                 <div>
                   <dt className="text-xs text-gray-500 sm:text-sm">Status</dt>
                   <dd className="mt-0.5">
-                    <span className="inline-flex items-center gap-1.5 text-green-700">
-                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                      Available
-                    </span>
+                    {roomStatus !== "active" ? (
+                      <span className="inline-flex items-center gap-1.5 text-gray-600">
+                        <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
+                        {ROOM_STATUS_LABEL[roomStatus]}
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-green-700">
+                        <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                        Available
+                      </span>
+                    )}
                   </dd>
                 </div>
               </dl>
@@ -463,6 +475,24 @@ export default function BookingPage() {
                   Return to lab search
                 </Button>
               </div>
+            </div>
+          ) : labDetail && roomStatus !== "active" ? (
+            <div className="px-4 py-6 sm:px-8 sm:py-8">
+              <h2 className="text-base font-medium text-gray-900">
+                {ROOM_UNAVAILABLE_NOTICE[roomStatus].title}
+              </h2>
+              <p className="mt-2 max-w-prose text-sm leading-relaxed text-gray-600">
+                {ROOM_UNAVAILABLE_NOTICE[roomStatus].body} Ubah status ruangan di
+                Supabase menjadi <span className="font-medium text-gray-900">active</span> untuk
+                membukanya kembali.
+              </p>
+              <Button
+                onClick={() => router.push("/admin/lab-search")}
+                variant="outline"
+                className="mt-5 border-gray-200 bg-white text-gray-700 hover:cursor-pointer hover:bg-gray-50"
+              >
+                Pilih ruangan lain
+              </Button>
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="divide-y divide-gray-100">

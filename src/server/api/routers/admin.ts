@@ -3,6 +3,7 @@ import { createTRPCRouter, protectedProcedure, publicProcedure } from "~/server/
 import { TRPCError } from "@trpc/server";
 import { clerkClient } from "@clerk/clerk-sdk-node";
 import { type PrismaClient } from "@prisma/client";
+import { type RoomStatus, toRoomStatus } from "~/lib/room-status";
 
 interface LabWithPIC {
   id: string;
@@ -11,6 +12,7 @@ interface LabWithPIC {
   department: string;
   type: string;
   roomType: string;
+  status: RoomStatus;
   capacity: number;
   image: string | null;
   picIds: string[];
@@ -883,6 +885,7 @@ export const adminRouter = createTRPCRouter({
           department: string;
           type: string;
           roomType: string;
+          status: string;
           capacity: number;
           image: string | null;
           picIds: unknown;
@@ -950,6 +953,9 @@ export const adminRouter = createTRPCRouter({
             type: room.type,
             // Lets the admin room pages split student labs from staff rooms.
             roomType: room.roomType,
+            // Every status is returned (Manage Admin assigns PICs to all rooms);
+            // the booking list hides or greys rooms by it.
+            status: toRoomStatus(room.status),
             capacity: room.capacity,
             image: room.image,
             picIds: picIdsArray,
@@ -997,6 +1003,7 @@ export const adminRouter = createTRPCRouter({
           facilityId: string;
           department: string;
           type: string;
+          status: string;
           capacity: number;
           image: string | null;
         } | null = null;
@@ -1029,6 +1036,7 @@ export const adminRouter = createTRPCRouter({
           facilityId: lab.facilityId,
           department: lab.department,
           type: lab.type,
+          status: toRoomStatus(lab.status),
           capacity: lab.capacity,
           image: lab.image ?? "",
         };

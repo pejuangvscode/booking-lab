@@ -1,3 +1,4 @@
+import { Link } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { StaffRoomArt, StudentLabArt } from "~/components/room-category-art";
@@ -71,7 +72,7 @@ export default function BookRoom() {
 
           {/* Help */}
           <p className="mt-10 text-sm text-gray-400">
-            Need help? Contact Kelvin Wiriyatama for assistance with room bookings.
+            Need help? Contact <a href="mailto:kelvin.wiriyatama@uph.edu" className="text-blue-600 hover:underline">Kelvin Wiriyatama</a> for assistance with room bookings.
           </p>
         </div>
       </div>

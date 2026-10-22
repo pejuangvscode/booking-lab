@@ -1,6 +1,28 @@
 import { z } from "zod";
+import { type PrismaClient } from "@prisma/client";
 import { createTRPCRouter, publicProcedure, protectedProcedure } from "~/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { isRoomBookable, ROOM_UNAVAILABLE_NOTICE, toRoomStatus } from "~/lib/room-status";
+
+/**
+ * Refuses a new booking for a room that is not active. The pages already hide
+ * or grey out such rooms; this covers direct links and stale tabs. The booking
+ * pages send the facilityId as labId, so the room is matched on either key.
+ */
+async function assertRoomBookable(db: PrismaClient, labId: string) {
+  const room = await db.lab.findFirst({
+    where: { OR: [{ id: labId }, { facilityId: labId }] },
+    select: { status: true },
+  });
+
+  if (room && !isRoomBookable(room.status)) {
+    const status = toRoomStatus(room.status) as keyof typeof ROOM_UNAVAILABLE_NOTICE;
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: ROOM_UNAVAILABLE_NOTICE[status].body,
+    });
+  }
+}
 
 export const bookingRouter = createTRPCRouter({
   create: publicProcedure
@@ -20,8 +42,11 @@ export const bookingRouter = createTRPCRouter({
       })
     }))
     .mutation(async ({ ctx, input }) => {
+      // Outside the try below, which would swap the reason for a generic error.
+      await assertRoomBookable(ctx.db, input.labId);
+
       try {
-      
+
         let userId;
         
       
@@ -746,8 +771,11 @@ export const bookingRouter = createTRPCRouter({
       equipment: z.string(),
     }))
     .mutation(async ({ ctx, input }) => {
+      // Outside the try below, which would swap the reason for a generic error.
+      await assertRoomBookable(ctx.db, input.labId);
+
       try {
-        const { 
+        const {
           labId, startDate, endDate, selectedDays, startTime, endTime,
           participants, eventName, eventType, phone, faculty, userData, equipment
         } = input;

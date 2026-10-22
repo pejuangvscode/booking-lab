@@ -1,4 +1,4 @@
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Search } from "lucide-react";
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useCallback, useState } from 'react';
@@ -6,7 +6,7 @@ import { PhotoLightbox } from "~/components/photo-lightbox";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
-import { isRoomUnderRenovation } from "~/lib/renovation";
+import { isRoomBookable, ROOM_STATUS_LABEL, toRoomStatus } from "~/lib/room-status";
 
 type Lab = {
   id: string;
@@ -17,6 +17,7 @@ type Lab = {
   capacity: number;
   image?: string | null;
   roomType?: string;
+  status?: string;
 };
 
 // The door code sits beside the name, unless the name already contains it
@@ -71,8 +72,8 @@ export default function StudentLabList() {
             onClick={() => router.push('/book-room')}
             className="mb-8 inline-flex items-center text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 hover:cursor-pointer"
           >
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            Back to room selection
+            <ChevronLeft className="h-4 w-4" />
+            Categories
           </button>
 
           {/* Header */}
@@ -129,7 +130,9 @@ export default function StudentLabList() {
             ) : (
               <ul className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white">
                 {filteredData.map((lab) => {
-                  const underRenovation = isRoomUnderRenovation(lab);
+                  // Not-available rooms never reach this list; anything else that is not
+                  // active (under construction) is shown greyed out without a Book button.
+                  const underRenovation = !isRoomBookable(lab.status);
                   return (
                     <li key={lab.id} className={underRenovation ? 'bg-gray-50' : undefined}>
                       <div
@@ -194,7 +197,7 @@ export default function StudentLabList() {
                           <div className="shrink-0">
                             {underRenovation ? (
                               <span className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500">
-                                Under Construction
+                                {ROOM_STATUS_LABEL[toRoomStatus(lab.status)]}
                               </span>
                             ) : (
                               <Button

@@ -26,6 +26,7 @@ import {
 } from "~/components/ui/popover";
 import { Checkbox } from "~/components/ui/checkbox";
 import { StatusPill } from "~/components/status-pill";
+import { isRoomBookable, isRoomListed, ROOM_STATUS_LABEL, toRoomStatus } from "~/lib/room-status";
 import { api } from "~/utils/api";
 import { startOfWeek, getDay } from 'date-fns';
 
@@ -120,16 +121,18 @@ export default function BookingCalendar() {
       name: lab.name,
       capacity: lab.capacity,
       roomType: lab.roomType,
+      status: lab.status,
     })) ?? [];
   }, [labsData]);
 
-  // Separate rooms by type
-  const studentLabs = useMemo(() => 
-    rooms.filter(room => room.roomType === 'student_lab'),
+  // Separate rooms by type for the filter. Not-available rooms are left out of
+  // it; their existing bookings still show on the calendar itself.
+  const studentLabs = useMemo(() =>
+    rooms.filter(room => room.roomType === 'student_lab' && isRoomListed(room.status)),
     [rooms]
   );
-  const staffRooms = useMemo(() => 
-    rooms.filter(room => room.roomType === 'staff_room'),
+  const staffRooms = useMemo(() =>
+    rooms.filter(room => room.roomType === 'staff_room' && isRoomListed(room.status)),
     [rooms]
   );
 
@@ -693,7 +696,9 @@ export default function BookingCalendar() {
                                 {room.name}
                               </label>
                               <span className="shrink-0 text-xs tabular-nums text-gray-500">
-                                {room.capacity === 0 ? "Flexible" : `${room.capacity} seats`}
+                                {!isRoomBookable(room.status)
+                                  ? ROOM_STATUS_LABEL[toRoomStatus(room.status)]
+                                  : room.capacity === 0 ? "Flexible" : `${room.capacity} seats`}
                               </span>
                             </div>
                           ))}
@@ -723,7 +728,9 @@ export default function BookingCalendar() {
                                 {room.name}
                               </label>
                               <span className="shrink-0 text-xs tabular-nums text-gray-500">
-                                {room.capacity === 0 ? "Flexible" : `${room.capacity} seats`}
+                                {!isRoomBookable(room.status)
+                                  ? ROOM_STATUS_LABEL[toRoomStatus(room.status)]
+                                  : room.capacity === 0 ? "Flexible" : `${room.capacity} seats`}
                               </span>
                             </div>
                           ))}

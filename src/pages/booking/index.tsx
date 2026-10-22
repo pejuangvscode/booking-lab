@@ -25,7 +25,7 @@ import {
 } from "~/components/ui/select";
 import { useCustomDialog } from "~/hooks/useCustomDialog";
 import { api } from "~/utils/api";
-import { isRoomUnderRenovation, RENOVATION_ROOM_LABEL } from "~/lib/renovation";
+import { ROOM_STATUS_LABEL, ROOM_UNAVAILABLE_NOTICE, toRoomStatus } from "~/lib/room-status";
 
 export default function BookingPage() {
   const router = useRouter();
@@ -269,7 +269,9 @@ export default function BookingPage() {
     return type.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
   };
 
-  const underRenovation = !!labDetail && isRoomUnderRenovation(labDetail);
+  // A room that is not active (under construction, or not available when
+  // reached by a direct link) shows a notice in place of the form.
+  const roomStatus = toRoomStatus(labDetail?.status);
 
   const hourOptions = Array.from({ length: 13 }, (_, i) => (i + 7).toString().padStart(2, '0'));
   const minuteOptions = Array.from({ length: 12 }, (_, i) => (i * 5).toString().padStart(2, '0'));
@@ -476,10 +478,10 @@ export default function BookingPage() {
                 <div>
                   <dt className="text-xs text-gray-500 sm:text-sm">Status</dt>
                   <dd className="mt-0.5">
-                    {underRenovation ? (
+                    {roomStatus !== "active" ? (
                       <span className="inline-flex items-center gap-1.5 text-gray-600">
                         <span className="h-1.5 w-1.5 rounded-full bg-gray-400" />
-                        Under Construction
+                        {ROOM_STATUS_LABEL[roomStatus]}
                       </span>
                     ) : (
                       <span className="inline-flex items-center gap-1.5 text-green-700">
@@ -499,14 +501,13 @@ export default function BookingPage() {
             <div className="flex justify-center p-12">
               <Loader2 className="h-6 w-6 animate-spin text-orange-600" />
             </div>
-          ) : underRenovation ? (
-            <div className="px-6 py-8 sm:px-8">
+          ) : labDetail && roomStatus !== "active" ? (
+            <div className="px-4 py-6 sm:px-8 sm:py-8">
               <h2 className="text-base font-medium text-gray-900">
-                Ruangan sedang direnovasi
+                {ROOM_UNAVAILABLE_NOTICE[roomStatus].title}
               </h2>
               <p className="mt-2 max-w-prose text-sm leading-relaxed text-gray-600">
-                {labDetail?.name} untuk sementara tidak dapat dipesan karena sedang
-                dalam masa renovasi. Ruangan yang sedang direnovasi: {RENOVATION_ROOM_LABEL}.
+                {ROOM_UNAVAILABLE_NOTICE[roomStatus].body}
               </p>
               <Button
                 onClick={() => router.push("/book-room")}

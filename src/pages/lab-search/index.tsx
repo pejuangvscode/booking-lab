@@ -6,7 +6,7 @@ import { Badge } from "~/components/ui/badge";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
-import { isRoomUnderRenovation } from "~/lib/renovation";
+import { isRoomBookable, isRoomListed, ROOM_STATUS_LABEL, toRoomStatus } from "~/lib/room-status";
 import { useRef } from "react";
 
 type Lab = {
@@ -17,6 +17,7 @@ type Lab = {
   type: string;
   capacity: number;
   image?: string | null;
+  status?: string;
 };
 
 type SortField = "name" | "facilityId" | "type" | "capacity";
@@ -50,6 +51,7 @@ export default function LabSearch() {
 
   const filteredData = labData.filter((lab: Lab) => {
     return (
+      isRoomListed(lab.status) &&
       (lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
         lab.facilityId.toString().toLowerCase().includes(searchTerm.toLowerCase())) &&
       (roomTypeFilter === "all" || lab.type === roomTypeFilter)
@@ -198,7 +200,7 @@ export default function LabSearch() {
             ) : (
               <div className="space-y-4 sm:space-y-6">
                 {currentItems.map((lab, index) => {
-                  const underRenovation = isRoomUnderRenovation(lab);
+                  const underRenovation = !isRoomBookable(lab.status);
                   return (
                   <div
                     key={lab.id}
@@ -243,7 +245,7 @@ export default function LabSearch() {
                           <div className="mt-4 sm:mt-0 sm:ml-6 flex-shrink-0 items-center">
                             {underRenovation ? (
                               <span className="inline-flex items-center rounded-xl border border-gray-200 bg-gray-50 px-5 sm:px-6 py-3 sm:py-3.5 text-sm font-semibold text-gray-500">
-                                Under Construction
+                                {ROOM_STATUS_LABEL[toRoomStatus(lab.status)]}
                               </span>
                             ) : (
                               <Button

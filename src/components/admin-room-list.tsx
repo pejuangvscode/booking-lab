@@ -1,4 +1,4 @@
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, ChevronLeft, Search } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
 import { useCallback, useState } from "react";
@@ -7,6 +7,7 @@ import { PhotoLightbox } from "~/components/photo-lightbox";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
+import { isRoomBookable, isRoomListed, ROOM_STATUS_LABEL, toRoomStatus } from "~/lib/room-status";
 
 type Lab = {
   id: string;
@@ -15,6 +16,7 @@ type Lab = {
   department: string;
   type: string;
   roomType?: string;
+  status?: string;
   capacity: number;
   image?: string | null;
   picIds?: string | string[] | null;
@@ -117,6 +119,9 @@ export function AdminRoomList({
     // Only this page's category (student labs or staff rooms)
     if ((lab.roomType ?? "student_lab") !== roomType) return false;
 
+    // Rooms marked not_available are not offered for booking at all.
+    if (!isRoomListed(lab.status)) return false;
+
     // First apply search filter
     const matchesSearch = lab.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       lab.facilityId.toString().toLowerCase().includes(searchTerm.toLowerCase());
@@ -212,8 +217,8 @@ export function AdminRoomList({
             onClick={() => router.push('/admin/lab-search')}
             className="mb-8 inline-flex items-center text-sm font-medium text-gray-500 transition-colors hover:text-gray-900 hover:cursor-pointer"
           >
-            <ArrowLeft className="mr-1.5 h-4 w-4" />
-            Back to categories
+            <ChevronLeft className="h-4 w-4" />
+            Categories
           </button>
 
           {/* Header */}
@@ -274,12 +279,15 @@ export function AdminRoomList({
                 </div>
               ) : (
                 <ul className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white">
-                  {currentItems.map((lab) => (
-                    <li key={lab.id}>
+                  {currentItems.map((lab) => {
+                    // Under construction: listed, greyed, and not bookable.
+                    const closed = !isRoomBookable(lab.status);
+                    return (
+                    <li key={lab.id} className={closed ? 'bg-gray-50' : undefined}>
                       <div
-                        className={`flex items-start gap-4 p-3 transition-colors hover:bg-gray-50/70 sm:items-center sm:p-4 ${
+                        className={`flex items-start gap-4 p-3 transition-colors sm:items-center sm:p-4 ${
                           lab.image ? 'cursor-pointer' : ''
-                        }`}
+                        } ${closed ? '' : 'hover:bg-gray-50/70'}`}
                         onClick={(e) => {
                           if (!lab.image) return;
                           openPreview(
@@ -299,7 +307,9 @@ export function AdminRoomList({
                             e.stopPropagation();
                             openPreview(lab.id, e.currentTarget);
                           }}
-                          className="relative h-[4.5rem] w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100 transition-opacity enabled:cursor-zoom-in enabled:hover:opacity-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-gray-400/50 sm:h-24 sm:w-32"
+                          className={`relative h-[4.5rem] w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100 transition-opacity enabled:cursor-zoom-in enabled:hover:opacity-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-gray-400/50 sm:h-24 sm:w-32 ${
+                            closed ? 'opacity-60' : ''
+                          }`}
                         >
                           {lab.image && (
                             <img
@@ -319,7 +329,7 @@ export function AdminRoomList({
                         {/* Phones stack name, details, and action beside the photo;
                             from sm up the action moves to the right edge. */}
                         <div className="flex min-w-0 flex-1 flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
-                          <div className="min-w-0">
+                          <div className={`min-w-0 ${closed ? 'opacity-60' : ''}`}>
                             <h2 className="text-base font-medium text-gray-900">
                               {lab.name}
                               {showsCode(lab) && (
@@ -333,19 +343,26 @@ export function AdminRoomList({
                             </p>
                           </div>
 
-                          <Button
-                            className={`shrink-0 text-white hover:cursor-pointer ${bookButtonClass}`}
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleBooking(lab);
-                            }}
-                          >
-                            Book
-                          </Button>
+                          {closed ? (
+                            <span className="inline-flex shrink-0 items-center rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500">
+                              {ROOM_STATUS_LABEL[toRoomStatus(lab.status)]}
+                            </span>
+                          ) : (
+                            <Button
+                              className={`shrink-0 text-white hover:cursor-pointer ${bookButtonClass}`}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleBooking(lab);
+                              }}
+                            >
+                              Book
+                            </Button>
+                          )}
                         </div>
                       </div>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               )}
 

@@ -1,13 +1,19 @@
 import { z } from "zod";
+import { toRoomStatus } from "~/lib/room-status";
 import { createTRPCRouter, publicProcedure } from "~/server/api/trpc";
 
+// Rooms marked not_available stay out of the lists people pick a room from.
+const LISTED = { status: { not: "not_available" } };
+
 export const labRouter = createTRPCRouter({
+  // Every room, whatever its status: the booking calendar needs them all to
+  // colour and size the bookings already made in rooms that have since closed.
   getAll: publicProcedure.query(async ({ ctx }) => {
     try {
       const labs = await ctx.db.lab.findMany({
         orderBy: { name: "asc" },
       });
-      
+
       return labs.map(room => ({
         id: room.id,
         name: room.name || '',
@@ -17,6 +23,7 @@ export const labRouter = createTRPCRouter({
         capacity: room.capacity || 0,
         image: room.image || "",
         roomType: room.roomType || "student_lab",
+        status: toRoomStatus(room.status),
       }));
     } catch (error) {
       console.error("Error fetching labs:", error);
@@ -28,11 +35,12 @@ export const labRouter = createTRPCRouter({
     try {
       const labs = await ctx.db.lab.findMany({
         where: {
-          roomType: "student_lab"
+          roomType: "student_lab",
+          ...LISTED,
         },
         orderBy: { name: "asc" },
       });
-      
+
       return labs.map(room => ({
         id: room.id,
         name: room.name || '',
@@ -42,6 +50,7 @@ export const labRouter = createTRPCRouter({
         capacity: room.capacity || 0,
         image: room.image || "",
         roomType: room.roomType || "student_lab",
+        status: toRoomStatus(room.status),
       }));
     } catch (error) {
       console.error("Error fetching student labs:", error);
@@ -53,11 +62,12 @@ export const labRouter = createTRPCRouter({
     try {
       const rooms = await ctx.db.lab.findMany({
         where: {
-          roomType: "staff_room"
+          roomType: "staff_room",
+          ...LISTED,
         },
         orderBy: { name: "asc" },
       });
-      
+
       return rooms.map(room => ({
         id: room.id,
         name: room.name || '',
@@ -67,6 +77,7 @@ export const labRouter = createTRPCRouter({
         capacity: room.capacity || 0,
         image: room.image || "",
         roomType: room.roomType || "staff_room",
+        status: toRoomStatus(room.status),
       }));
     } catch (error) {
       console.error("Error fetching staff rooms:", error);
@@ -113,6 +124,9 @@ export const labRouter = createTRPCRouter({
           capacity: lab.capacity || 0,
           image: lab.image || "",
           roomType: lab.roomType || "student_lab",
+          // Returned for every status, so a direct link to a closed room can
+          // explain why it cannot be booked instead of failing.
+          status: toRoomStatus(lab.status),
         };
       } catch (error) {
         console.error("Error fetching lab by ID:", error);
