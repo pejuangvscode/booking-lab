@@ -1,9 +1,59 @@
 ﻿import Head from "next/head";
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
-import { Home as HomeIcon, BookOpen, Users, Calendar, FileText, Phone, Menu, X, Layers, Timer, Info, ChevronDown, ArrowRight, Mail, Wrench } from "lucide-react";
+import { Checkbox } from "~/components/ui/checkbox";
+import { Home as HomeIcon, BookOpen, Users, Calendar, FileText, Phone, Menu, X, Layers, Timer, Info, ChevronDown, ArrowRight, Mail } from "lucide-react";
 import React from "react";
-import { RENOVATION_ROOM_LABEL } from "~/lib/renovation";
+
+// Rooms announced in the landing-page popup. `share` sets each photo's width in
+// the header strip: the bigger lab gets the bigger frame.
+const NEW_ROOMS = [
+  {
+    code: "B344",
+    label: "Ruang Workshop",
+    capacity: 15,
+    share: 2,
+    image:
+      "https://res.cloudinary.com/dqz0crqoj/image/upload/c_limit,w_900,f_auto,q_auto/v1792649639/rsw6d9xjv9wlhvtdeeyo.jpg",
+  },
+  {
+    code: "B356",
+    label: "Lab Komputer",
+    capacity: 30,
+    share: 3,
+    image:
+      "https://res.cloudinary.com/dqz0crqoj/image/upload/c_limit,w_900,f_auto,q_auto/v1792649637/sllgfmxmzcwcw0sr0ai5.jpg",
+  },
+];
+
+// Change this whenever the announcement's content changes, so visitors who hid
+// the previous announcement still get to see the new one.
+const ANNOUNCEMENT_ID = "new-rooms-b344-b356";
+const HIDE_ANNOUNCEMENT_KEY = `booklab:hide-announcement:${ANNOUNCEMENT_ID}`;
+
+const isAnnouncementHidden = () => {
+  try {
+    return window.localStorage.getItem(HIDE_ANNOUNCEMENT_KEY) === "1";
+  } catch {
+    // Storage blocked (private mode, strict browser settings): just show it.
+    return false;
+  }
+};
+
+const hideAnnouncementForever = () => {
+  try {
+    window.localStorage.setItem(HIDE_ANNOUNCEMENT_KEY, "1");
+  } catch {
+    // Storage unavailable: the popup simply shows again on the next visit.
+  }
+};
+
+// Stagger offset for the announcement's entrance, read by the CSS below.
+const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as React.CSSProperties;
+
+// Must match the exit animation length in the global styles.
+const ANNOUNCEMENT_EXIT_MS = 180;
 
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -52,15 +102,49 @@ const AnimatedSection: React.FC<{
 };
 
 export default function Home() {
-  // Show the renovation notice on every page load.
-  const [showNoticeModal, setShowNoticeModal] = useState(true);
+  // The new-rooms announcement shows on every page load unless the visitor
+  // ticked "Jangan tampilkan lagi".
+  const [showNoticeModal, setShowNoticeModal] = useState(false);
+  const [isClosingNotice, setIsClosingNotice] = useState(false);
+  const [dontShowAgain, setDontShowAgain] = useState(false);
+  const closeTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const [activeSection, setActiveSection] = useState('home');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [openRuleSection, setOpenRuleSection] = useState<string | null>(null);
 
-  const handleCloseNotice = () => {
-    setShowNoticeModal(false);
-  };
+  // Decided after mount: localStorage only exists in the browser, and starting
+  // hidden means visitors who opted out never see the popup flash in and out.
+  useEffect(() => {
+    if (!isAnnouncementHidden()) setShowNoticeModal(true);
+    return () => {
+      if (closeTimer.current) clearTimeout(closeTimer.current);
+    };
+  }, []);
+
+  const rememberChoice = useCallback(() => {
+    if (dontShowAgain) hideAnnouncementForever();
+  }, [dontShowAgain]);
+
+  const handleCloseNotice = useCallback(() => {
+    if (isClosingNotice) return;
+    rememberChoice();
+    // Let the exit animation play before unmounting.
+    setIsClosingNotice(true);
+    closeTimer.current = setTimeout(() => {
+      setShowNoticeModal(false);
+      setIsClosingNotice(false);
+    }, ANNOUNCEMENT_EXIT_MS);
+  }, [isClosingNotice, rememberChoice]);
+
+  // Escape dismisses the announcement, like every other dialog in the app.
+  useEffect(() => {
+    if (!showNoticeModal) return;
+    const handleKey = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') handleCloseNotice();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [showNoticeModal, handleCloseNotice]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -116,52 +200,114 @@ export default function Home() {
         <title>BookLab | FAIDAS Lab Booking</title>
         <meta name="description" content="UPH Lab Room Booking Portal" />
         <link rel="icon" href="/favicon.ico" />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
-        <link
-          href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&display=swap"
-          rel="stylesheet"
-        />
       </Head>
 
       {showNoticeModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
           <div
-            className="absolute inset-0 bg-gray-900/40 backdrop-blur-[2px] animate-[noticeFade_0.2s_ease-out]"
+            className={`announce-backdrop absolute inset-0 bg-gray-900/50 backdrop-blur-[2px] ${isClosingNotice ? 'is-closing' : ''}`}
             onClick={handleCloseNotice}
           />
           <div
             role="dialog"
-            aria-live="polite"
             aria-modal="true"
-            aria-labelledby="renovation-notice-title"
-            className="relative w-full max-w-sm overflow-hidden rounded-2xl border border-gray-100 bg-white p-6 shadow-xl animate-[noticeIn_0.25s_ease-out] sm:p-7"
+            aria-labelledby="new-rooms-title"
+            className={`announce-panel relative max-h-[calc(100dvh-3rem)] w-full max-w-xl overflow-y-auto rounded-2xl border border-gray-100 bg-white shadow-xl ${isClosingNotice ? 'is-closing' : ''}`}
           >
-            <p className="mt-5 text-[11px] font-medium uppercase tracking-[0.3em] text-orange-600">
-              Pemberitahuan
-            </p>
-            <h2
-              id="renovation-notice-title"
-              className="mt-2 text-xl font-medium text-gray-900"
-            > 
-              Ruangan sedang direnovasi
-            </h2>
-            <p className="mt-2.5 text-sm leading-relaxed text-gray-600">
-              Ruangan{' '}
-              <span className="font-medium text-gray-900">
-                {RENOVATION_ROOM_LABEL}
-              </span>{' '}
-              sedang dalam masa renovasi dan untuk sementara tidak dapat digunakan.
-              Mohon pilih ruangan lain untuk peminjaman.
-            </p>
+            {/* The photos lead, edge to edge, uncovered left to right on entry. */}
+            <div className="flex h-44 gap-[3px] sm:h-60">
+              {NEW_ROOMS.map((room, index) => (
+                <div
+                  key={room.code}
+                  className="announce-photo relative min-w-0 overflow-hidden bg-gray-100"
+                  style={{ flex: `${room.share} 1 0%`, ...delay(140 + index * 140) }}
+                >
+                  <img
+                    src={room.image}
+                    alt={`${room.label} ${room.code}`}
+                    decoding="async"
+                    className="h-full w-full object-cover"
+                  />
+                  <span
+                    aria-hidden="true"
+                    className="absolute bottom-3 left-3 rounded-md bg-white px-2 py-1 text-xs font-medium tabular-nums text-gray-900 ring-1 ring-black/5"
+                  >
+                    {room.code}
+                  </span>
+                </div>
+              ))}
+            </div>
 
-            <button
-              type="button"
-              onClick={handleCloseNotice}
-              className="mt-6 inline-flex w-full items-center justify-center rounded-lg bg-orange-600 px-4 py-2.5 text-sm font-medium text-white transition-colors hover:cursor-pointer hover:bg-orange-700"
-            >
-              Mengerti
-            </button>
+            <div className="px-6 pb-6 pt-6 sm:px-8 sm:pb-8 sm:pt-7">
+              <h2
+                id="new-rooms-title"
+                className="announce-item text-2xl font-medium tracking-tight text-gray-900"
+                style={delay(380)}
+              >
+                Ada ruangan baru!
+              </h2>
+
+              {/* Read like a building directory: the door code leads each row. */}
+              <ul className="mt-4 border-t border-gray-100">
+                {NEW_ROOMS.map((room, index) => (
+                  <li
+                    key={room.code}
+                    className="announce-item flex items-center gap-4 border-b border-gray-100 py-3.5 sm:items-baseline"
+                    style={delay(460 + index * 80)}
+                  >
+                    <span className="w-[4.5rem] shrink-0 text-2xl font-medium tracking-tight tabular-nums text-gray-900 sm:w-24 sm:text-3xl">
+                      {room.code}
+                    </span>
+                    {/* Stacked beside the code on phones, one line from sm up. */}
+                    <span className="flex min-w-0 flex-1 flex-col sm:flex-row sm:items-baseline sm:justify-between sm:gap-4">
+                      <span className="text-sm font-medium text-gray-700">
+                        {room.label}
+                      </span>
+                      <span className="mt-0.5 text-sm tabular-nums text-gray-500 sm:mt-0 sm:shrink-0">
+                        {room.capacity} orang
+                      </span>
+                    </span>
+                  </li>
+                ))}
+              </ul>
+
+              <div
+                className="announce-item mt-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between"
+                style={delay(620)}
+              >
+                <div className="flex items-center gap-2.5">
+                  <Checkbox
+                    id="hide-announcement"
+                    checked={dontShowAgain}
+                    onCheckedChange={(checked) => setDontShowAgain(checked === true)}
+                    className="hover:cursor-pointer"
+                  />
+                  <label
+                    htmlFor="hide-announcement"
+                    className="cursor-pointer select-none text-sm text-gray-500"
+                  >
+                    Jangan tampilkan lagi
+                  </label>
+                </div>
+
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    onClick={handleCloseNotice}
+                    className="flex-1 whitespace-nowrap rounded-lg border border-gray-200 bg-white px-4 py-2.5 text-sm font-medium text-gray-700 transition-colors hover:cursor-pointer hover:bg-gray-50 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-gray-400/50 sm:flex-none"
+                  >
+                    Tutup
+                  </button>
+                  <Link
+                    href="/book-room/student-lab"
+                    onClick={rememberChoice}
+                    className="inline-flex flex-1 items-center justify-center whitespace-nowrap rounded-lg bg-orange-600 px-5 py-2.5 text-sm font-medium text-white transition-colors hover:bg-orange-700 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-gray-400/50 sm:flex-none"
+                  >
+                    Lihat ruangan
+                  </Link>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}
@@ -250,11 +396,10 @@ export default function Home() {
                   className="h-12 w-full cursor-pointer rounded-lg bg-white px-7 text-sm font-medium text-orange-600 shadow-sm transition-colors hover:bg-orange-50 sm:w-auto"
                   onClick={() => window.location.href = '/book-room'}
                 >
-                  Book a Lab Now
+                  Book Now
                 </Button>
                 <Button
-                  variant="outline"
-                  className="h-12 w-full cursor-pointer rounded-lg border border-white/40 bg-transparent px-7 text-sm font-medium text-white transition-colors hover:bg-white/10 hover:text-white sm:w-auto"
+                  className="h-12 w-full cursor-pointer rounded-lg bg-transparent px-7 text-sm font-medium bg-white/10 text-white transition-colors hover:bg-white/20 hover:text-white sm:w-auto"
                   onClick={() => window.location.href = '/booking-calendar'}
                 >
                   View Calendar
@@ -273,54 +418,6 @@ export default function Home() {
         </button>
       </section>
 
-      {/* ==================== ABOUT SECTION ==================== */}
-      <section id="about" className="relative border-t border-gray-100 py-20 sm:py-28">
-        {/* Accent line */}
-        {/* Orbs */}
-
-        <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="max-w-5xl mx-auto">
-            <AnimatedSection>
-              <div className="mb-16">
-                <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">About Us</p>
-                <h2 className="text-3xl sm:text-4xl font-medium text-gray-900 mb-4">
-                  About FAIDAS BookLab
-                </h2>
-                <p className="text-base sm:text-lg text-gray-600 mx-auto leading-relaxed">
-                  BookLab adalah sistem booking laboratorium FAIDAS (Faculty of Artificial Intelligence and Data Science) UPH yang memungkinkan mahasiswa dan dosen untuk mereservasi ruang laboratorium dengan mudah dan efisien.
-                </p>
-              </div>
-            </AnimatedSection>
-
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
-              {[
-                {
-                  title: "Easy Booking",
-                  description: "Sistem booking yang user-friendly dengan calendar yang intuitif"
-                },
-                {
-                  title: "Real-time Updates",
-                  description: "Informasi ketersediaan lab yang selalu update secara real-time"
-                },
-                {
-                  title: "Multiple Labs",
-                  description: "Akses ke berbagai laboratorium dengan spesifikasi yang berbeda"
-                }
-              ].map((feature, index) => (
-                <AnimatedSection key={index} delay={index * 100}>
-                  <div className="rounded-2xl border border-gray-200 bg-white p-6 shadow-sm transition-shadow hover:shadow-md">
-                    <div className="relative">
-                      <h3 className="text-base font-medium text-gray-900 mb-2">{feature.title}</h3>
-                      <p className="text-sm text-gray-600 leading-relaxed">{feature.description}</p>
-                    </div>
-                  </div>
-                </AnimatedSection>
-              ))}
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* ==================== HOW TO USE SECTION ==================== */}
       <section id="how-to-use" className="relative border-t border-gray-100 py-20 sm:py-28">
         {/* Accent line */}
@@ -330,13 +427,9 @@ export default function Home() {
           <div className="max-w-3xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-14">
-                <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">How It Works</p>
                 <h2 className="text-3xl sm:text-4xl font-medium text-gray-900 mb-4">
-                  Cara Menggunakan BookLab
+                  Cara Booking
                 </h2>
-                <p className="text-base sm:text-lg text-gray-600">
-                  Ikuti 6 langkah mudah untuk melakukan booking laboratorium
-                </p>
               </div>
             </AnimatedSection>
 
@@ -409,9 +502,8 @@ export default function Home() {
           <div className="max-w-3xl mx-auto">
             <AnimatedSection>
               <div className="text-center mb-8">
-                <p className="text-xs font-medium text-orange-600 uppercase tracking-widest mb-3">Rules & Regulations</p>
                 <h2 className="text-3xl sm:text-4xl font-medium text-gray-900">
-                  Tata Tertib Penggunaan Laboratorium FAIDAS
+                  Tata Tertib
                 </h2>
               </div>
             </AnimatedSection>
@@ -843,13 +935,59 @@ export default function Home() {
 
       <style jsx global>{`
         html { scroll-behavior: smooth; }
-        @keyframes noticeIn {
-          from { opacity: 0; transform: translateY(8px) scale(0.98); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+
+        /*
+         * New-rooms announcement — one authored entrance. The panel rises, the
+         * two room photos are uncovered left to right like a new door sign
+         * being unveiled (each photo settling from a slight zoom), then the
+         * room codes and actions follow. Every keyframe only states its "from",
+         * so the resting state is the element's own, fully visible styling.
+         * The exit is shorter than the entrance; keep its 180ms in step with
+         * ANNOUNCEMENT_EXIT_MS.
+         */
+        .announce-backdrop {
+          animation: announce-fade 320ms ease-out both;
         }
-        @keyframes noticeFade {
-          from { opacity: 0; }
-          to { opacity: 1; }
+        .announce-panel {
+          animation: announce-rise 560ms cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+        .announce-photo {
+          animation: announce-unveil 900ms cubic-bezier(0.16, 1, 0.3, 1) var(--delay, 0ms) both;
+        }
+        .announce-photo img {
+          animation: announce-settle 1400ms cubic-bezier(0.16, 1, 0.3, 1) var(--delay, 0ms) both;
+        }
+        .announce-item {
+          animation: announce-item 520ms cubic-bezier(0.16, 1, 0.3, 1) var(--delay, 0ms) both;
+        }
+        .announce-backdrop.is-closing {
+          animation: announce-fade-out 180ms ease-in both;
+        }
+        .announce-panel.is-closing {
+          animation: announce-leave 180ms ease-in both;
+        }
+
+        @keyframes announce-fade { from { opacity: 0; } }
+        @keyframes announce-fade-out { to { opacity: 0; } }
+        @keyframes announce-rise { from { opacity: 0; transform: translateY(32px) scale(0.96); } }
+        @keyframes announce-leave { to { opacity: 0; transform: translateY(12px) scale(0.98); } }
+        @keyframes announce-unveil { from { clip-path: inset(0 100% 0 0); } }
+        @keyframes announce-settle { from { transform: scale(1.15); } }
+        @keyframes announce-item { from { opacity: 0; transform: translateY(10px); } }
+
+        /* Reduced motion: no travel, no unveil, no zoom — just quick fades. */
+        @media (prefers-reduced-motion: reduce) {
+          .announce-panel,
+          .announce-item {
+            animation: announce-fade 200ms ease-out both;
+          }
+          .announce-photo,
+          .announce-photo img {
+            animation: none;
+          }
+          .announce-panel.is-closing {
+            animation: announce-fade-out 150ms ease-in both;
+          }
         }
       `}</style>
     </div>

@@ -1,17 +1,23 @@
 import { SignInButton, useAuth, useUser } from '@clerk/nextjs';
 import { Switch } from '~/components/ui/switch';
-import { is } from 'date-fns/locale';
-import { Building, Calendar, Loader2, Users } from "lucide-react";
+import { ChevronLeft, Loader2 } from "lucide-react";
 import Head from "next/head";
 import Link from "next/link";
 import { useRouter } from "next/router";
 import { useEffect, useState } from "react";
+import {
+  AvailabilityStatus,
+  ChoiceOption,
+  FieldError,
+  FieldLabel,
+  FormSection,
+  TimeField,
+} from "~/components/booking-form-parts";
 import { Button } from "~/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "~/components/ui/card";
 import { CustomDialog } from "~/components/ui/custom-dialog";
 import { Input } from "~/components/ui/input";
 import { Label } from "~/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "~/components/ui/radio-group";
+import { RadioGroup } from "~/components/ui/radio-group";
 import {
   Select,
   SelectContent,
@@ -381,82 +387,102 @@ export default function BookingPage() {
   };
 
   return (
-    <div className="min-h-screen bg-neutral-50 px-4 pb-12 pt-24">
+    <div className="min-h-screen bg-neutral-50 px-4 pb-16 pt-24 sm:px-6">
       <Head>
         <title>Book a Lab | UPH Facility Booking</title>
       </Head>
-      
 
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-        {/* Header section */}
-        <div className="border-b border-gray-100 px-6 py-6">
-          <h2 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
+      <div className="mx-auto max-w-3xl">
+        <Link
+          href="/admin/lab-search"
+          className="inline-flex items-center gap-1 text-sm text-gray-500 transition-colors hover:text-gray-900"
+        >
+          <ChevronLeft className="h-4 w-4" />
+          All rooms
+        </Link>
+
+        <header className="mt-4 sm:mt-5">
+          <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
             {labDetail?.name ? `Book ${labDetail.name}` : "Book Laboratory"}
-          </h2>
+          </h1>
           {labDetail && (
-            <div className="flex flex-wrap gap-2 mt-3">
-              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
-                {formatLabType(labDetail.type)}
-              </span>
-              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
-                {labDetail.capacity && labDetail.capacity > 0 
-                  ? `${labDetail.capacity} seats` 
-                  : "Flexible space"}
-              </span>
-              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
-                {labDetail.department}
-              </span>
-            </div>
+            <>
+              <p className="mt-1.5 text-sm text-gray-500">{labDetail.department}</p>
+              <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 border-y border-gray-200 py-3 text-sm sm:mt-6 sm:grid-cols-4 sm:gap-x-6 sm:py-4">
+                {labDetail.facilityId && (
+                  <div>
+                    <dt className="text-xs text-gray-500 sm:text-sm">Room ID</dt>
+                    <dd className="mt-0.5 font-medium text-gray-900">{labDetail.facilityId}</dd>
+                  </div>
+                )}
+                <div>
+                  <dt className="text-xs text-gray-500 sm:text-sm">Type</dt>
+                  <dd className="mt-0.5 text-gray-900">{formatLabType(labDetail.type)}</dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-gray-500 sm:text-sm">Capacity</dt>
+                  <dd className="mt-0.5 text-gray-900">
+                    {labDetail.capacity && labDetail.capacity > 0
+                      ? `${labDetail.capacity} seats`
+                      : "Flexible space"}
+                  </dd>
+                </div>
+                <div>
+                  <dt className="text-xs text-gray-500 sm:text-sm">Status</dt>
+                  <dd className="mt-0.5">
+                    <span className="inline-flex items-center gap-1.5 text-green-700">
+                      <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
+                      Available
+                    </span>
+                  </dd>
+                </div>
+              </dl>
+            </>
           )}
-          <div className="mt-3 flex flex-wrap gap-2">
-            {labDetail?.facilityId && (
-              <span className="inline-flex items-center rounded-md border border-gray-200 px-2.5 py-1 text-xs font-medium text-gray-600">
-                <span className="text-gray-400">ID:</span> {labDetail.facilityId}
-              </span>
-            )}
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-green-50 px-2.5 py-1 text-xs font-medium text-green-700">
-              <span className="h-1.5 w-1.5 rounded-full bg-green-500"></span>
-              Available
-            </span>
-          </div>
-        </div>
+        </header>
 
-        {/* Form section */}
-        {isLabLoading ? (
-          <div className="p-12 flex justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-orange-600" />
-          </div>
-        ) : labError ? (
-          <div className="p-6">
-            <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
-              <p className="text-sm font-medium text-red-900">
-                Failed to load lab details
-              </p>
-              <p className="mt-1 text-sm leading-relaxed text-red-800">
-                Please try again, or select a different lab.
-              </p>
-              <Button
-                onClick={() => router.push("/admin/lab-search")}
-                variant="outline"
-                className="mt-4 border-red-200 bg-white text-red-700 hover:cursor-pointer hover:bg-red-50 hover:text-red-800"
-              >
-                Return to lab search
-              </Button>
+        <div className="-mx-4 mt-6 overflow-hidden border-y border-gray-200 bg-white sm:mx-0 sm:mt-8 sm:rounded-2xl sm:border">
+          {isLabLoading ? (
+            <div className="flex justify-center p-12">
+              <Loader2 className="h-6 w-6 animate-spin text-orange-600" />
             </div>
-          </div>
-        ) : (
-          <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-4 sm:space-y-6">
-            {/* Multiple Booking Toggle */}
-            <Card className="border border-gray-200">
-              <CardHeader className="pb-3">
-                <CardTitle className="text-lg flex items-center space-x-2">
-                  <Calendar className="h-5 w-5 text-blue-600" />
-                  <span>Booking Mode</span>
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center space-x-3">
+          ) : labError ? (
+            <div className="p-6 sm:p-8">
+              <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4">
+                <p className="text-sm font-medium text-red-900">
+                  Failed to load lab details
+                </p>
+                <p className="mt-1 text-sm leading-relaxed text-red-800">
+                  Please try again, or select a different lab.
+                </p>
+                <Button
+                  onClick={() => router.push("/admin/lab-search")}
+                  variant="outline"
+                  className="mt-4 border-red-200 bg-white text-red-700 hover:cursor-pointer hover:bg-red-50 hover:text-red-800"
+                >
+                  Return to lab search
+                </Button>
+              </div>
+            </div>
+          ) : (
+            <form onSubmit={handleSubmit} className="divide-y divide-gray-100">
+              <FormSection
+                title="Date and time"
+                hint={isMultipleBooking ? "The same time slot is booked on every chosen day." : undefined}
+              >
+                <div className="flex items-center justify-between gap-4 rounded-xl border border-gray-200 px-3.5 py-3 sm:px-4 sm:py-3.5">
+                  <div>
+                    <Label htmlFor="recurring" className="cursor-pointer text-sm font-medium text-gray-900">
+                      Repeat weekly
+                    </Label>
+                    <p className="mt-0.5 text-xs text-gray-500 sm:text-sm">
+                      {isMultipleBooking
+                        ? "Recurring bookings on chosen days across a date range."
+                        : "Off. One booking on a single date."}
+                    </p>
+                  </div>
                   <Switch
+                    id="recurring"
                     checked={isMultipleBooking}
                     onCheckedChange={(checked) => {
                       setIsMultipleBooking(checked);
@@ -469,507 +495,329 @@ export default function BookingPage() {
                     }}
                     className="cursor-pointer"
                   />
+                </div>
+
+                <div className={`grid gap-3 sm:grid-cols-2 sm:gap-5 ${isMultipleBooking ? "grid-cols-2" : ""}`}>
                   <div>
-                    <Label className="text-sm font-medium text-gray-700 cursor-pointer">
-                      {isMultipleBooking ? "Multiple Booking (Recurring)" : "Single Booking"}
-                    </Label>
-                    <p className="text-xs text-gray-500 mt-1">
-                      {isMultipleBooking 
-                        ? "Create recurring bookings for specific days of the week over a date range"
-                        : "Create a single booking for one specific date"
-                      }
-                    </p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Date Selection */}
-              <div className="space-y-2">
-                <label htmlFor="bookingDate" className="block text-sm font-medium text-gray-700">
-                  {isMultipleBooking ? "Start Date" : "Booking Date"}
-                </label>
-                <div className="hover:cursor-pointer">
-                  <Input
-                    type="date"
-                    id="bookingDate"
-                    value={bookingDate}
-                    onChange={(e) => setBookingDate(e.target.value)}
-                    min={new Date().toISOString().split('T')[0]}
-                    className={formErrors.bookingDate ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}
-                  />
-                </div>
-                {formErrors.bookingDate && (
-                  <p className="text-red-500 text-xs">{formErrors.bookingDate}</p>
-                )}
-              </div>
-
-              {/* End Date (Multiple Booking Only) */}
-              {isMultipleBooking && (
-                <div className="space-y-2">
-                  <label htmlFor="endDate" className="block text-sm font-medium text-gray-700">
-                    End Date
-                  </label>
-                  <div className="hover:cursor-pointer">
+                    <FieldLabel htmlFor="bookingDate">
+                      {isMultipleBooking ? "Start date" : "Date"}
+                    </FieldLabel>
                     <Input
                       type="date"
-                      id="endDate"
-                      value={endDate}
-                      onChange={(e) => setEndDate(e.target.value)}
-                      min={bookingDate || new Date().toISOString().split('T')[0]}
-                      className={formErrors.endDate ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}
+                      id="bookingDate"
+                      value={bookingDate}
+                      onChange={(e) => setBookingDate(e.target.value)}
+                      min={new Date().toISOString().split('T')[0]}
+                      className={formErrors.bookingDate ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}
                     />
+                    <FieldError message={formErrors.bookingDate} />
                   </div>
-                  {formErrors.endDate && (
-                    <p className="text-red-500 text-xs">{formErrors.endDate}</p>
-                  )}
-                </div>
-              )}
 
-              {/* Time slots */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">Start Time</label>
-                  <div className="flex space-x-2">
-                    <Select value={startHour} onValueChange={setStartHour}>
-                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
-                        <SelectValue placeholder="Hour" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {hourOptions.map((hour) => (
-                          <SelectItem key={`start-hour-${hour}`} value={hour}>
-                            {hour}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={startMinute} onValueChange={setStartMinute}>
-                      <SelectTrigger className={`w-full ${formErrors.startTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
-                        <SelectValue placeholder="Minute" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {minuteOptions.map((minute) => (
-                          <SelectItem key={`start-min-${minute}`} value={minute}>
-                            {minute}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {formErrors.startTime && (
-                    <p className="text-red-500 text-xs">{formErrors.startTime}</p>
-                  )}
-                </div>
-
-                <div className="space-y-2">
-                  <label className="block text-sm font-medium text-gray-700">End Time</label>
-                  <div className="flex space-x-2">
-                    <Select value={endHour} onValueChange={setEndHour}>
-                      <SelectTrigger className={`w-full ${formErrors.endTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
-                        <SelectValue placeholder="Hour" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {hourOptions.map((hour) => (
-                          <SelectItem key={`end-hour-${hour}`} value={hour}>
-                            {hour}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-
-                    <Select value={endMinute} onValueChange={setEndMinute}>
-                      <SelectTrigger className={`w-full ${formErrors.endTime ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}`}>
-                        <SelectValue placeholder="Minute" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {minuteOptions.map((minute) => (
-                          <SelectItem key={`end-min-${minute}`} value={minute}>
-                            {minute}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  {formErrors.endTime && (
-                    <p className="text-red-500 text-xs">{formErrors.endTime}</p>
-                  )}
-                </div>
-              </div>
-            </div>
-
-            {isMultipleBooking && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg">Select Days of Week</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-3">
-                    {daysOfWeek.map((day) => (
-                      <div key={day.value} className="flex items-center space-x-2">
-                        <Checkbox
-                          id={`day-${day.value}`}
-                          checked={selectedDays.includes(day.value)}
-                          onCheckedChange={() => handleDayToggle(day.value)}
-                        />
-                        <Label 
-                          htmlFor={`day-${day.value}`} 
-                          className="text-sm cursor-pointer"
-                        >
-                          {day.label}
-                        </Label>
-                      </div>
-                    ))}
-                  </div>
-                  {formErrors.selectedDays && (
-                    <p className="text-red-500 text-xs mt-2">{formErrors.selectedDays}</p>
-                  )}
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Booking Preview (Multiple Booking Only) */}
-            {isMultipleBooking && showPreview && previewBookings.length > 0 && (
-              <Card>
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center justify-between">
-                    <span>Booking Preview ({previewBookings.length} bookings)</span>
-                    <Button 
-                      type="button" 
-                      variant="outline" 
-                      size="sm"
-                      onClick={() => setShowPreview(!showPreview)}
-                    >
-                      {showPreview ? 'Hide' : 'Show'} Details
-                    </Button>
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <p className="text-sm text-blue-700 mb-3">
-                      The following bookings will be created:
-                    </p>
-                    <div className="max-h-32 overflow-y-auto space-y-1">
-                      {previewBookings.slice(0, 10).map((booking, index) => (
-                        <div key={index} className="text-xs bg-white p-2 rounded border">
-                          <strong>{booking.dayName}</strong> - {new Date(booking.date).toLocaleDateString()}
-                        </div>
-                      ))}
-                      {previewBookings.length > 10 && (
-                        <div className="text-xs text-gray-500 italic">
-                          ... and {previewBookings.length - 10} more bookings
-                        </div>
-                      )}
+                  {isMultipleBooking && (
+                    <div>
+                      <FieldLabel htmlFor="endDate">End date</FieldLabel>
+                      <Input
+                        type="date"
+                        id="endDate"
+                        value={endDate}
+                        onChange={(e) => setEndDate(e.target.value)}
+                        min={bookingDate || new Date().toISOString().split('T')[0]}
+                        className={formErrors.endDate ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}
+                      />
+                      <FieldError message={formErrors.endDate} />
                     </div>
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Booking Type Selection */}
-            <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
-                Booking Type
-              </label>
-
-              <RadioGroup 
-                value={bookingType} 
-                onValueChange={handleBookingTypeChange}
-                className={`grid gap-4 ${labDetail?.capacity === 0 ? 'grid-cols-1' : 'grid-cols-1 md:grid-cols-2'}`}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem 
-                    value="full" 
-                    id="full" 
-                    disabled={labDetail?.capacity === 0}
-                    className="sr-only"
-                  />
-                  <Label htmlFor="full" className="flex-1 cursor-pointer w-full">
-                    <Card className={`p-4 border transition-colors ${
-                      bookingType === "full" 
-                        ? "border-orange-500 bg-orange-50" 
-                        : "border-gray-200 hover:border-gray-300"
-                    } ${labDetail?.capacity === 0 ? 'opacity-100' : ''}`}>
-                      <CardContent className="p-0">
-                        <div className="flex items-center space-x-3">
-                          <Building className={`h-5 w-5 ${
-                            bookingType === "full" ? "text-orange-600" : "text-gray-400"
-                          }`} />
-                          <div>
-                            <div className="font-medium text-sm">
-                              {labDetail?.capacity === 0 ? "Book Entire Space" : "Book Full Room"}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {labDetail?.capacity === 0 
-                                ? "Flexible space, no capacity limit"
-                                : labDetail?.capacity && labDetail.capacity > 0 
-                                  ? `${labDetail.capacity} seats` 
-                                  : "All available seats"
-                              }
-                            </div>
-                          </div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </Label>
+                  )}
                 </div>
 
-                {/* Partial Room Option */}
-                {labDetail?.capacity !== 0 && (
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="partial" id="partial" className="sr-only" />
-                    <Label htmlFor="partial" className="flex-1 cursor-pointer w-full">
-                      <Card className={`p-4 border transition-colors ${
-                        bookingType === "partial" 
-                          ? "border-orange-500 bg-orange-50" 
-                          : "border-gray-200 hover:border-gray-300"
-                      }`}>
-                        <CardContent className="p-0">
-                          <div className="flex items-center space-x-3">
-                            <Users className={`h-5 w-5 ${
-                              bookingType === "partial" ? "text-orange-600" : "text-gray-400"
-                            }`} />
-                            <div>
-                              <div className="font-medium text-sm">Specify Participants</div>
-                              <div className="text-xs text-gray-500">
-                                Choose number of people
-                              </div>
-                            </div>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </Label>
+                {isMultipleBooking && (
+                  <fieldset>
+                    <legend className="mb-1.5 text-sm font-medium text-gray-700">Days</legend>
+                    <div className="flex flex-wrap gap-2">
+                      {daysOfWeek.map((day) => (
+                        <Label
+                          key={day.value}
+                          htmlFor={`day-${day.value}`}
+                          className={`flex cursor-pointer items-center gap-2 rounded-lg border px-3 py-2 text-sm font-normal transition-colors ${
+                            selectedDays.includes(day.value)
+                              ? "border-orange-500 bg-orange-50/40 text-gray-900"
+                              : "border-gray-200 text-gray-700 hover:border-gray-300"
+                          }`}
+                        >
+                          <Checkbox
+                            id={`day-${day.value}`}
+                            checked={selectedDays.includes(day.value)}
+                            onCheckedChange={() => handleDayToggle(day.value)}
+                          />
+                          {day.short}
+                        </Label>
+                      ))}
+                    </div>
+                    <FieldError message={formErrors.selectedDays} />
+                  </fieldset>
+                )}
+
+                <div className="grid grid-cols-2 gap-3 sm:gap-5">
+                  <TimeField
+                    label="Start"
+                    hour={startHour}
+                    minute={startMinute}
+                    onHourChange={setStartHour}
+                    onMinuteChange={setStartMinute}
+                    hourOptions={hourOptions}
+                    minuteOptions={minuteOptions}
+                    invalid={!!formErrors.startTime}
+                    error={formErrors.startTime}
+                  />
+                  <TimeField
+                    label="End"
+                    hour={endHour}
+                    minute={endMinute}
+                    onHourChange={setEndHour}
+                    onMinuteChange={setEndMinute}
+                    hourOptions={hourOptions}
+                    minuteOptions={minuteOptions}
+                    invalid={!!formErrors.endTime}
+                    error={formErrors.endTime}
+                  />
+                </div>
+
+                {isMultipleBooking && showPreview && previewBookings.length > 0 && (
+                  <div className="overflow-hidden rounded-xl border border-gray-200">
+                    <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-2.5">
+                      <p className="text-sm font-medium text-gray-900">
+                        {previewBookings.length} booking{previewBookings.length !== 1 ? "s" : ""} will be created
+                      </p>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={() => setShowPreview(!showPreview)}
+                        className="text-gray-600 hover:cursor-pointer"
+                      >
+                        {showPreview ? 'Hide' : 'Show'}
+                      </Button>
+                    </div>
+                    <ul className="max-h-48 divide-y divide-gray-100 overflow-y-auto">
+                      {previewBookings.slice(0, 10).map((booking, index) => (
+                        <li key={index} className="flex items-center justify-between gap-4 px-4 py-2 text-sm">
+                          <span className="text-gray-900">{booking.dayName}</span>
+                          <span className="tabular-nums text-gray-500">
+                            {new Date(booking.date).toLocaleDateString()}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                    {previewBookings.length > 10 && (
+                      <p className="border-t border-gray-100 px-4 py-2 text-xs text-gray-500">
+                        And {previewBookings.length - 10} more
+                      </p>
+                    )}
                   </div>
                 )}
-              </RadioGroup>
-            </div>
+              </FormSection>
 
-            {(bookingType === "partial") && (
-              <div className="space-y-2">
-                <label htmlFor="participants" className="block text-sm font-medium text-gray-700">
-                  Number of Participants {labDetail?.capacity === 0 && <span className="text-red-500">*</span>}
-                </label>
-                <Input
-                  type="number"
-                  id="participants"
-                  value={participants}
-                  onChange={(e) => setParticipants(e.target.value)}
-                  min="1"
-                  max={labDetail?.capacity && labDetail.capacity > 0 ? labDetail.capacity : 999}
-                  placeholder={
-                    labDetail?.capacity === 0
-                      ? "Enter number of participants (required)"
-                      : labDetail?.capacity && labDetail.capacity > 0 
-                        ? `Enter number (max: ${labDetail.capacity})`
-                        : "Enter number of participants"
-                  }
-                  className={formErrors.participants ? "border-red-500" : ""}
-                  required={labDetail?.capacity === 0}
-                />
-                {formErrors.participants && (
-                  <p className="text-red-500 text-xs">{formErrors.participants}</p>
-                )}
-                {labDetail?.capacity && labDetail.capacity > 0 ? (
-                  <p className="text-xs text-gray-500">
-                    Room capacity: {labDetail.capacity} seats
-                  </p>
-                ) : (
-                  <p className="text-xs text-gray-500">
-                    This room has flexible seating arrangements
-                  </p>
-                )}
-              </div>
-            )}
-
-            {/* Full Room Confirmation Display - update text for zero capacity */}
-            {bookingType === "full" && labDetail && labDetail.capacity !== 0 && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
-                <p className="text-sm font-medium text-gray-900">Full room booking</p>
-                <p className="mt-1 text-sm text-gray-600">
-                  You are booking the entire room ({labDetail.capacity} seats).
-                </p>
-              </div>
-            )}
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {/* Event Name/Purpose */}
-              <div className="space-y-2">
-                <label htmlFor="eventName" className="block text-sm font-medium text-gray-700">
-                  Event Name/Purpose
-                </label>
-                <Input
-                  type="text"
-                  id="eventName"
-                  value={eventName}
-                  onChange={(e) => setEventName(e.target.value)}
-                  placeholder="E.g., Algorithm Class, Department Meeting"
-                  className={formErrors.eventName ? "border-red-500" : ""}
-                />
-                {formErrors.eventName && (
-                  <p className="text-red-500 text-xs">{formErrors.eventName}</p>
-                )}
-              </div>
-
-              {/* Event Type */}
-              <div className="space-y-2">
-                <label htmlFor="eventType" className="block text-sm font-medium text-gray-700">
-                  Event Type
-                </label>
-                <Select value={eventType} onValueChange={setEventType}>
-                  <SelectTrigger className={formErrors.eventType ? "border-red-500 hover:cursor-pointer" : "hover:cursor-pointer"}>
-                    <SelectValue placeholder="Select event type" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {eventTypes.map((type) => (
-                      <SelectItem key={type} value={type} className="hover:cursor-pointer">
-                        {type}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                {formErrors.eventType && (
-                  <p className="text-red-500 text-xs">{formErrors.eventType}</p>
-                )}                
-              </div>
-
-              {/* Faculty */}
-              <div className="space-y-2">
-                <label htmlFor="faculty" className="block text-sm font-medium text-gray-700">
-                  Faculty
-                </label>
-                <Input
-                  type="text"
-                  id="faculty"
-                  value={faculty}
-                  onChange={(e) => setFaculty(e.target.value)}
-                  placeholder="Enter your faculty name"
-                  className={formErrors.faculty ? "border-red-500" : ""}
-                />
-                {formErrors.faculty && (
-                  <p className="text-red-500 text-xs">{formErrors.faculty}</p>
-                )}
-              </div>
-
-              {/* Requestor Phone */}
-              <div className="space-y-2">
-                <label htmlFor="phone" className="block text-sm font-medium text-gray-700">
-                  Requestor Phone
-                </label>
-                <Input
-                  type="tel"
-                  id="phone"
-                  value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Phone number"
-                  className={formErrors.phone ? "border-red-500" : ""}
-                />
-                {formErrors.phone && (
-                  <p className="text-red-500 text-xs">{formErrors.phone}</p>
-                )}
-              </div>
-
-              {/* Requestor Name */}
-              <div className="space-y-2">
-                <label htmlFor="requestorName" className="block text-sm font-medium text-gray-700">
-                  Requestor Name
-                </label>
-                <Input
-                  type="text"
-                  id="requestorName"
-                  value={requestorName}
-                  onChange={(e) => setRequestorName(e.target.value)}
-                  placeholder="Your full name"
-                  className={formErrors.requestorName ? "border-red-500" : ""}
-                />
-                {formErrors.requestorName && (
-                  <p className="text-red-500 text-xs">{formErrors.requestorName}</p>
-                )}
-              </div>
-            </div>
-
-            {/* Note Message */}
-            <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
-              <p className="text-sm font-medium text-gray-900">Note</p>
-              <p className="mt-1 text-sm leading-relaxed text-gray-600">
-                Booking requests are subject to approval by the lab administrator. Please make sure all details are correct before submitting.
-              </p>
-            </div>
-
-            {bookingDate && startHour && startMinute && endHour && endMinute && (
-              <div className="rounded-xl border border-gray-200 bg-gray-50 px-5 py-4">
-                {checking ? (
-                  <p className="flex items-center gap-2 text-sm text-gray-600">
-                    <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-gray-400" />
-                    Checking availability...
-                  </p>
-                ) : formErrors.startTime ? (
-                  <p className="flex items-center gap-2 text-sm text-red-700">
-                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                    Invalid booking time
-                  </p>
-                ) : formErrors.conflict ? (
-                  <p className="flex items-center gap-2 text-sm text-red-700">
-                    <span className="h-1.5 w-1.5 rounded-full bg-red-500" />
-                    Time slot not available
-                  </p>
-                ) : (
-                  <p className="flex items-center gap-2 text-sm text-green-700">
-                    <span className="h-1.5 w-1.5 rounded-full bg-green-500" />
-                    Time slot available
-                  </p>
-                )}
-              </div>
-            )}
-
-            {formErrors.conflict && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4" role="alert">
-                <p className="text-sm font-medium text-red-900">Booking conflict</p>
-                <p className="mt-1 text-sm leading-relaxed text-red-800">
-                  {formErrors.conflict}
-                </p>
-                <p className="mt-4 text-xs font-medium text-red-900">Suggestions</p>
-                <ul className="mt-1.5 space-y-1 text-xs leading-relaxed text-red-800">
-                  <li>Try a different time slot</li>
-                  <li>Choose a different room</li>
-                  {bookingType === "partial" && (
-                    <li>Reduce the number of participants</li>
+              <FormSection title="Space">
+                <RadioGroup
+                  value={bookingType}
+                  onValueChange={handleBookingTypeChange}
+                  className={`grid gap-3 ${labDetail?.capacity === 0 ? 'grid-cols-1' : 'grid-cols-1 sm:grid-cols-2'}`}
+                >
+                  <ChoiceOption
+                    value="full"
+                    id="full"
+                    disabled={labDetail?.capacity === 0}
+                    lone={labDetail?.capacity === 0}
+                    selected={bookingType === "full"}
+                    title="Whole room"
+                    description={
+                      labDetail?.capacity && labDetail.capacity > 0
+                        ? `All ${labDetail.capacity} seats are reserved for the event.`
+                        : "Flexible space with no seat limit."
+                    }
+                  />
+                  {labDetail?.capacity !== 0 && (
+                    <ChoiceOption
+                      value="partial"
+                      id="partial"
+                      selected={bookingType === "partial"}
+                      title="Some seats"
+                      description="Book only the seats needed. Others can book the rest."
+                    />
                   )}
-                  {bookingType === "full" && (
-                    <li>Consider a partial booking if you don&apos;t need the full room</li>
-                  )}
-                </ul>
-              </div>
-            )}
-            
-            {/* Submit Button - Updated */}
-            <div className="flex justify-center pt-4">
-              <Button 
-                type="submit" 
-                className="w-full py-4 sm:py-6 bg-blue-600 hover:bg-blue-700 text-base sm:text-lg hover:cursor-pointer"
-                disabled={bookingMutation.status === "pending" || multipleBookingMutation.status === "pending" || checking || isSubmitting}
-              >
-                {(bookingMutation.status === "pending" || multipleBookingMutation.status === "pending" || isSubmitting) ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Processing...
-                  </>
-                ) : checking ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Checking availability...
-                  </>
-                ) : isMultipleBooking ? (
-                  `Create ${previewBookings.length} Recurring Bookings`
-                ) : (
-                  `Confirm booking ${bookingType === "full" ? "(Full Room)" : ""}`
+                </RadioGroup>
+
+                {(bookingType === "partial") && (
+                  <div className="sm:max-w-[16rem]">
+                    <FieldLabel htmlFor="participants">Number of people</FieldLabel>
+                    <Input
+                      type="number"
+                      id="participants"
+                      value={participants}
+                      onChange={(e) => setParticipants(e.target.value)}
+                      min="1"
+                      max={labDetail?.capacity && labDetail.capacity > 0 ? labDetail.capacity : 999}
+                      placeholder={
+                        labDetail?.capacity === 0
+                          ? "Enter number of participants (required)"
+                          : labDetail?.capacity && labDetail.capacity > 0
+                            ? `Enter number (max: ${labDetail.capacity})`
+                            : "Enter number of participants"
+                      }
+                      className={formErrors.participants ? "border-red-500" : ""}
+                      required={labDetail?.capacity === 0}
+                    />
+                    {formErrors.participants ? (
+                      <FieldError message={formErrors.participants} />
+                    ) : (
+                      <p className="mt-1.5 text-xs text-gray-500">
+                        {labDetail?.capacity && labDetail.capacity > 0
+                          ? `Up to ${labDetail.capacity} seats.`
+                          : "This room has flexible seating."}
+                      </p>
+                    )}
+                  </div>
                 )}
-              </Button>
-            </div>
-          </form>
-        )}
+              </FormSection>
+
+              <FormSection title="Event">
+                <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+                  <div>
+                    <FieldLabel htmlFor="eventName">Event name</FieldLabel>
+                    <Input
+                      type="text"
+                      id="eventName"
+                      value={eventName}
+                      onChange={(e) => setEventName(e.target.value)}
+                      placeholder="E.g., Algorithm Class, Department Meeting"
+                      className={formErrors.eventName ? "border-red-500" : ""}
+                    />
+                    <FieldError message={formErrors.eventName} />
+                  </div>
+                  <div>
+                    <FieldLabel htmlFor="eventType">Event type</FieldLabel>
+                    <Select value={eventType} onValueChange={setEventType}>
+                      <SelectTrigger
+                        id="eventType"
+                        className={`w-full hover:cursor-pointer ${formErrors.eventType ? "border-red-500" : ""}`}
+                      >
+                        <SelectValue placeholder="Select event type" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {eventTypes.map((type) => (
+                          <SelectItem key={type} value={type} className="hover:cursor-pointer">
+                            {type}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FieldError message={formErrors.eventType} />
+                  </div>
+                </div>
+              </FormSection>
+
+              <FormSection title="Requester">
+                <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
+                  <div>
+                    <FieldLabel htmlFor="requestorName">Full name</FieldLabel>
+                    <Input
+                      type="text"
+                      id="requestorName"
+                      value={requestorName}
+                      onChange={(e) => setRequestorName(e.target.value)}
+                      placeholder="Your full name"
+                      className={formErrors.requestorName ? "border-red-500" : ""}
+                    />
+                    <FieldError message={formErrors.requestorName} />
+                  </div>
+                  <div>
+                    <FieldLabel htmlFor="phone">Phone</FieldLabel>
+                    <Input
+                      type="tel"
+                      id="phone"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      placeholder="Phone number"
+                      className={formErrors.phone ? "border-red-500" : ""}
+                    />
+                    <FieldError message={formErrors.phone} />
+                  </div>
+                  <div className="sm:col-span-2">
+                    <FieldLabel htmlFor="faculty">Faculty</FieldLabel>
+                    <Input
+                      type="text"
+                      id="faculty"
+                      value={faculty}
+                      onChange={(e) => setFaculty(e.target.value)}
+                      placeholder="Enter your faculty name"
+                      className={formErrors.faculty ? "border-red-500" : ""}
+                    />
+                    <FieldError message={formErrors.faculty} />
+                  </div>
+                </div>
+              </FormSection>
+
+              <div className="space-y-4 px-4 py-5 sm:space-y-5 sm:px-8 sm:py-6">
+                {formErrors.conflict && (
+                  <div className="rounded-xl border border-red-200 bg-red-50 px-5 py-4" role="alert">
+                    <p className="text-sm font-medium text-red-900">Booking conflict</p>
+                    <p className="mt-1 text-sm leading-relaxed text-red-800">
+                      {formErrors.conflict}
+                    </p>
+                    <p className="mt-4 text-xs font-medium text-red-900">Suggestions</p>
+                    <ul className="mt-1.5 space-y-1 text-xs leading-relaxed text-red-800">
+                      <li>Try a different time slot</li>
+                      <li>Choose a different room</li>
+                      {bookingType === "partial" && (
+                        <li>Reduce the number of participants</li>
+                      )}
+                      {bookingType === "full" && (
+                        <li>Consider a partial booking if you don&apos;t need the full room</li>
+                      )}
+                    </ul>
+                  </div>
+                )}
+
+                <div className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
+                  <div className="space-y-1.5">
+                    {bookingDate && startHour && startMinute && endHour && endMinute && (
+                      <AvailabilityStatus
+                        checking={checking}
+                        invalidTime={!!formErrors.startTime}
+                        conflict={!!formErrors.conflict}
+                      />
+                    )}
+                    <p className="max-w-sm text-sm leading-relaxed text-gray-500">
+                      Requests are reviewed by the lab administrator before they&apos;re confirmed.
+                    </p>
+                  </div>
+                  <Button
+                    type="submit"
+                    className="h-11 w-full shrink-0 bg-orange-600 px-6 text-white hover:cursor-pointer hover:bg-orange-700 sm:w-auto"
+                    disabled={bookingMutation.status === "pending" || multipleBookingMutation.status === "pending" || checking || isSubmitting}
+                  >
+                    {(bookingMutation.status === "pending" || multipleBookingMutation.status === "pending" || isSubmitting) ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Processing...
+                      </>
+                    ) : checking ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Checking availability...
+                      </>
+                    ) : isMultipleBooking ? (
+                      `Create ${previewBookings.length} Recurring Bookings`
+                    ) : (
+                      `Confirm booking ${bookingType === "full" ? "(Full Room)" : ""}`
+                    )}
+                  </Button>
+                </div>
+              </div>
+            </form>
+          )}
+        </div>
       </div>
-      
+
       <CustomDialog
         isOpen={dialogState.isOpen}
         onClose={closeDialog}

@@ -148,13 +148,13 @@ export function Navbar() {
                 />
               </div>
               <div className="flex-shrink-0 flex flex-col items-left">
-                <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
+                <span className={`text-lg sm:text-xl font-bold leading-none transition-colors duration-300 ${
                   isMenuOpen ? 'text-orange-600' :
                   isAtTop && router.pathname === '/' ? 'text-white drop-shadow-md' : 'text-orange-500'
                 }`}>
                   Book
                 </span>
-                <span className={`text-lg sm:text-xl font-black leading-none transition-colors duration-300 ${
+                <span className={`text-lg sm:text-xl font-bold leading-none transition-colors duration-300 ${
                   isMenuOpen ? 'text-orange-600' : isAtTop && router.pathname === '/' ? 'text-white drop-shadow-md' : 'text-orange-500'
                 }`}>
                   Lab

@@ -325,7 +325,7 @@ export default function BookingDetailPage() {
             </h1>
             <p className="mt-2 text-sm text-gray-500">
               Booking #{booking.id}
-              {booking.createdAt && <> · Submitted {formatDateShort(booking.createdAt)}</>}
+              {booking.createdAt && <>, submitted {formatDateShort(booking.createdAt)}</>}
             </p>
           </div>
         </header>

@@ -1,10 +1,10 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import { useAuth } from '@clerk/nextjs';
-import { Loader2, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Loader2, RefreshCw, Search } from 'lucide-react';
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
-import { Badge } from "~/components/ui/badge";
+import { StatusPill } from "~/components/status-pill";
 import { api } from '~/utils/api';
 import Head from 'next/head';
 import { CustomDialog } from "~/components/ui/custom-dialog";
@@ -36,6 +36,190 @@ type Booking = {
     facilityId: string;
   };
 };
+
+// Booking lists are one set of rows: a stacked card on phones, a table from md.
+// Columns from md: date, event, room, status, action.
+const ROW_COLS =
+  "grid-cols-[minmax(0,1fr)_auto] md:grid-cols-[10.5rem_minmax(0,1.3fr)_minmax(0,1fr)_7rem_5.5rem]";
+
+function ListHeader() {
+  return (
+    <div
+      aria-hidden="true"
+      className={`hidden ${ROW_COLS} gap-x-4 border-b border-gray-100 bg-gray-50 px-5 py-2.5 text-xs font-medium uppercase tracking-wide text-gray-500 md:grid`}
+    >
+      <span>Date</span>
+      <span>Event</span>
+      <span>Room</span>
+      <span>Status</span>
+      <span />
+    </div>
+  );
+}
+
+/**
+ * The whole row is the button. On phones it reads as three left-aligned lines
+ * (event and status, date and time, room); from md the action label shows as
+ * its own column so the table still says what a click does.
+ */
+function BookingRow({
+  date,
+  startTime,
+  endTime,
+  eventName,
+  roomName,
+  roomId,
+  status,
+  actionLabel,
+  onOpen,
+  disabled,
+}: {
+  date: string;
+  startTime: string;
+  endTime: string;
+  eventName: string;
+  roomName: string;
+  roomId: string;
+  status: string;
+  actionLabel: string;
+  onOpen: () => void;
+  disabled?: boolean;
+}) {
+  return (
+    <li>
+      <button
+        type="button"
+        onClick={onOpen}
+        disabled={disabled}
+        className={`grid w-full ${ROW_COLS} items-start gap-x-4 gap-y-1 px-5 py-4 text-left transition-colors hover:cursor-pointer hover:bg-gray-50 focus-visible:bg-gray-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-gray-300 active:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60 md:items-center md:gap-y-0`}
+      >
+        <span className="order-1 min-w-0 text-sm font-medium text-gray-900 md:order-none md:col-start-2 md:row-start-1 md:truncate">
+          {eventName}
+        </span>
+        <span className="order-2 justify-self-end md:order-none md:col-start-4 md:row-start-1 md:justify-self-start">
+          <StatusPill status={status} />
+        </span>
+        <span className="order-3 col-span-2 flex flex-wrap gap-x-3 text-sm text-gray-600 md:order-none md:col-span-1 md:col-start-1 md:row-start-1 md:block">
+          <span className="md:block md:text-gray-900">{date}</span>
+          <span className="tabular-nums md:block md:text-gray-500">
+            {startTime}&ndash;{endTime}
+          </span>
+        </span>
+        <span className="order-4 col-span-2 min-w-0 text-sm md:order-none md:col-span-1 md:col-start-3 md:row-start-1">
+          <span className="text-gray-600 md:block md:truncate md:text-gray-900">{roomName}</span>
+          {roomId !== roomName && (
+            <span className="ml-2 text-gray-500 md:ml-0 md:block md:text-xs">{roomId}</span>
+          )}
+        </span>
+        <span
+          aria-hidden="true"
+          className="hidden h-8 items-center justify-self-end rounded-md border border-gray-200 bg-white px-3 text-sm font-medium text-gray-700 md:col-start-5 md:row-start-1 md:inline-flex"
+        >
+          {actionLabel}
+        </span>
+      </button>
+    </li>
+  );
+}
+
+function SkeletonRows({ count }: { count: number }) {
+  return (
+    <ul aria-hidden="true" className="divide-y divide-gray-100">
+      {Array.from({ length: count }, (_, i) => (
+        <li
+          key={i}
+          className={`grid ${ROW_COLS} animate-pulse items-center gap-x-4 gap-y-2 px-5 py-4 md:gap-y-0`}
+        >
+          <div className="order-3 col-span-2 h-3.5 w-40 rounded bg-gray-100 md:order-none md:col-span-1" />
+          <div className="order-1 h-3.5 w-32 rounded bg-gray-100 md:order-none" />
+          <div className="order-4 col-span-2 h-3.5 w-24 rounded bg-gray-100 md:order-none md:col-span-1" />
+          <div className="order-2 h-5 w-20 justify-self-end rounded-md bg-gray-100 md:order-none md:justify-self-start" />
+          <div className="hidden h-8 w-20 justify-self-end rounded-md bg-gray-100 md:block" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function EmptyState({ title, body }: { title: string; body: string }) {
+  return (
+    <div className="px-5 py-10 text-center sm:py-14">
+      <p className="text-sm font-medium text-gray-900">{title}</p>
+      <p className="mt-1 text-sm text-gray-500">{body}</p>
+    </div>
+  );
+}
+
+function Pager({
+  label,
+  summary,
+  page,
+  pageCount,
+  previousDisabled,
+  nextDisabled,
+  onPrevious,
+  onNext,
+  onPage,
+}: {
+  label: string;
+  summary: string;
+  page: number;
+  pageCount: number;
+  previousDisabled: boolean;
+  nextDisabled: boolean;
+  onPrevious: () => void;
+  onNext: () => void;
+  onPage: (page: number) => void;
+}) {
+  // One page of results needs no pager; the count already sits beside the heading.
+  // Still shown past page 1, so a narrowed search never strands someone there.
+  if (pageCount <= 1 && page === 1) return null;
+
+  const stepClass = "h-8 w-8 p-0 text-gray-600 hover:cursor-pointer";
+  return (
+    <div className="flex flex-col gap-3 border-t border-gray-100 px-5 py-3 sm:flex-row sm:items-center sm:justify-between">
+      <p className="text-sm tabular-nums text-gray-500">{summary}</p>
+      <nav aria-label={label} className="flex items-center gap-1">
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Previous page"
+          disabled={previousDisabled}
+          onClick={onPrevious}
+          className={stepClass}
+        >
+          <ChevronLeft className="h-4 w-4" />
+        </Button>
+        {Array.from({ length: pageCount }, (_, i) => i + 1).map((n) => (
+          <Button
+            key={n}
+            variant="ghost"
+            size="sm"
+            aria-current={page === n ? "page" : undefined}
+            onClick={() => onPage(n)}
+            className={`h-8 min-w-8 px-2 tabular-nums hover:cursor-pointer ${
+              page === n
+                ? "bg-gray-900 text-white hover:bg-gray-900 hover:text-white"
+                : "text-gray-600"
+            }`}
+          >
+            {n}
+          </Button>
+        ))}
+        <Button
+          variant="ghost"
+          size="sm"
+          aria-label="Next page"
+          disabled={nextDisabled}
+          onClick={onNext}
+          className={stepClass}
+        >
+          <ChevronRight className="h-4 w-4" />
+        </Button>
+      </nav>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   const { dialogState, closeDialog, confirm, success, error } = useCustomDialog();
@@ -143,24 +327,6 @@ export default function Dashboard() {
     return dateObj.toLocaleDateString('en-US', options);
   };
 
-  // Get status badge color
-  const getStatusBadge = (status: string) => {
-    switch(status.toLowerCase()) {
-      case 'pending':
-        return "bg-amber-50 text-amber-700 border-0";
-      case 'accepted':
-        return "bg-green-50 text-green-700 border-0";
-      case 'rejected':
-        return "bg-red-50 text-red-700 border-0";
-      case 'cancelled':
-        return "bg-gray-100 text-gray-600 border-0";
-      case 'completed':
-        return "bg-blue-50 text-blue-700 border-0";
-      default:
-        return "bg-blue-50 text-blue-700 border-0";
-    }
-  };
-
   // Helper function to get location name safely
   const getLocationInfo = (booking: Booking) => {
     const locationObj = booking.lab || booking.room;
@@ -194,342 +360,198 @@ export default function Dashboard() {
         <meta name="description" content="Manage your room bookings" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
-      
-      <div className="container mx-auto px-4 py-6 sm:py-8 mt-16 sm:mt-20 relative z-10">
-      {/* Current Bookings Section */}
-      <div className="mb-6 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm sm:mb-8">
-        <div className="border-b border-gray-100 px-5 py-5 sm:px-6">
-          <p className="text-xs font-medium uppercase tracking-wider text-orange-600">Active bookings</p>
-          <h2 className="mt-1 text-lg font-medium tracking-tight text-gray-900 sm:text-xl">My current bookings</h2>
-          <p className="mt-1 text-sm text-gray-500">Manage and track your active reservations</p>
-        </div>
-        
-        <div className="p-4 sm:p-6">
-          <div className="flex flex-wrap items-center justify-between mb-6 gap-4">
-            <div className="flex items-center space-x-2 bg-gray-50 rounded-xl px-4 py-2 border border-gray-200">
-              <span className="text-xs sm:text-sm font-medium text-gray-700">Show</span>
-              <select 
-                className="rounded-lg border border-gray-300 bg-white px-3 py-1.5 text-xs sm:text-sm font-medium focus:border-orange-400 focus:outline-none"
+
+      <div className="mx-auto max-w-5xl px-4 pb-20 pt-24 sm:px-6 sm:pt-28">
+        <header>
+          <div className="flex items-center justify-between gap-4">
+            <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
+              My bookings
+            </h1>
+          </div>
+        </header>
+
+        {/* Current bookings */}
+        <section aria-labelledby="current-heading" className="mt-10">
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <h2 id="current-heading" className="text-lg font-medium tracking-tight text-gray-900">
+              Current
+              {currentBookingsData && (
+                <span className="ml-2 font-normal tabular-nums text-gray-500">
+                  {currentBookingsData.total}
+                </span>
+              )}
+            </h2>
+
+            <div className="flex items-center gap-2">
+              <div className="relative min-w-0 flex-1 sm:w-64 sm:flex-none">
+                <label htmlFor="current-search" className="sr-only">
+                  Search current bookings
+                </label>
+                <Search
+                  aria-hidden="true"
+                  className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400"
+                />
+                <Input
+                  id="current-search"
+                  type="text"
+                  placeholder="Search bookings"
+                  className="h-9 bg-white pl-9 text-sm"
+                  value={currentSearchTerm}
+                  onChange={(e) => setCurrentSearchTerm(e.target.value)}
+                />
+              </div>
+              <select
+                aria-label="Rows per page"
+                className="h-9 shrink-0 rounded-md border border-gray-200 bg-white px-2 text-sm text-gray-700 hover:cursor-pointer focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-gray-400/50"
                 value={currentEntriesCount}
                 onChange={(e) => setCurrentEntriesCount(Number(e.target.value))}
               >
-                <option value={10}>10</option>
-                <option value={25}>25</option>
-                <option value={50}>50</option>
+                <option value={10}>10 rows</option>
+                <option value={25}>25 rows</option>
+                <option value={50}>50 rows</option>
               </select>
-              <span className="text-xs sm:text-sm font-medium text-gray-700">entries</span>
-            </div>
-            
-            <div className="flex items-center space-x-2">
-              <label htmlFor="current-search" className="mr-2 text-xs sm:text-sm font-medium text-gray-700">Search:</label>
-              <Input
-                id="current-search"
-                type="text"
-                className="w-36 sm:w-64 text-xs sm:text-sm rounded-lg border-gray-200 focus-visible:border-orange-400"
-                value={currentSearchTerm}
-                onChange={(e) => setCurrentSearchTerm(e.target.value)}
-              />
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 onClick={() => refetchCurrentBookings()}
-                className="border-gray-200 text-gray-700 text-xs sm:text-sm hover:cursor-pointer hover:bg-gray-50"
+                aria-label="Refresh"
+                title="Refresh"
+                className="h-9 w-9 shrink-0 border-gray-200 p-0 text-gray-600 hover:cursor-pointer hover:bg-gray-50"
               >
-                <RefreshCw className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />
-                <span className="hidden sm:inline">Refresh</span>
+                <RefreshCw className="h-4 w-4" />
               </Button>
             </div>
           </div>
 
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Date</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {isLoadingCurrentBookings ? (
-                  <>
-                    {[...Array(currentEntriesCount)].map((_, i) => (
-                      <tr key={i} className="animate-pulse">
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-8"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded w-24"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-28 mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded w-16"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-6 bg-gray-200 rounded w-20"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-36"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-8 bg-gray-200 rounded w-20"></div>
-                        </td>
-                      </tr>
-                    ))}
-                  </>
-                ) : isErrorCurrentBookings ? (
-                  <tr>
-                    <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center text-red-500 text-xs sm:text-sm">
-                      Error loading bookings. Please try again.
-                    </td>
-                  </tr>
-                ) : currentBookingsData && currentBookingsData.bookings.length > 0 ? (
-                  currentBookingsData.bookings.map((booking, index) => {
-                    const location = getLocationInfo(booking);
-                    return (
-                      <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 font-medium">
-                          {(currentPage - 1) * currentEntriesCount + index + 1}
-                        </td>
-                        <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="text-xs sm:text-sm font-medium text-gray-900">{formatDate(booking.bookingDate)}</div>
-                          <div className="text-[10px] sm:text-xs text-gray-600 font-medium">{booking.startTime} - {booking.endTime}</div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="text-xs sm:text-sm font-medium text-gray-900">{location.name}</div>
-                          <div className="text-[10px] sm:text-xs text-gray-500">{location.facilityId}</div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <Badge className={`${getStatusBadge(booking.status)} text-[10px] sm:text-xs px-2 py-0.5`}>
-                            {booking.status}
-                          </Badge>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                          {booking.eventName}
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:cursor-pointer text-[10px] sm:text-xs py-1.5 h-auto font-medium"
-                            onClick={() => setActionBooking(booking)}
-                            disabled={cancelBookingMutation.isPending}
-                          >
-                            Manage
-                          </Button>
-                        </td>
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center text-gray-500 text-xs sm:text-sm">
-                      No data available in table
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
+          <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+            <ListHeader />
+            {isLoadingCurrentBookings ? (
+              <SkeletonRows count={currentEntriesCount} />
+            ) : isErrorCurrentBookings ? (
+              <p className="px-5 py-12 text-center text-sm text-red-700">
+                Error loading bookings. Please try again.
+              </p>
+            ) : currentBookingsData && currentBookingsData.bookings.length > 0 ? (
+              <ul className="divide-y divide-gray-100">
+                {currentBookingsData.bookings.map((booking) => {
+                  const location = getLocationInfo(booking);
+                  return (
+                    <BookingRow
+                      key={booking.id}
+                      date={formatDate(booking.bookingDate)}
+                      startTime={booking.startTime}
+                      endTime={booking.endTime}
+                      eventName={booking.eventName}
+                      roomName={location.name}
+                      roomId={location.facilityId}
+                      status={booking.status}
+                      actionLabel="Manage"
+                      onOpen={() => setActionBooking(booking)}
+                      disabled={cancelBookingMutation.isPending}
+                    />
+                  );
+                })}
+              </ul>
+            ) : (
+              <EmptyState
+                title={currentSearchTerm ? "Nothing matches your search" : "No current bookings"}
+                body={
+                  currentSearchTerm
+                    ? "Try a different search term."
+                    : "New requests stay here until they are finished."
+                }
+              />
+            )}
+            <Pager
+              label="Current bookings pages"
+              summary={
+                currentBookingsData
+                  ? `Showing ${currentBookingsData.total > 0 ? (currentPage - 1) * currentEntriesCount + 1 : 0}–${Math.min(currentPage * currentEntriesCount, currentBookingsData.total)} of ${currentBookingsData.total}`
+                  : "Showing 0 of 0"
+              }
+              page={currentPage}
+              pageCount={
+                currentBookingsData
+                  ? Math.min(5, Math.ceil(currentBookingsData.total / currentEntriesCount))
+                  : 0
+              }
+              previousDisabled={currentPage === 1}
+              nextDisabled={!currentBookingsData || currentPage >= Math.ceil(currentBookingsData.total / currentEntriesCount)}
+              onPrevious={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+              onNext={() => setCurrentPage(prev => prev + 1)}
+              onPage={(page) => setCurrentPage(page)}
+            />
           </div>
-          
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 space-y-3 sm:space-y-0">
-            <div className="text-[10px] sm:text-sm text-gray-700">
-              {currentBookingsData ? (
-                `Showing ${currentBookingsData.total > 0 ? (currentPage - 1) * currentEntriesCount + 1 : 0} to ${Math.min(currentPage * currentEntriesCount, currentBookingsData.total)} of ${currentBookingsData.total} entries`
-              ) : (
-                "Showing 0 to 0 of 0 entries"
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Button 
-                variant="outline" 
-                disabled={currentPage === 1}
-                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
-                className="text-[10px] sm:text-xs py-1.5 px-3 h-auto font-medium rounded-lg border-gray-200 hover:bg-gray-50"
-              >
-                Previous
-              </Button>
-              {currentBookingsData && Array.from({ length: Math.min(5, Math.ceil(currentBookingsData.total / currentEntriesCount)) }).map((_, i) => (
-                <Button 
-                  key={i}
-                  variant={currentPage === i + 1 ? "default" : "outline"}
-                  className={`text-[10px] sm:text-xs py-1.5 px-3 h-auto font-medium rounded-lg transition-all duration-300 ${
-                    currentPage === i + 1 
-                      ? "bg-gray-900 text-white border-0" 
-                      : "border border-gray-200 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setCurrentPage(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-              <Button 
-                variant="outline"
-                disabled={!currentBookingsData || currentPage >= Math.ceil(currentBookingsData.total / currentEntriesCount)}
-                onClick={() => setCurrentPage(prev => prev + 1)}
-                className="text-[10px] sm:text-xs py-1.5 px-3 h-auto font-medium rounded-lg border-gray-200 hover:bg-gray-50"
-              >
-                Next
-              </Button>
-            </div>
+        </section>
+
+        {/* History: completed, cancelled and rejected bookings */}
+        <section aria-labelledby="history-heading" className="mt-12 sm:mt-14">
+          <h2 id="history-heading" className="text-lg font-medium tracking-tight text-gray-900">
+            History
+            {completedBookingsData && (
+              <span className="ml-2 font-normal tabular-nums text-gray-500">
+                {completedBookingsData.total}
+              </span>
+            )}
+          </h2>
+
+          <div className="mt-4 overflow-hidden rounded-2xl border border-gray-200 bg-white">
+            <ListHeader />
+            {isLoadingCompletedBookings ? (
+              <SkeletonRows count={completedEntriesCount} />
+            ) : isErrorCompletedBookings ? (
+              <p className="px-5 py-12 text-center text-sm text-red-700">
+                Error loading completed bookings. Please try again.
+              </p>
+            ) : completedBookingsData && completedBookingsData.bookings.length > 0 ? (
+              <ul className="divide-y divide-gray-100">
+                {completedBookingsData.bookings.map((booking) => {
+                  const location = getLocationInfo(booking);
+                  return (
+                    <BookingRow
+                      key={booking.id}
+                      date={formatDate(booking.bookingDate)}
+                      startTime={booking.startTime}
+                      endTime={booking.endTime}
+                      eventName={booking.eventName}
+                      roomName={location.name}
+                      roomId={location.facilityId}
+                      status={booking.status}
+                      actionLabel="Details"
+                      onOpen={() => router.push(`/booking-detail?bookingId=${booking.id}`)}
+                    />
+                  );
+                })}
+              </ul>
+            ) : (
+              <EmptyState
+                title="No past bookings yet"
+                body="Completed, cancelled, and rejected bookings end up here."
+              />
+            )}
+            <Pager
+              label="History pages"
+              summary={
+                completedBookingsData
+                  ? `Showing ${completedBookingsData.total > 0 ? (completedPage - 1) * completedEntriesCount + 1 : 0}–${Math.min(completedPage * completedEntriesCount, completedBookingsData.total)} of ${completedBookingsData.total}`
+                  : "Showing 0 of 0"
+              }
+              page={completedPage}
+              pageCount={
+                completedBookingsData
+                  ? Math.min(5, Math.ceil(completedBookingsData.total / completedEntriesCount))
+                  : 0
+              }
+              previousDisabled={completedPage === 1}
+              nextDisabled={!completedBookingsData || completedPage >= Math.ceil(completedBookingsData.total / completedEntriesCount)}
+              onPrevious={() => setCompletedPage(prev => Math.max(prev - 1, 1))}
+              onNext={() => setCompletedPage(prev => prev + 1)}
+              onPage={(page) => setCompletedPage(page)}
+            />
           </div>
-        </div>
+        </section>
       </div>
 
-      {/* Completed Bookings Section */}
-      <div className="overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm">
-        <div className="border-b border-gray-100 px-5 py-5 sm:px-6">
-          <p className="text-xs font-medium uppercase tracking-wider text-blue-600">History</p>
-          <h2 className="mt-1 text-lg font-medium tracking-tight text-gray-900 sm:text-xl">Completed bookings</h2>
-          <p className="mt-1 text-sm text-gray-500">Review your booking history and past activities</p>
-        </div>
-        
-        <div className="p-4 sm:p-6">
-          <div className="overflow-x-auto rounded-xl border border-gray-200">
-            <table className="min-w-full divide-y divide-gray-200">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Booking Date</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Room</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Event</th>
-                  <th className="px-2 sm:px-6 py-3 sm:py-4 text-left text-[10px] sm:text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="bg-white divide-y divide-gray-100">
-                {isLoadingCompletedBookings ? (
-                  <>
-                    {[...Array(completedEntriesCount)].map((_, i) => (
-                      <tr key={i} className="animate-pulse">
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-8"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-32 mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded w-24"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-28 mb-2"></div>
-                          <div className="h-3 bg-gray-200 rounded w-16"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-6 bg-gray-200 rounded w-20"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-4 bg-gray-200 rounded w-36"></div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="h-8 bg-gray-200 rounded w-20"></div>
-                        </td>
-                      </tr>
-                    ))}
-                  </>
-                ) : isErrorCompletedBookings ? (
-                  <tr>
-                    <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center text-red-500 text-xs sm:text-sm">
-                      Error loading completed bookings. Please try again.
-                    </td>
-                  </tr>
-                ) : completedBookingsData && completedBookingsData.bookings.length > 0 ? (
-                  completedBookingsData.bookings.map((booking, index) => {
-                    const location = getLocationInfo(booking);
-                    return (
-                      <tr key={booking.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900 font-medium">
-                          {(completedPage - 1) * completedEntriesCount + index + 1}
-                        </td>
-                        <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="text-xs sm:text-sm font-medium text-gray-900">{formatDate(booking.bookingDate)}</div>
-                          <div className="text-[10px] sm:text-xs text-gray-600 font-medium">{booking.startTime} - {booking.endTime}</div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-3 sm:py-4 whitespace-nowrap">
-                          <div className="text-xs sm:text-sm font-medium text-gray-900">{location.name}</div>
-                          <div className="text-[10px] sm:text-xs text-gray-500">{location.facilityId}</div>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <Badge className={`${getStatusBadge(booking.status)} text-[10px] sm:text-xs px-2 py-0.5`}>
-                            {booking.status}
-                          </Badge>
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap text-xs sm:text-sm text-gray-900">
-                          {booking.eventName}
-                        </td>
-                        <td className="px-2 sm:px-6 py-2 sm:py-4 whitespace-nowrap">
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm" 
-                              className="border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:cursor-pointer text-[10px] sm:text-xs py-1.5 h-auto font-medium"
-                              onClick={() => router.push(`/booking-detail?bookingId=${booking.id}`)}
-                            >
-                              Details
-                            </Button>
-                          </div>
-                        </td>   
-                      </tr>
-                    );
-                  })
-                ) : (
-                  <tr>
-                    <td colSpan={6} className="px-2 sm:px-6 py-3 sm:py-4 text-center text-gray-500 text-xs sm:text-sm">
-                      No data available in table
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </table>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-4 space-y-3 sm:space-y-0">
-            <div className="text-[10px] sm:text-sm text-gray-700">
-              {completedBookingsData ? (
-                `Showing ${completedBookingsData.total > 0 ? (completedPage - 1) * completedEntriesCount + 1 : 0} to ${Math.min(completedPage * completedEntriesCount, completedBookingsData.total)} of ${completedBookingsData.total} entries`
-              ) : (
-                "Showing 0 to 0 of 0 entries"
-              )}
-            </div>
-            <div className="flex flex-wrap gap-1 sm:gap-2">
-              <Button 
-                variant="outline" 
-                disabled={completedPage === 1}
-                onClick={() => setCompletedPage(prev => Math.max(prev - 1, 1))}
-                className="text-[10px] sm:text-xs py-1.5 px-3 h-auto font-medium rounded-lg border-gray-200 hover:bg-gray-50"
-              >
-                Previous
-              </Button>
-              {completedBookingsData && Array.from({ length: Math.min(5, Math.ceil(completedBookingsData.total / completedEntriesCount)) }).map((_, i) => (
-                <Button 
-                  key={i}
-                  variant={completedPage === i + 1 ? "default" : "outline"}
-                  className={`text-[10px] sm:text-xs py-1.5 px-3 h-auto font-medium rounded-lg transition-all duration-300 ${
-                    completedPage === i + 1 
-                      ? "bg-gray-900 text-white border-0" 
-                      : "border border-gray-200 hover:bg-gray-50"
-                  }`}
-                  onClick={() => setCompletedPage(i + 1)}
-                >
-                  {i + 1}
-                </Button>
-              ))}
-              <Button 
-                variant="outline"
-                disabled={!completedBookingsData || completedPage >= Math.ceil(completedBookingsData.total / completedEntriesCount)}
-                onClick={() => setCompletedPage(prev => prev + 1)}
-                className="text-[10px] sm:text-xs py-1.5 px-3 h-auto font-medium rounded-lg border-gray-200 hover:bg-gray-50"
-              >
-                Next
-              </Button>
-            </div>
-          </div>
-        </div>
-      </div>
-      </div>
-      
       {/* Action sheet — replaces the row of Details/Complete/Cancel buttons */}
       {actionBooking && (
         <div className="fixed inset-0 z-50 flex items-center justify-center px-4 py-6">
@@ -546,12 +568,13 @@ export default function Dashboard() {
               <h3 className="min-w-0 text-lg font-medium text-gray-900">
                 {actionBooking.eventName}
               </h3>
-              <Badge className={`${getStatusBadge(actionBooking.status)} shrink-0 px-2 py-0.5 text-[10px]`}>
-                {actionBooking.status}
-              </Badge>
+              <StatusPill status={actionBooking.status} className="shrink-0" />
             </div>
             <p className="mt-2 text-sm text-gray-500">
-              {formatDate(actionBooking.bookingDate)} &middot; {actionBooking.startTime} &ndash; {actionBooking.endTime}
+              {formatDate(actionBooking.bookingDate)}
+            </p>
+            <p className="mt-0.5 text-sm tabular-nums text-gray-500">
+              {actionBooking.startTime} &ndash; {actionBooking.endTime}
             </p>
             <p className="mt-0.5 text-sm text-gray-500">
               {getLocationInfo(actionBooking).name}

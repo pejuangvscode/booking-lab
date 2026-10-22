@@ -287,7 +287,7 @@
 .calendar-minimal .rbc-month-view,
 .calendar-minimal .rbc-time-view {
   border: 1px solid #e5e7eb;
-  border-radius: 12px;
+  border-radius: 14px;
   overflow: hidden;
   background: #fff;
 }
@@ -296,11 +296,11 @@
 }
 .calendar-minimal .rbc-header {
   padding: 10px 8px;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 500;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #9ca3af;
+  color: #6b7280;
   border-bottom: 1px solid #e5e7eb;
 }
 .calendar-minimal .rbc-header + .rbc-header {
@@ -313,13 +313,14 @@
   border-left: 1px solid #f3f4f6;
 }
 .calendar-minimal .rbc-date-cell {
-  padding: 6px 8px 0 0;
+  padding: 6px 6px 2px 0;
   font-size: 12px;
   color: #374151;
 }
 .calendar-minimal .rbc-button-link {
   font-weight: 500;
   color: #4b5563;
+  font-variant-numeric: tabular-nums;
 }
 .calendar-minimal .rbc-off-range-bg {
   background: #fafafa;
@@ -327,12 +328,21 @@
 .calendar-minimal .rbc-off-range .rbc-button-link {
   color: #c7cad1;
 }
+/* Today is marked by its date, in ink: blue belongs to student labs only. */
 .calendar-minimal .rbc-today {
-  background: #eff6ff;
+  background: transparent;
 }
 .calendar-minimal .rbc-date-cell.rbc-now .rbc-button-link {
-  color: #2563eb;
-  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 5px;
+  border-radius: 8px;
+  background: #111827;
+  color: #fff;
+  font-weight: 500;
 }
 .calendar-minimal .rbc-event,
 .calendar-minimal .rbc-event.rbc-selected {
@@ -341,8 +351,8 @@
   box-shadow: none;
   outline: none;
 }
-.calendar-minimal .rbc-event:focus {
-  outline: 2px solid #93c5fd;
+.calendar-minimal .rbc-event:focus-visible {
+  outline: 2px solid #9ca3af;
   outline-offset: 1px;
 }
 .calendar-minimal .rbc-show-more {
@@ -359,9 +369,9 @@
 }
 .calendar-minimal .rbc-time-view .rbc-time-gutter,
 .calendar-minimal .rbc-time-header-gutter {
-  font-size: 11px;
-  color: #9ca3af;
+  font-size: 12px;
+  color: #6b7280;
 }
 .calendar-minimal .rbc-current-time-indicator {
-  background: #2563eb;
+  background: #111827;
 }

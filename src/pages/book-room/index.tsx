@@ -1,6 +1,6 @@
-import { Building2, Users, ArrowRight } from "lucide-react";
 import Head from "next/head";
 import { useRouter } from "next/router";
+import { StaffRoomArt, StudentLabArt } from "~/components/room-category-art";
 
 const categories = [
   {
@@ -10,9 +10,7 @@ const categories = [
       "Computer labs for student activities, group work, and academic events.",
     cta: "Browse labs",
     href: "/book-room/student-lab",
-    icon: Users,
-    iconBg: "bg-blue-50",
-    iconText: "text-blue-600",
+    Art: StudentLabArt,
     hoverBorder: "hover:border-blue-300",
     link: "text-blue-600",
   },
@@ -22,9 +20,7 @@ const categories = [
     description: "Meeting rooms for staff activities and discussions.",
     cta: "Browse rooms",
     href: "/book-room/staff-room",
-    icon: Building2,
-    iconBg: "bg-orange-50",
-    iconText: "text-orange-600",
+    Art: StaffRoomArt,
     hoverBorder: "hover:border-orange-300",
     link: "text-orange-600",
   },
@@ -54,18 +50,14 @@ export default function BookRoom() {
           {/* Categories */}
           <div className="grid gap-4 sm:grid-cols-2 sm:gap-5">
             {categories.map((category) => {
-              const Icon = category.icon;
+              const { Art } = category;
               return (
                 <button
                   key={category.key}
                   onClick={() => router.push(category.href)}
-                  className={`group hover:cursor-pointer flex h-full flex-col items-start rounded-2xl border border-gray-200 bg-white p-7 text-left transition-colors hover:bg-gray-50/60 ${category.hoverBorder}`}
+                  className={`group hover:cursor-pointer flex h-full flex-col items-start rounded-2xl border border-gray-200 bg-white p-7 text-left transition-colors focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-gray-400/50 ${category.hoverBorder}`}
                 >
-                  <span
-                    className={`flex h-12 w-12 items-center justify-center rounded-xl ${category.iconBg}`}
-                  >
-                    <Icon className={`h-6 w-6 ${category.iconText}`} />
-                  </span>
+                  <Art className="h-24 w-[7.5rem]" />
                   <h2 className="mt-5 text-lg font-medium text-gray-900">
                     {category.title}
                   </h2>

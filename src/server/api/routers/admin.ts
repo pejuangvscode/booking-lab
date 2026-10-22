@@ -10,6 +10,7 @@ interface LabWithPIC {
   facilityId: string;
   department: string;
   type: string;
+  roomType: string;
   capacity: number;
   image: string | null;
   picIds: string[];
@@ -881,6 +882,7 @@ export const adminRouter = createTRPCRouter({
           facilityId: string;
           department: string;
           type: string;
+          roomType: string;
           capacity: number;
           image: string | null;
           picIds: unknown;
@@ -946,6 +948,8 @@ export const adminRouter = createTRPCRouter({
             facilityId: room.facilityId,
             department: room.department,
             type: room.type,
+            // Lets the admin room pages split student labs from staff rooms.
+            roomType: room.roomType,
             capacity: room.capacity,
             image: room.image,
             picIds: picIdsArray,

@@ -1,7 +1,8 @@
-import { ArrowLeft, Calendar, ChevronDown, MapPin, Search, Users, Wrench } from "lucide-react";
+import { ArrowLeft, Search } from "lucide-react";
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
+import { PhotoLightbox } from "~/components/photo-lightbox";
 import { Button } from "~/components/ui/button";
 import { Input } from "~/components/ui/input";
 import { api } from "~/utils/api";
@@ -17,6 +18,14 @@ type Lab = {
   image?: string | null;
   roomType?: string;
 };
+
+// The door code sits beside the name, unless the name already contains it
+// (e.g. "Lab F209"), so it never reads twice.
+const showsCode = (lab: Lab) =>
+  !lab.name.toUpperCase().includes(lab.facilityId.toUpperCase());
+
+const capacityLabel = (lab: Lab) =>
+  lab.capacity > 0 ? `${lab.capacity} seats` : "Flexible space";
 
 export default function StudentLabList() {
   const router = useRouter();
@@ -35,6 +44,17 @@ export default function StudentLabList() {
       lab.facilityId.toLowerCase().includes(searchTerm.toLowerCase())
     );
   });
+
+  // The thumbnail the open photo zooms out of (and back into on close).
+  const [previewOrigin, setPreviewOrigin] = useState<HTMLElement | null>(null);
+  const openLab = labData.find((lab) => lab.id === openLabId);
+
+  const openPreview = (labId: string, origin: HTMLElement | null) => {
+    setPreviewOrigin(origin);
+    setOpenLabId(labId);
+  };
+
+  const closePreview = useCallback(() => setOpenLabId(null), []);
 
   return (
     <>
@@ -76,16 +96,16 @@ export default function StudentLabList() {
 
           {/* Loading */}
           {isLoading && (
-            <div className="space-y-3">
+            <div className="divide-y divide-gray-100 rounded-xl border border-gray-200 bg-white">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="rounded-xl border border-gray-200 bg-white p-5">
-                  <div className="animate-pulse space-y-3">
-                    <div className="h-5 w-1/2 rounded bg-gray-100"></div>
-                    <div className="h-4 w-2/3 rounded bg-gray-100"></div>
-                    <div className="flex gap-2 pt-1">
-                      <div className="h-6 w-20 rounded-md bg-gray-100"></div>
-                      <div className="h-6 w-16 rounded-md bg-gray-100"></div>
+                <div key={i} className="flex animate-pulse items-start gap-4 p-3 sm:items-center sm:p-4">
+                  <div className="h-[4.5rem] w-24 shrink-0 rounded-lg bg-gray-100 sm:h-24 sm:w-32" />
+                  <div className="flex flex-1 flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div className="w-full space-y-2.5">
+                      <div className="h-4 w-1/2 rounded bg-gray-100" />
+                      <div className="h-3.5 w-1/3 rounded bg-gray-100" />
                     </div>
+                    <div className="h-9 w-16 shrink-0 rounded-md bg-gray-100" />
                   </div>
                 </div>
               ))}
@@ -102,103 +122,112 @@ export default function StudentLabList() {
           {/* List */}
           {!isLoading && !error && (
             filteredData.length === 0 ? (
-              <div className="rounded-xl border border-gray-200 bg-white px-6 py-16 text-center">
-                <div className="mx-auto flex h-11 w-11 items-center justify-center rounded-full bg-gray-100">
-                  <Search className="h-5 w-5 text-gray-400" />
-                </div>
-                <p className="mt-4 text-sm font-medium text-gray-900">No labs found</p>
-                <p className="mt-1 text-sm text-gray-500">Try a different search term.</p>
+              <div className="rounded-xl border border-gray-200 bg-white px-6 py-12 text-center">
+                <p className="text-sm font-medium text-gray-900">No labs available</p>
+                <p className="mt-1 text-sm text-gray-500">There are no student labs to book right now.</p>
               </div>
             ) : (
-              <div className="space-y-3">
+              <ul className="divide-y divide-gray-100 overflow-hidden rounded-xl border border-gray-200 bg-white">
                 {filteredData.map((lab) => {
-                  const isOpen = openLabId === lab.id;
                   const underRenovation = isRoomUnderRenovation(lab);
                   return (
-                    <div
-                      key={lab.id}
-                      className={`overflow-hidden rounded-xl border transition-colors ${
-                        underRenovation
-                          ? 'border-gray-200 bg-gray-50'
-                          : 'border-gray-200 bg-white hover:border-gray-300'
-                      }`}
-                    >
+                    <li key={lab.id} className={underRenovation ? 'bg-gray-50' : undefined}>
                       <div
-                        className="flex cursor-pointer flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between"
-                        onClick={() => setOpenLabId(isOpen ? null : lab.id)}
+                        className={`flex items-start gap-4 p-3 transition-colors sm:items-center sm:p-4 ${
+                          lab.image ? 'cursor-pointer' : ''
+                        } ${underRenovation ? '' : 'hover:bg-gray-50/70'}`}
+                        onClick={(e) => {
+                          if (!lab.image) return;
+                          openPreview(
+                            lab.id,
+                            e.currentTarget.querySelector<HTMLElement>('[data-preview-thumb]'),
+                          );
+                        }}
                       >
-                        <div className={`min-w-0 ${underRenovation ? 'opacity-60' : ''}`}>
-                          <h2 className="text-base font-medium text-gray-900">
-                            {lab.name}
-                          </h2>
-                          <p className="mt-0.5 text-sm text-gray-500">
-                            {lab.department} &middot; {lab.facilityId}
-                          </p>
-                          <div className="mt-3 flex flex-wrap gap-2">
-                            <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
-                              <MapPin className="h-3 w-3" />
-                              {lab.type}
-                            </span>
-                            <span className="inline-flex items-center gap-1 rounded-md border border-gray-200 px-2 py-0.5 text-xs font-medium text-gray-600">
-                              {lab.capacity} seats
-                            </span>
-                          </div>
-                        </div>
-
-                        <div className="flex shrink-0 items-center gap-3 self-start sm:self-auto">
-                          {underRenovation ? (
-                            <span className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500">
-                              Under Construction
-                            </span>
-                          ) : (
-                            <Button
-                              className="bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                void router.push(`/booking?labId=${lab.id}`);
+                        {/* Tap the photo (or the row) to view it full screen. */}
+                        <button
+                          type="button"
+                          data-preview-thumb
+                          disabled={!lab.image}
+                          aria-haspopup="dialog"
+                          aria-label={lab.image ? `View photo of ${lab.name}` : `No photo of ${lab.name}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            openPreview(lab.id, e.currentTarget);
+                          }}
+                          className={`relative h-[4.5rem] w-24 shrink-0 overflow-hidden rounded-lg bg-gray-100 transition-opacity enabled:cursor-zoom-in enabled:hover:opacity-90 focus-visible:outline-none focus-visible:ring-[3px] focus-visible:ring-gray-400/50 sm:h-24 sm:w-32 ${
+                            underRenovation ? 'opacity-60' : ''
+                          }`}
+                        >
+                          {lab.image && (
+                            <img
+                              src={lab.image}
+                              alt=""
+                              loading="lazy"
+                              decoding="async"
+                              className="h-full w-full object-cover"
+                              onError={(e) => {
+                                // Leave the grey tile rather than a broken-image glyph.
+                                e.currentTarget.style.visibility = 'hidden';
                               }}
-                            >
-                              Book
-                            </Button>
+                            />
                           )}
-                          <ChevronDown
-                            className={`h-5 w-5 text-gray-400 transition-transform ${isOpen ? 'rotate-180' : ''}`}
-                          />
-                        </div>
-                      </div>
+                        </button>
 
-                      {/* Expandable preview */}
-                      <div
-                        className={`grid transition-all duration-300 ease-out ${
-                          isOpen ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'
-                        }`}
-                      >
-                        <div className="overflow-hidden">
-                          <div className="border-t border-gray-100 p-5">
-                            {lab.image ? (
-                              <img
-                                src={lab.image}
-                                alt={`Lab ${lab.name}`}
-                                className="w-full rounded-lg border border-gray-100 object-cover"
-                                onError={(e) => {
-                                  e.currentTarget.onerror = null;
-                                  e.currentTarget.src = "/placeholder-lab.jpg";
-                                }}
-                              />
+                        {/* Phones stack name, details, and action beside the photo;
+                            from sm up the action moves to the right edge. */}
+                        <div className="flex min-w-0 flex-1 flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between sm:gap-4">
+                          <div className={`min-w-0 ${underRenovation ? 'opacity-60' : ''}`}>
+                            <h2 className="text-base font-medium text-gray-900">
+                              {lab.name}
+                              {showsCode(lab) && (
+                                <span className="ml-2 whitespace-nowrap font-normal tabular-nums text-gray-500">
+                                  {lab.facilityId}
+                                </span>
+                              )}
+                            </h2>
+                            <p className="mt-1 text-sm tabular-nums text-gray-500">
+                              {capacityLabel(lab)}
+                            </p>
+                          </div>
+
+                          <div className="shrink-0">
+                            {underRenovation ? (
+                              <span className="inline-flex items-center gap-1.5 rounded-md border border-gray-200 bg-gray-50 px-3 py-1.5 text-xs font-medium text-gray-500">
+                                Under Construction
+                              </span>
                             ) : (
-                              <p className="text-sm text-gray-400">No preview available.</p>
+                              <Button
+                                className="bg-blue-600 text-white hover:bg-blue-700 hover:cursor-pointer"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  void router.push(`/booking?labId=${lab.id}`);
+                                }}
+                              >
+                                Book
+                              </Button>
                             )}
                           </div>
                         </div>
                       </div>
-                    </div>
+                    </li>
                   );
                 })}
-              </div>
+              </ul>
             )
           )}
         </div>
       </div>
+
+      {openLab?.image && (
+        <PhotoLightbox
+          src={openLab.image}
+          alt={`Lab ${openLab.name}`}
+          caption={showsCode(openLab) ? `${openLab.name} (${openLab.facilityId})` : openLab.name}
+          originEl={previewOrigin}
+          onClose={closePreview}
+        />
+      )}
     </>
   );
 }

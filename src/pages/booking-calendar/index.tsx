@@ -7,7 +7,7 @@ import { Calendar, dateFnsLocalizer, Views } from 'react-big-calendar';
 import 'react-big-calendar/lib/css/react-big-calendar.css';
 import { useUser } from '@clerk/nextjs';
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Filter, X, ChevronLeft, ChevronRight } from "lucide-react";
+import { Filter, ChevronLeft, ChevronRight } from "lucide-react";
 import Head from 'next/head';
 import { useForm } from "react-hook-form";
 import * as z from "zod";
@@ -25,7 +25,7 @@ import {
   PopoverTrigger,
 } from "~/components/ui/popover";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Badge } from "~/components/ui/badge";
+import { StatusPill } from "~/components/status-pill";
 import { api } from "~/utils/api";
 import { startOfWeek, getDay } from 'date-fns';
 
@@ -380,8 +380,8 @@ export default function BookingCalendar() {
         style: {
           backgroundColor: '#f3f4f6',
           color: 'transparent',
-          borderRadius: '6px',
-          border: '1px solid #e5e7eb',
+          borderRadius: '8px',
+          border: 'none',
           cursor: 'default',
         }
       };
@@ -391,20 +391,21 @@ export default function BookingCalendar() {
       return {
         style: {
           backgroundColor: 'transparent',
-          color: '#6b7280',
-          borderRadius: '6px',
-          border: '1px solid #e5e7eb',
-          textAlign: 'center' as const,
+          color: '#4b5563',
+          borderRadius: '8px',
+          border: 'none',
+          textAlign: 'left' as const,
         }
       };
     }
 
     const color = roomColors[event.roomId] ?? '#2563eb';
 
+    // A light wash of the room-type colour, dark text on top.
     const baseStyle = {
-      backgroundColor: color,
-      color: 'white',
-      borderRadius: '6px',
+      backgroundColor: `${color}1f`,
+      color: '#111827',
+      borderRadius: '8px',
       border: 'none',
     };
 
@@ -468,9 +469,9 @@ export default function BookingCalendar() {
     };
 
     return (
-      <div className="mb-3 flex flex-col items-start justify-between gap-3 sm:mb-4 sm:flex-row sm:items-center">
-        <div className="text-lg font-medium text-gray-900 sm:text-xl">{label}</div>
-        <div className="flex items-center gap-1">
+      <div className="mb-4 flex items-center justify-between gap-3">
+        <h2 className="text-lg font-medium tracking-tight text-gray-900 sm:text-xl">{label}</h2>
+        <div className="flex shrink-0 items-center gap-1">
           <Button
             variant="outline"
             size="sm"
@@ -504,56 +505,40 @@ export default function BookingCalendar() {
 
   const EventComponent = ({ event }: { event: BookingEvent }) => {
     if (event.status === 'skeleton') {
-      return (
-        <div className="text-xs h-full overflow-hidden p-1 bg-gray-200 rounded animate-pulse">
-        </div>
-      );
+      return <div className="h-4 animate-pulse rounded bg-gray-200" />;
     }
-    
+
     if (event.status === 'overflow') {
+      // `participants` carries the number of hidden events on this day.
       return (
-        <div 
-          className="text-xs h-full overflow-hidden px-1.5 py-1.5 sm:px-2 sm:py-2 cursor-pointer"
-          style={{ fontSize: '10px' }}
-        >
-          <div className="font-bold text-center leading-tight">
-            {event.title}
-          </div>
+        <div className="cursor-pointer px-1.5 py-0.5 text-xs font-medium text-gray-600 hover:text-gray-900 hover:underline">
+          +{event.participants} more
         </div>
       );
     }
 
     return (
-      <div 
-        className="text-xs h-full overflow-hidden p-0.5 sm:p-1 text-white cursor-pointer" 
-        style={{ fontSize: '10px' }}
-      >
-        <div className="font-bold leading-tight">
+      <div className="h-full cursor-pointer overflow-hidden px-1.5 py-0.5 text-xs leading-snug">
+        <div className="tabular-nums text-gray-600">
           <span className="hidden sm:inline">
-            {format(event.start, 'H:mm')} - {format(event.end, 'H:mm')} 
+            {format(event.start, 'H:mm')}&ndash;{format(event.end, 'H:mm')}
           </span>
           <span className="sm:hidden">
             {format(event.start, 'H:mm')}
           </span>
-          <div className="truncate">{event.title}</div>
         </div>
-        <div className="truncate opacity-90">
+        <div className="truncate font-medium text-gray-900">{event.title}</div>
+        <div className="hidden truncate text-gray-600 sm:block">
           {event.roomId}
-          <span className="hidden sm:inline">, {event.bookedBy}</span>
-        </div>
-        <div className="opacity-90">
-          <span className="sm:hidden">
-            {event.bookingType === 'full' ? 'Full' : `${event.participants}p`}
-          </span>
-          <span className="hidden sm:inline">
+          <span className="ml-1.5 text-gray-500">
             {event.bookingType === 'full' ? (
               event.roomCapacity === 0 ? (
-                `Full Space (${event.participants} people)`
+                `${event.participants} people`
               ) : (
-                `Full Room (${event.roomCapacity} seats)`
+                'Full room'
               )
             ) : (
-              `Partial (${event.participants}/${event.roomCapacity} seats)`
+              `${event.participants}/${event.roomCapacity} seats`
             )}
           </span>
         </div>
@@ -589,43 +574,29 @@ export default function BookingCalendar() {
 
   if (!isMounted || !isLoaded) {
     return (
-      <div className="min-h-screen bg-neutral-50 pt-20 sm:pt-24">
-
+      <div className="min-h-screen bg-neutral-50">
         <Head>
           <title>Laboratory Booking Calendar</title>
           <meta name="description" content="Book laboratory rooms for your classes and events" />
         </Head>
-        
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 relative z-10">
-          <div className="mb-6">
-            <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">Laboratory Booking Calendar</h1>
-            <p className="mt-2 text-sm text-gray-500 sm:text-base">View and book available laboratory time slots</p>
-          </div>
-          
-          <div>
-            <div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4">
-                <div className="h-[950px] animate-pulse">
-                  <div className="flex justify-between items-center mb-6">
-                    <div className="h-8 bg-gray-200 rounded w-48"></div>
-                    <div className="flex gap-2">
-                      <div className="h-10 bg-gray-200 rounded w-24"></div>
-                      <div className="h-10 bg-gray-200 rounded w-20"></div>
-                      <div className="h-10 bg-gray-200 rounded w-24"></div>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-7 gap-2 mb-4">
-                    {[1, 2, 3, 4, 5, 6, 7].map((i) => (
-                      <div key={i} className="h-6 bg-gray-200 rounded"></div>
-                    ))}
-                  </div>
-                  <div className="grid grid-cols-7 gap-2">
-                    {[...Array(35)].map((_, i) => (
-                      <div key={i} className="h-24 bg-gray-100 rounded border border-gray-200"></div>
-                    ))}
-                  </div>
-                </div>
-              </div>
+
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 sm:pt-28">
+          <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
+            Booking calendar
+          </h1>
+          <p className="mt-1.5 text-sm text-gray-500">
+            Who has which room, and when.
+          </p>
+
+          <div aria-hidden="true" className="mt-8 animate-pulse">
+            <div className="mb-4 flex items-center justify-between">
+              <div className="h-7 w-40 rounded bg-gray-200" />
+              <div className="h-8 w-36 rounded bg-gray-200" />
+            </div>
+            <div className="grid grid-cols-7 gap-px overflow-hidden rounded-xl border border-gray-200 bg-gray-100">
+              {Array.from({ length: 35 }, (_, i) => (
+                <div key={i} className="h-24 bg-white sm:h-36" />
+              ))}
             </div>
           </div>
         </div>
@@ -635,272 +606,215 @@ export default function BookingCalendar() {
 
   return (
     <>
-      <div className="min-h-screen bg-neutral-50 pt-20 sm:pt-24">
-
+      <div className="min-h-screen bg-neutral-50">
         <Head>
           <title>Laboratory Booking Calendar</title>
           <meta name="description" content="Book laboratory rooms for your classes and events" />
         </Head>
-        
-        <div className="container mx-auto px-2 sm:px-4 py-4 sm:py-6 relative z-10">
-        {/* Header Section */}
-        <div className="mb-6 animate-fadeInUp">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+
+        <div className="mx-auto max-w-7xl px-4 pb-16 pt-24 sm:px-6 sm:pt-28">
+          <header className="flex flex-col gap-5 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">Laboratory Booking Calendar</h1>
-              <p className="mt-2 text-sm text-gray-500 sm:text-base">View and book available laboratory time slots</p>
+              <h1 className="text-2xl font-medium tracking-tight text-gray-900 sm:text-3xl">
+                Booking calendar
+              </h1>
+              <div className="mt-3 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-gray-600">
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm bg-blue-600" />
+                  Students Lab
+                </span>
+                <span className="inline-flex items-center gap-2">
+                  <span className="h-2.5 w-2.5 rounded-sm bg-orange-600" />
+                  Staff Room
+                </span>
+              </div>
             </div>
-            
-            <div className="flex items-center gap-3">
+
+            <div className="flex items-center gap-2">
               <Popover open={showFilterPopover} onOpenChange={setShowFilterPopover}>
                 <PopoverTrigger asChild>
                   <Button
                     variant="outline"
-                    className="relative border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:cursor-pointer"
+                    className="h-9 border-gray-200 bg-white text-gray-700 hover:bg-gray-50 hover:text-gray-900 hover:cursor-pointer"
                   >
-                    <Filter className="h-4 w-4 mr-2" />
-                    Filter Rooms
+                    <Filter className="mr-2 h-4 w-4" />
+                    Filter rooms
                     {selectedRoomFilters.length > 0 && (
-                      <Badge
-                        variant="secondary"
-                        className="ml-2 bg-gray-900 text-white text-xs px-1.5 py-0.5"
-                      >
+                      <span className="ml-2 rounded-md bg-gray-900 px-1.5 text-xs font-medium tabular-nums text-white">
                         {selectedRoomFilters.length}
-                      </Badge>
+                      </span>
                     )}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80 p-0" align="end">
-                  <div className="p-4 border-b">
-                    <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-medium text-gray-900">Filter by Laboratory</h4>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => setShowFilterPopover(false)}
-                        className="h-6 w-6 p-0"
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={clearAllFilters}
-                        className="text-xs hover:cursor-pointer"
-                      >
-                        Clear All
-                      </Button>
-                    </div>
+                  <div className="flex items-center justify-between gap-3 border-b border-gray-100 px-4 py-3">
+                    <h4 className="text-sm font-medium text-gray-900">Show rooms</h4>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={clearAllFilters}
+                      className="h-7 px-2 text-xs text-gray-600 hover:cursor-pointer hover:text-gray-900"
+                    >
+                      Clear all
+                    </Button>
                   </div>
-                  
+
                   {isLoadingLabs ? (
-                    <div className="p-4 space-y-3">
+                    <div className="space-y-3 p-4">
                       {[1, 2, 3, 4].map((i) => (
-                        <div key={i} className="flex items-center space-x-3 animate-pulse">
-                          <div className="w-4 h-4 bg-gray-200 rounded"></div>
-                          <div className="w-3 h-3 bg-gray-200 rounded-sm"></div>
-                          <div className="flex-1 h-4 bg-gray-200 rounded"></div>
+                        <div key={i} className="flex animate-pulse items-center gap-3">
+                          <div className="h-4 w-4 rounded bg-gray-200" />
+                          <div className="h-4 flex-1 rounded bg-gray-200" />
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="max-h-[400px] overflow-y-auto">
-                      {/* Student Labs Section */}
+                    <div className="max-h-[400px] divide-y divide-gray-100 overflow-y-auto">
                       {studentLabs.length > 0 && (
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                            <h5 className="text-xs font-medium text-blue-700 uppercase tracking-wide">Student Labs</h5>
-                          </div>
-                          {studentLabs.map((room) => {
-                            const color = roomColors[room.id];
-                            
-                            return (
-                              <div key={room.id} className="flex items-center space-x-3">
-                                <Checkbox
-                                  id={`filter-${room.id}`}
-                                  checked={selectedRoomFilters.includes(room.id)}
-                                  onCheckedChange={(checked) => 
-                                    handleRoomFilterChange(room.id, checked as boolean)
-                                  }
-                                  className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 hover:cursor-pointer"
-                                />
-                                <div className="flex items-center space-x-2 flex-1">
-                                  <span 
-                                    className="inline-block w-3 h-3 rounded-sm flex-shrink-0" 
-                                    style={{ backgroundColor: color }}
-                                  />
-                                  <label 
-                                    htmlFor={`filter-${room.id}`}
-                                    className="text-sm font-medium text-gray-700 cursor-pointer flex-1"
-                                  >
-                                    {room.name}
-                                  </label>
-                                  <span className="text-xs text-gray-500">
-                                    {room.capacity === 0 ? "Flex" : room.capacity}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
+                        <div className="px-4 py-3">
+                          <h5 className="mb-1.5 flex items-center gap-2 text-xs font-medium text-gray-500">
+                            <span className="h-2.5 w-2.5 rounded-sm bg-blue-600" />
+                            Students Lab
+                          </h5>
+                          {studentLabs.map((room) => (
+                            <div key={room.id} className="flex items-center gap-3 py-1.5">
+                              <Checkbox
+                                id={`filter-${room.id}`}
+                                checked={selectedRoomFilters.includes(room.id)}
+                                onCheckedChange={(checked) =>
+                                  handleRoomFilterChange(room.id, checked as boolean)
+                                }
+                                className="data-[state=checked]:bg-blue-600 data-[state=checked]:border-blue-600 hover:cursor-pointer"
+                              />
+                              <label
+                                htmlFor={`filter-${room.id}`}
+                                className="min-w-0 flex-1 cursor-pointer truncate text-sm text-gray-800"
+                              >
+                                {room.name}
+                              </label>
+                              <span className="shrink-0 text-xs tabular-nums text-gray-500">
+                                {room.capacity === 0 ? "Flexible" : `${room.capacity} seats`}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
-                      
-                      {/* Divider */}
-                      {studentLabs.length > 0 && staffRooms.length > 0 && (
-                        <div className="border-t border-gray-200 my-2"></div>
-                      )}
-                      
-                      {/* Staff Rooms Section */}
+
                       {staffRooms.length > 0 && (
-                        <div className="p-4 space-y-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                            <h5 className="text-xs font-medium text-orange-700 uppercase tracking-wide">Staff Rooms</h5>
-                          </div>
-                          {staffRooms.map((room) => {
-                            const color = roomColors[room.id];
-                            
-                            return (
-                              <div key={room.id} className="flex items-center space-x-3">
-                                <Checkbox
-                                  id={`filter-${room.id}`}
-                                  checked={selectedRoomFilters.includes(room.id)}
-                                  onCheckedChange={(checked) => 
-                                    handleRoomFilterChange(room.id, checked as boolean)
-                                  }
-                                  className="data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600 hover:cursor-pointer"
-                                />
-                                <div className="flex items-center space-x-2 flex-1">
-                                  <span 
-                                    className="inline-block w-3 h-3 rounded-sm flex-shrink-0" 
-                                    style={{ backgroundColor: color }}
-                                  />
-                                  <label 
-                                    htmlFor={`filter-${room.id}`}
-                                    className="text-sm font-medium text-gray-700 cursor-pointer flex-1"
-                                  >
-                                    {room.name}
-                                  </label>
-                                  <span className="text-xs text-gray-500">
-                                    {room.capacity === 0 ? "Flex" : room.capacity}
-                                  </span>
-                                </div>
-                              </div>
-                            );
-                          })}
+                        <div className="px-4 py-3">
+                          <h5 className="mb-1.5 flex items-center gap-2 text-xs font-medium text-gray-500">
+                            <span className="h-2.5 w-2.5 rounded-sm bg-orange-600" />
+                            Staff Room
+                          </h5>
+                          {staffRooms.map((room) => (
+                            <div key={room.id} className="flex items-center gap-3 py-1.5">
+                              <Checkbox
+                                id={`filter-${room.id}`}
+                                checked={selectedRoomFilters.includes(room.id)}
+                                onCheckedChange={(checked) =>
+                                  handleRoomFilterChange(room.id, checked as boolean)
+                                }
+                                className="data-[state=checked]:bg-orange-600 data-[state=checked]:border-orange-600 hover:cursor-pointer"
+                              />
+                              <label
+                                htmlFor={`filter-${room.id}`}
+                                className="min-w-0 flex-1 cursor-pointer truncate text-sm text-gray-800"
+                              >
+                                {room.name}
+                              </label>
+                              <span className="shrink-0 text-xs tabular-nums text-gray-500">
+                                {room.capacity === 0 ? "Flexible" : `${room.capacity} seats`}
+                              </span>
+                            </div>
+                          ))}
                         </div>
                       )}
                     </div>
                   )}
-                  
-                  {selectedRoomFilters.length > 0 && (
-                    <div className="p-4 border-t bg-gray-50">
-                      <div className="text-xs text-gray-600 mb-2">
-                        Showing {selectedRoomFilters.length} of {rooms.length} laboratories:
-                      </div>
-                      <div className="flex flex-wrap gap-1">
-                        {selectedRoomFilters.map(roomId => {
-                          const room = rooms.find(r => r.id === roomId);
-                          const color = roomColors[roomId] || '#1177DE';
-                          return (
-                            <Badge 
-                              key={roomId} 
-                              variant="secondary" 
-                              className="text-xs"
-                              style={{ 
-                                backgroundColor: `${color}20`,
-                                color: color,
-                                border: `1px solid ${color}40`
-                              }}
-                            >
-                              {room?.id || roomId}
-                            </Badge>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
+
+                  <div className="flex items-center justify-between gap-3 border-t border-gray-100 px-4 py-3">
+                    <p className="text-xs text-gray-500">
+                      {selectedRoomFilters.length > 0
+                        ? `Showing ${selectedRoomFilters.length} of ${rooms.length} rooms`
+                        : "Showing all rooms"}
+                    </p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setShowFilterPopover(false)}
+                      className="h-8 border-gray-200 text-gray-700 hover:cursor-pointer hover:bg-gray-50"
+                    >
+                      Done
+                    </Button>
+                  </div>
                 </PopoverContent>
               </Popover>
-              
+
               {selectedRoomFilters.length > 0 && (
                 <Button
                   variant="ghost"
                   size="sm"
                   onClick={clearAllFilters}
-                  className="text-xs text-gray-500 hover:bg-gray-100 hover:text-gray-900 hover:cursor-pointer"
+                  className="h-9 text-sm text-gray-500 hover:bg-gray-100 hover:text-gray-900 hover:cursor-pointer"
                 >
-                  <X className="h-3 w-3 mr-1" />
-                  Clear Filter
+                  Clear filter
                 </Button>
               )}
             </div>
-          </div>
-        </div>
-        
-        {/* Main Content */}
-        <div>
-          {/* Calendar Section */}
-          <div>
-              <div className="rounded-2xl border border-gray-200 bg-white p-3 sm:p-4">
-                <div className="calendar-minimal h-[950px]">
-                  {bookingsError ? (
-                  <div className="flex items-center justify-center h-full p-4">
-                    <p className="text-red-500 text-sm text-center">Error loading bookings: {bookingsError.message}</p>
-                  </div>
-                ) : (
-                  <Calendar
-                    localizer={localizer}
-                    events={isLoadingBookings ? generateSkeletonEvents() : limitEventsPerDay(events, 1)}
-                    startAccessor="start"
-                    endAccessor="end"
-                    style={{ height: "100%" }}
-                    views={{
-                      month: true,
-                      week: true,
-                      day: true
-                    }}
-                    defaultView={Views.MONTH}
-                    toolbar={true}
-                    step={60}
-                    timeslots={1}
-                    selectable
-                    onSelectSlot={handleSelectSlot}
-                    onSelectEvent={(event) => {
-                      if (event.status === 'skeleton') {
-                        return; // Don't handle skeleton clicks
-                      }
-                      if (event.status === 'overflow') {
-                        const dateKey = event.id.replace('more-', '');
-                        handleMoreEventsClick(dateKey);
-                      } else {
-                        handleSelectEvent(event);
-                      }
-                    }}
-                    eventPropGetter={eventStyleGetter}
-                    components={{
-                      event: EventComponent,
-                      toolbar: CustomToolbar,
-                    }}
-                    dayLayoutAlgorithm="no-overlap"
-                    popup={false}
-                    showMultiDayTimes={false}
-                    min={new Date(0, 0, 0, 7, 0)}
-                    max={new Date(0, 0, 0, 21, 0)}
-                    onNavigate={(date, view) => {
-                      setCurrentDate(date);
-                    }}
-                    date={currentDate}
-                    culture="en-US"
-                  />
-                )}
+          </header>
+
+          <div className="calendar-minimal mt-8 h-[760px] sm:h-[900px]">
+            {bookingsError ? (
+              <div className="flex h-full items-center justify-center rounded-xl border border-gray-200 bg-white p-4">
+                <p className="text-center text-sm text-red-700">Error loading bookings: {bookingsError.message}</p>
               </div>
-            </div>
+            ) : (
+              <Calendar
+                localizer={localizer}
+                events={isLoadingBookings ? generateSkeletonEvents() : limitEventsPerDay(events, 1)}
+                startAccessor="start"
+                endAccessor="end"
+                style={{ height: "100%" }}
+                views={{
+                  month: true,
+                  week: true,
+                  day: true
+                }}
+                defaultView={Views.MONTH}
+                toolbar={true}
+                step={60}
+                timeslots={1}
+                selectable
+                onSelectSlot={handleSelectSlot}
+                onSelectEvent={(event) => {
+                  if (event.status === 'skeleton') {
+                    return; // Don't handle skeleton clicks
+                  }
+                  if (event.status === 'overflow') {
+                    const dateKey = event.id.replace('more-', '');
+                    handleMoreEventsClick(dateKey);
+                  } else {
+                    handleSelectEvent(event);
+                  }
+                }}
+                eventPropGetter={eventStyleGetter}
+                components={{
+                  event: EventComponent,
+                  toolbar: CustomToolbar,
+                }}
+                dayLayoutAlgorithm="no-overlap"
+                popup={false}
+                showMultiDayTimes={false}
+                min={new Date(0, 0, 0, 7, 0)}
+                max={new Date(0, 0, 0, 21, 0)}
+                onNavigate={(date, view) => {
+                  setCurrentDate(date);
+                }}
+                date={currentDate}
+                culture="en-US"
+              />
+            )}
           </div>
-        </div>
         </div>
       </div>
 
@@ -909,30 +823,14 @@ export default function BookingCalendar() {
           {selectedEvent && (
             <>
               <DialogHeader className="space-y-0 border-b border-gray-100 px-6 py-5 text-left">
-                <div className="flex items-center gap-2">
-                  <span
-                    className="h-2.5 w-2.5 shrink-0 rounded-full"
-                    style={{ backgroundColor: roomColors[selectedEvent.roomId] ?? '#2563eb' }}
-                  />
+                <div className="flex items-start justify-between gap-3">
+                  <DialogTitle className="min-w-0 text-lg font-medium text-gray-900">
+                    {selectedEvent.title || 'Event details'}
+                  </DialogTitle>
                   {selectedEvent.status && selectedEvent.status !== 'overflow' && (
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                        ['confirmed', 'accepted', 'approved'].includes(selectedEvent.status.toLowerCase())
-                          ? 'bg-green-50 text-green-700'
-                          : selectedEvent.status.toLowerCase() === 'pending'
-                          ? 'bg-amber-50 text-amber-700'
-                          : selectedEvent.status.toLowerCase() === 'completed'
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'bg-gray-100 text-gray-600'
-                      }`}
-                    >
-                      {selectedEvent.status.charAt(0).toUpperCase() + selectedEvent.status.slice(1)}
-                    </span>
+                    <StatusPill status={selectedEvent.status} className="mt-1 shrink-0" />
                   )}
                 </div>
-                <DialogTitle className="mt-3 text-lg font-medium text-gray-900">
-                  {selectedEvent.title || 'Event details'}
-                </DialogTitle>
               </DialogHeader>
 
               <div className="max-h-[60vh] overflow-y-auto px-6">
@@ -945,14 +843,20 @@ export default function BookingCalendar() {
                   </div>
                   <div className="flex items-start justify-between gap-6 py-3">
                     <dt className="text-sm text-gray-500">Time</dt>
-                    <dd className="text-right text-sm font-medium text-gray-900">
+                    <dd className="text-right text-sm font-medium tabular-nums text-gray-900">
                       {safeFormat(selectedEvent.start, 'HH:mm')} &ndash; {safeFormat(selectedEvent.end, 'HH:mm')}
                     </dd>
                   </div>
                   <div className="flex items-start justify-between gap-6 py-3">
                     <dt className="text-sm text-gray-500">Room</dt>
                     <dd className="text-right">
-                      <div className="text-sm font-medium text-gray-900">{selectedEvent.roomId}</div>
+                      <div className="inline-flex items-center gap-2 text-sm font-medium text-gray-900">
+                        <span
+                          className="h-2.5 w-2.5 shrink-0 rounded-sm"
+                          style={{ backgroundColor: roomColors[selectedEvent.roomId] ?? '#2563eb' }}
+                        />
+                        {selectedEvent.roomId}
+                      </div>
                       <div className="text-xs text-gray-500">
                         {rooms.find((r) => r.id === selectedEvent.roomId)?.name || 'Unknown'}
                       </div>
@@ -976,9 +880,9 @@ export default function BookingCalendar() {
                     <dd className="text-right text-sm font-medium text-gray-900">{selectedEvent.bookedBy}</dd>
                   </div>
                   {selectedEvent.description && (
-                    <div className="py-3">
-                      <dt className="text-sm text-gray-500">Notes</dt>
-                      <dd className="mt-1 text-sm leading-relaxed text-gray-700">{selectedEvent.description}</dd>
+                    <div className="flex items-start justify-between gap-6 py-3">
+                      <dt className="text-sm text-gray-500">Event type</dt>
+                      <dd className="text-right text-sm font-medium text-gray-900">{selectedEvent.description}</dd>
                     </div>
                   )}
                 </dl>
@@ -1005,7 +909,7 @@ export default function BookingCalendar() {
               {moreEventsData?.date && format(moreEventsData.date, 'EEEE, MMMM d, yyyy')}
             </DialogTitle>
             <p className="text-sm text-gray-500">
-              {moreEventsData?.events.length} event{moreEventsData?.events.length !== 1 ? 's' : ''} scheduled
+              {moreEventsData?.events.length} booking{moreEventsData?.events.length !== 1 ? 's' : ''}
             </p>
           </DialogHeader>
 
@@ -1025,35 +929,29 @@ export default function BookingCalendar() {
                   }}
                   className="flex w-full items-center gap-3 rounded-lg px-4 py-3 text-left transition-colors hover:bg-gray-50 hover:cursor-pointer"
                 >
-                  <span
-                    className="h-9 w-1 shrink-0 rounded-full"
-                    style={{ backgroundColor: roomColors[event.roomId] ?? '#2563eb' }}
-                  />
                   <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-baseline gap-2">
                       <span className="truncate text-sm font-medium text-gray-900">{event.title}</span>
-                      <span className="shrink-0 text-xs text-gray-400">
+                      <span className="shrink-0 text-xs tabular-nums text-gray-500">
                         {format(event.start, 'HH:mm')}&ndash;{format(event.end, 'HH:mm')}
                       </span>
                     </div>
-                    <div className="mt-0.5 truncate text-xs text-gray-500">
-                      {event.roomId} &middot; {event.bookedBy}
+                    <div className="mt-0.5 flex min-w-0 gap-3 text-xs text-gray-500">
+                      <span className="inline-flex shrink-0 items-center gap-1.5">
+                        <span
+                          className="h-2 w-2 rounded-sm"
+                          style={{ backgroundColor: roomColors[event.roomId] ?? '#2563eb' }}
+                        />
+                        {event.roomId}
+                      </span>
+                      <span className="truncate">{event.bookedBy}</span>
                     </div>
                   </div>
                   {event.status && event.status !== 'overflow' && (
-                    <span
-                      className={`hidden shrink-0 rounded-full px-2 py-0.5 text-xs font-medium sm:inline ${
-                        ['confirmed', 'accepted', 'approved'].includes(event.status.toLowerCase())
-                          ? 'bg-green-50 text-green-700'
-                          : event.status.toLowerCase() === 'completed'
-                          ? 'bg-blue-50 text-blue-700'
-                          : 'bg-amber-50 text-amber-700'
-                      }`}
-                    >
-                      {event.status.charAt(0).toUpperCase() + event.status.slice(1)}
+                    <span className="hidden shrink-0 sm:block">
+                      <StatusPill status={event.status} />
                     </span>
                   )}
-                  <ChevronRight className="h-4 w-4 shrink-0 text-gray-300" />
                 </button>
               ))}
             </div>
