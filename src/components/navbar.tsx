@@ -111,24 +111,46 @@ export function Navbar() {
     return `${baseClasses} border-transparent ${isAtTop && router.pathname === '/' ? 'text-white/85 hover:text-white hover:border-white/50' : 'text-gray-600 hover:text-orange-600 hover:border-orange-300'}`;
   };
 
+  // Mobile rows: the current page gets the orange wash, nothing down the side.
+  const mobileRow = "block w-full rounded-lg px-3 py-2.5 text-left text-base transition-colors duration-200 hover:cursor-pointer";
+
   const getMobileLinkClasses = (path: string) => {
-    const baseClasses = "block pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200";
-    
     if (isActive(path)) {
-      return `${baseClasses} border-orange-500 text-orange-600 bg-orange-50 font-semibold`;
+      return `${mobileRow} bg-orange-50 font-medium text-orange-600`;
     }
 
-    return `${baseClasses} border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700`;
+    return `${mobileRow} text-gray-700 hover:bg-gray-50 hover:text-gray-900`;
   };
 
+  const getMobileSubLinkClasses = (path: string) =>
+    `block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors duration-200 hover:cursor-pointer ${
+      router.pathname.startsWith(path)
+        ? "font-medium text-orange-600"
+        : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+    }`;
+
   return (
-    <nav 
+    <>
+    {/* Mobile menu backdrop. There is no close icon: tapping anywhere outside
+        the menu closes it. It lives outside <nav> because the nav's backdrop
+        blur would otherwise pin this "fixed" layer to the nav, not the screen. */}
+    {isMenuOpen && (
+      <div
+        aria-hidden="true"
+        className="fixed inset-0 z-40 bg-gray-900/30 backdrop-blur-[2px] sm:hidden"
+        onClick={() => {
+          setIsMenuOpen(false);
+          setIsAdminDropdownOpen(false);
+        }}
+      />
+    )}
+    <nav
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isMounted && !visible ? '-translate-y-full' : 'transform-none'
-      } ${isAtTop && router.pathname === '/' 
-          ? 'bg-transparent' 
+        isMounted && !visible && !isMenuOpen ? '-translate-y-full' : 'transform-none'
+      } ${isAtTop && router.pathname === '/' && !isMenuOpen
+          ? 'bg-transparent'
           : 'bg-white/95 backdrop-blur-md shadow-lg border-b border-gray-100'
-      } ${isMenuOpen && 'bg-white/95 backdrop-blur-md shadow-lg'}`}
+      }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
@@ -287,55 +309,44 @@ export function Navbar() {
           <div className={`-mr-2 flex items-center sm:hidden`}>
             <button
               onClick={() => setIsMenuOpen(!isMenuOpen)}
-              className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 focus:outline-none focus:ring-2 focus:ring-inset ${
-                isAtTop && router.pathname === '/'
-                  ? 'text-white hover:text-white/80 focus:ring-white/50'
-                  : 'text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:ring-orange-500'
+              className={`inline-flex items-center justify-center p-2 rounded-md transition-colors duration-300 hover:cursor-pointer focus:outline-none focus-visible:ring-2 focus-visible:ring-inset ${
+                isAtTop && router.pathname === '/' && !isMenuOpen
+                  ? 'text-white hover:text-white/80 focus-visible:ring-white/50'
+                  : isMenuOpen
+                    ? 'bg-gray-100 text-gray-700 focus-visible:ring-gray-400'
+                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus-visible:ring-gray-400'
               }`}
               aria-expanded={isMenuOpen}
+              aria-controls="mobile-menu"
             >
-              <span className="sr-only">Open main menu</span>
-              {isMenuOpen ? (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </svg>
-              ) : (
-                <svg
-                  className="block h-6 w-6"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  aria-hidden="true"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </svg>
-              )}
+              <span className="sr-only">{isMenuOpen ? "Close main menu" : "Open main menu"}</span>
+              {/* Always the menu icon, never an ×: the menu closes from the backdrop. */}
+              <svg
+                className="block h-6 w-6"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+                aria-hidden="true"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
             </button>
           </div>
         </div>
       </div>
 
       {/* Mobile menu */}
-      <div className={`${isMenuOpen ? "block" : "hidden"} sm:hidden bg-white border-t border-gray-200`}>
-        <div className="pt-2 pb-3 space-y-1">
+      <div
+        id="mobile-menu"
+        className={`${isMenuOpen ? "block" : "hidden"} max-h-[calc(100dvh-4rem)] overflow-y-auto border-t border-gray-100 bg-white sm:hidden`}
+      >
+        <div className="space-y-0.5 px-2 py-2">
           <SignedOut>
             <Link
               onClick={() => setIsMenuOpen(false)}
@@ -383,11 +394,16 @@ export function Navbar() {
                     e.stopPropagation();
                     setIsAdminDropdownOpen(!isAdminDropdownOpen);
                   }}
-                  className="w-full text-left pl-3 pr-4 py-2 border-l-4 text-base font-medium transition-colors duration-200 border-transparent text-gray-500 hover:bg-gray-50 hover:border-gray-300 hover:text-gray-700 flex items-center justify-between cursor-pointer"
+                  aria-expanded={isAdminDropdownOpen}
+                  className={`${mobileRow} flex items-center justify-between ${
+                    router.pathname.startsWith('/admin')
+                      ? 'font-medium text-orange-600'
+                      : 'text-gray-700 hover:bg-gray-50 hover:text-gray-900'
+                  }`}
                 >
                   <span>Admin Menu</span>
                   <svg
-                    className={`h-5 w-5 transition-transform duration-200 ${isAdminDropdownOpen ? 'rotate-180' : ''}`}
+                    className={`h-5 w-5 text-gray-400 transition-transform duration-200 ${isAdminDropdownOpen ? 'rotate-180' : ''}`}
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -396,7 +412,7 @@ export function Navbar() {
                   </svg>
                 </button>
                 {isAdminDropdownOpen && (
-                  <div className="bg-gray-50 border-l-4 border-orange-200">
+                  <div className="mt-0.5 space-y-0.5 pl-3">
                     <button
                       onClick={(e) => { 
                         e.preventDefault();
@@ -405,7 +421,7 @@ export function Navbar() {
                         setIsAdminDropdownOpen(false);
                         void router.push('/admin/dashboard');
                       }}
-                      className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
+                      className={getMobileSubLinkClasses('/admin/dashboard')}
                     >
                       Admin Dashboard
                     </button>
@@ -417,7 +433,7 @@ export function Navbar() {
                         setIsAdminDropdownOpen(false);
                         void router.push('/admin/lab-search');
                       }}
-                      className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
+                      className={getMobileSubLinkClasses('/admin/lab-search')}
                     >
                       Book as Admin
                     </button>
@@ -429,7 +445,7 @@ export function Navbar() {
                         setIsAdminDropdownOpen(false);
                         void router.push('/admin/manage-booking');
                       }}
-                      className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
+                      className={getMobileSubLinkClasses('/admin/manage-booking')}
                     >
                       Manage Booking
                     </button>
@@ -442,7 +458,7 @@ export function Navbar() {
                           setIsAdminDropdownOpen(false);
                           void router.push('/admin/manage-admin');
                         }}
-                        className="w-full text-left block pl-8 pr-4 py-2 text-sm text-gray-700 hover:bg-orange-50 hover:text-orange-600 cursor-pointer"
+                        className={getMobileSubLinkClasses('/admin/manage-admin')}
                       >
                         Manage Admin
                       </button>
@@ -455,11 +471,11 @@ export function Navbar() {
         </div>
         
         {/* Mobile user section */}
-        <div className="pt-4 pb-3 border-t border-gray-200">
-          <div className="flex items-center px-4">
+        <div className="border-t border-gray-100 py-3">
+          <div className="flex items-center px-5">
             <SignedOut>
               <SignInButton mode="modal">
-                <button className="inline-flex items-center px-4 py-2 text-sm font-medium rounded-md shadow-sm text-white bg-orange-600 hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200">
+                <button className="inline-flex items-center rounded-md bg-orange-600 px-4 py-2 text-sm font-medium text-white transition-colors duration-200 hover:cursor-pointer hover:bg-orange-700 focus:outline-none focus-visible:ring-2 focus-visible:ring-orange-500 focus-visible:ring-offset-2">
                   Sign in
                 </button>
               </SignInButton>
@@ -475,5 +491,6 @@ export function Navbar() {
         </div>
       </div>
     </nav>
+    </>
   );
 }

@@ -1,5 +1,9 @@
 import { type AppType } from "next/app";
-import { Poppins } from "next/font/google";
+
+import "@fontsource/poppins/300.css";
+import "@fontsource/poppins/400.css";
+import "@fontsource/poppins/500.css";
+import "@fontsource/poppins/700.css";
 import { useEffect, useState } from "react";
 import { api } from "~/utils/api";
 import {
@@ -14,12 +18,6 @@ import "nprogress/nprogress.css";
 import { Navbar } from "~/components/navbar";
 
 import "~/styles/globals.css";
-
-const geist = Poppins({
-  weight: ['300', '400', '500', '700'],
-  subsets: ['latin'],
-  variable: '--font-poppins',
-});
 
 import type { AppProps } from "next/app";
 
@@ -78,7 +76,7 @@ const AppContent = ({ Component, pageProps, router }: AppProps) => {
 
 const MyApp: AppType = ({ Component, pageProps, router }) => {
   return (
-    <div className={geist.className}>
+    <div className="font-sans">
       <ClerkProvider 
         {...pageProps}
         afterSignInUrl="/auth/redirect"

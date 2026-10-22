@@ -3,7 +3,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Button } from "~/components/ui/button";
 import { Checkbox } from "~/components/ui/checkbox";
-import { Home as HomeIcon, BookOpen, Users, Calendar, FileText, Phone, Menu, X, Layers, Timer, Info, ChevronDown, ArrowRight, Mail } from "lucide-react";
+import { ChevronDown, Mail, Phone } from "lucide-react";
 import React from "react";
 
 // Rooms announced in the landing-page popup. `share` sets each photo's width in
@@ -54,6 +54,16 @@ const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as React.CSSProperties;
 
 // Must match the exit animation length in the global styles.
 const ANNOUNCEMENT_EXIT_MS = 180;
+
+// Landing sections in page order. The desktop rail, the mobile menu, and the
+// scroll spy that marks the current section all read this one list, so adding
+// or removing a section only happens here.
+const NAV_ITEMS = [
+  { id: "home", label: "Home" },
+  { id: "how-to-use", label: "How to use" },
+  { id: "rules", label: "Rules" },
+  { id: "contact", label: "Contact" },
+];
 
 const useIntersectionObserver = (options = {}) => {
   const [isIntersecting, setIsIntersecting] = useState(false);
@@ -148,7 +158,7 @@ export default function Home() {
 
   useEffect(() => {
     const handleScroll = () => {
-      const sections = ['home', 'about', 'how-to-use', 'rules', 'contact'];
+      const sections = NAV_ITEMS.map((item) => item.id);
       const scrollPosition = window.scrollY + 100;
 
       for (const section of sections) {
@@ -182,13 +192,7 @@ export default function Home() {
     setIsMobileMenuOpen(false);
   };
 
-  const navItems = [
-    { id: 'home', label: 'Home', icon: <HomeIcon className="w-4 h-4" /> },
-    { id: 'about', label: 'About', icon: <Info className="w-4 h-4" /> },
-    { id: 'how-to-use', label: 'How to Use', icon: <BookOpen className="w-4 h-4" /> },
-    { id: 'rules', label: 'Rules', icon: <FileText className="w-4 h-4" /> },
-    { id: 'contact', label: 'Contact', icon: <Phone className="w-4 h-4" /> },
-  ];
+  const activeLabel = NAV_ITEMS.find((item) => item.id === activeSection)?.label ?? "Home";
 
   const toggleRuleSection = (id: string) => {
     setOpenRuleSection(openRuleSection === id ? null : id);
@@ -312,61 +316,86 @@ export default function Home() {
         </div>
       )}
 
-      {/* Side Navigation - Desktop */}
-      <nav className="hidden lg:block fixed top-1/2 right-6 transform -translate-y-1/2 z-40">
-        <div className="rounded-full border border-gray-200 bg-white py-3 px-1.5 shadow-sm">
-          <div className="flex flex-col space-y-1">
-            {navItems.map((item) => (
-              <button
-                key={item.id}
-                onClick={() => scrollToSection(item.id)}
-                className={`group relative p-2.5 rounded-full transition-all duration-200 ${
-                  activeSection === item.id
-                    ? 'bg-orange-600 text-white'
-                    : 'text-gray-700 hover:text-gray-600 hover:bg-gray-50'
-                }`}
-                title={item.label}
-              >
-                {item.icon}
-                <span className="absolute right-full mr-3 px-2.5 py-1.5 bg-gray-900 text-white text-xs rounded-md whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none">
-                  {item.label}
-                </span>
-              </button>
-            ))}
-          </div>
-        </div>
+      {/* Section rail - desktop. A dot per section; its name shows on hover and focus. */}
+      <nav
+        aria-label="Page sections"
+        className="fixed right-6 top-1/2 z-40 hidden -translate-y-1/2 lg:block"
+      >
+        <ul className="flex flex-col items-center gap-0.5 rounded-full border border-gray-200 bg-white/90 px-1 py-2 backdrop-blur">
+          {NAV_ITEMS.map((item) => {
+            const isActive = activeSection === item.id;
+            return (
+              <li key={item.id}>
+                <button
+                  type="button"
+                  onClick={() => scrollToSection(item.id)}
+                  aria-label={item.label}
+                  aria-current={isActive ? "location" : undefined}
+                  className="group relative flex h-7 w-7 items-center justify-center rounded-full hover:cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-gray-400/60"
+                >
+                  <span
+                    className={`rounded-full transition-all duration-200 ${
+                      isActive
+                        ? "h-2.5 w-2.5 bg-orange-600"
+                        : "h-1.5 w-1.5 bg-gray-300 group-hover:bg-gray-500"
+                    }`}
+                  />
+                  <span className="pointer-events-none absolute right-full mr-3 whitespace-nowrap rounded-md bg-gray-900 px-2.5 py-1.5 text-xs text-white opacity-0 transition-opacity duration-150 group-hover:opacity-100 group-focus-visible:opacity-100">
+                    {item.label}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ul>
       </nav>
 
-      {/* Mobile Navigation Button */}
+      {/* Section menu - mobile. The pill names the current section and opens the list. */}
       <button
+        type="button"
         onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-        className="lg:hidden fixed bottom-6 right-6 z-50 bg-orange-600 text-white p-3.5 rounded-full shadow-md transition-colors duration-200 hover:bg-orange-700 active:scale-95"
+        aria-expanded={isMobileMenuOpen}
+        aria-controls="section-menu"
+        className="fixed bottom-5 right-4 z-50 flex h-11 items-center gap-2 rounded-full border border-gray-200 bg-white pl-4 pr-3 text-sm font-medium text-gray-900 shadow-sm transition-colors hover:cursor-pointer hover:bg-gray-50 active:bg-gray-100 lg:hidden"
       >
-        {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+        {activeLabel}
+        <ChevronDown
+          className={`h-4 w-4 text-gray-500 transition-transform duration-200 ${isMobileMenuOpen ? "" : "rotate-180"}`}
+        />
       </button>
 
-      {/* Mobile Navigation Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden fixed inset-0 z-40 bg-black/40 backdrop-blur-sm" onClick={() => setIsMobileMenuOpen(false)}>
-          <div className="absolute bottom-24 left-4 right-4 bg-white rounded-2xl shadow-xl p-5" onClick={(e) => e.stopPropagation()}>
-            <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3 px-1">Navigation</p>
-            <div className="flex flex-col space-y-1">
-              {navItems.map((item) => (
-                <button
-                  key={item.id}
-                  onClick={() => scrollToSection(item.id)}
-                  className={`flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-all duration-200 ${
-                    activeSection === item.id
-                      ? 'bg-orange-50 text-orange-600'
-                      : 'text-gray-600 hover:bg-gray-50'
-                  }`}
-                >
-                  <span className={activeSection === item.id ? 'text-orange-500' : 'text-gray-400'}>{item.icon}</span>
-                  <span className="font-medium text-sm">{item.label}</span>
-                </button>
-              ))}
-            </div>
-          </div>
+        <div
+          className="fixed inset-0 z-40 bg-gray-900/30 backdrop-blur-[2px] lg:hidden"
+          onClick={() => setIsMobileMenuOpen(false)}
+        >
+          <nav
+            id="section-menu"
+            aria-label="Page sections"
+            className="absolute bottom-20 right-4 w-56 overflow-hidden rounded-2xl border border-gray-100 bg-white py-1.5 shadow-xl"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <ul>
+              {NAV_ITEMS.map((item) => {
+                const isActive = activeSection === item.id;
+                return (
+                  <li key={item.id}>
+                    <button
+                      type="button"
+                      onClick={() => scrollToSection(item.id)}
+                      aria-current={isActive ? "location" : undefined}
+                      className={`flex w-full items-center justify-between px-4 py-3 text-left text-sm transition-colors hover:cursor-pointer hover:bg-gray-50 ${
+                        isActive ? "font-medium text-gray-900" : "text-gray-600"
+                      }`}
+                    >
+                      {item.label}
+                      {isActive && <span className="h-2 w-2 rounded-full bg-orange-600" />}
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          </nav>
         </div>
       )}
 
@@ -410,11 +439,12 @@ export default function Home() {
         </div>
 
         <button
-          onClick={() => scrollToSection('about')}
-          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1.5 text-white/60 transition-colors hover:cursor-pointer hover:text-white"
+          onClick={() => scrollToSection('how-to-use')}
+          aria-label="Scroll to How to use"
+          className="absolute bottom-8 left-1/2 flex -translate-x-1/2 flex-col items-center gap-1 text-white/80 transition-colors hover:cursor-pointer hover:text-white focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white/60 rounded-md px-2 py-1"
         >
-          <span className="text-[10px] font-medium uppercase tracking-widest">Scroll</span>
-          <ChevronDown className="h-4 w-4 animate-bounce" />
+          <span className="text-xs font-medium uppercase tracking-wider">Scroll</span>
+          <ChevronDown className="h-4 w-4" />
         </button>
       </section>
 
