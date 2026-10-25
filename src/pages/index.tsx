@@ -850,15 +850,6 @@ export default function Home() {
                           },
                           {
                             letter: "c",
-                            lab: "Paddock P208",
-                            desc: "Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:",
-                            email: "kusno.prasetya@uph.edu",
-                            phone: "08560-5502-8999",
-                            phoneRaw: "0856055028999",
-                            name: "Kusno Prasetya"
-                          },
-                          {
-                            letter: "d",
                             lab: "Lab Gedung B356 dan B344",
                             desc: "Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:",
                             email: "ricky.purba@uph.edu",
@@ -867,7 +858,7 @@ export default function Home() {
                             name: "Ricky Ricardo Purba"
                           },
                           {
-                            letter: "e",
+                            letter: "d",
                             lab: "Laboran",
                             desc: "Jika memerlukan bantuan teknis tentang peralatan lab yang tidak bisa ditangani oleh PIC silahkan hubungi Laboran melalui kontak berikut:",
                             email: "ricky.purba@uph.edu",
@@ -876,7 +867,7 @@ export default function Home() {
                             name: "Ricky Ricardo Purba"
                           },
                           {
-                            letter: "f",
+                            letter: "e",
                             lab: "Kepala Lab",
                             desc: "Jika ada masalah yang berkaitan dengan laboratorium dan bertingkat fakultas silahkan hubungi:",
                             email: "aditya.mitra@uph.edu",
