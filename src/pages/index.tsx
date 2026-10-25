@@ -736,7 +736,7 @@ export default function Home() {
 
               {/* Disclaimer */}
               <AnimatedSection delay={275}>
-                <div className="px-4 py-3 bg-orange-50/80 rounded-lg border border-orange-200/50 text-xs sm:text-sm text-orange-800/70 italic">
+                <div className="px-4 py-3 bg-gray-50/80 rounded-lg border border-gray-200/50 text-xs sm:text-sm text-gray-800/70 italic">
                   Segala bentuk pelanggaran terhadap tata tertib di atas akan dikenakan sanksi. Penentuan sanksi merupakan hak mutlak dari Kepala Laboratorium FAIDAS dan juga PIC Lab yang bertugas
                 </div>
               </AnimatedSection>
@@ -859,7 +859,7 @@ export default function Home() {
                           },
                           {
                             letter: "d",
-                            lab: "Lab Gedung F205 dan F209-210",
+                            lab: "Lab Gedung B356 dan B344",
                             desc: "Jika memerlukan bantuan seputar peminjaman ruangan dan alat di dalam ruangan bersangkutan silahkan hubungi PIC melalui kontak berikut:",
                             email: "ricky.purba@uph.edu",
                             phone: "0859-7455-6230",
@@ -943,21 +943,6 @@ export default function Home() {
               <p className="text-sm text-gray-400 mb-6">
                 Developed by Teofilus Insani, Informatics 2023
               </p>
-
-              <div className="pt-6 border-t border-gray-100">
-                <div className="flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <p className="text-xs text-gray-400 order-2 sm:order-1">
-                    © 2025 BookLab - Faculty of Artificial Intelligence and Data Science, UPH
-                  </p>
-                  <div className="flex items-center space-x-1.5 order-1 sm:order-2">
-                    <img src="/colored_logo.png" alt="FAIDAS Logo" className="h-5" />
-                    <div className="flex flex-col pl-2 border-l-2 border-gray-400">
-                      <span className="text-xs font-medium leading-none text-orange-500">Book</span>
-                      <span className="text-xs font-medium leading-none text-orange-500">Lab</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </AnimatedSection>
           </div>
         </div>
